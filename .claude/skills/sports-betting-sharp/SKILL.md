@@ -221,5 +221,33 @@ After results come in (via `/bet-tracker`), revisit calibration notes and add ou
 
 ---
 
+## Slack Message Format
+
+When sending results via Slack DM to `U0ATA0A6NKB`, use this phone-friendly format. NO markdown tables.
+
+If picks found:
+Line 1: 🔪 *V2-Sharp Picks | [Weekday Mon DD]*
+Line 2 (italic): [X] signals investigated · [Y] confirmed · [Z] picks
+
+Then a divider line, then for each pick:
+[sport emoji] *PICK N — [SPORT]*
+*[Bet description]*
+💰 [Line] @ [Book]
+📦 [X] unit(s) · Score [X.X] 🟢  (🟢 if 7+, 🟡 if 5-6.9)
+• Signal: [RLM/Steam/Unpriced injury — specific details]
+• Public split: [X]% on opponent, line moved [direction]
+• Best line: [Book @ line]
+⚠️ _[what would invalidate this pick]_
+
+Divider line, then:
+🔍 *Investigated but discarded:* [matchup] — [reason]
+
+Finish with 1-2 punchy entertaining sentences about the sharp action — like a sharp friend texting you.
+
+If no picks found:
+🔪 *V2-Sharp | [Weekday Mon DD]*
+No sharp signals confirmed today. Sitting out is the play.
+[1-2 fun sentences about patience being profitable, or roasting the public.]
+
 ## Self-Healing
 If sharp-tracking sources change URLs or go behind paywalls, update this SKILL.md with working alternatives. Key sites to keep current: ActionNetwork, SportsBettingDime, DocSports steam reports.

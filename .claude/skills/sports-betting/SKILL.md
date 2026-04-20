@@ -221,5 +221,27 @@ After results come in (via `/bet-tracker`), revisit calibration notes and add ou
 
 ---
 
+## Slack Message Format
+
+When sending results via Slack DM to `U0ATA0A6NKB`, use this phone-friendly format. NO markdown tables.
+
+Line 1: 🎯 *V1-Trends Picks | [Weekday Mon DD]*
+Line 2 (italic): [X] picks · [Y] units at risk
+
+Then a divider line, then for each pick:
+[sport emoji] *PICK N — [SPORT]*
+*[Bet description]*
+💰 [Line] @ [Book]
+📦 [X] unit(s) · Score [X.X] 🟢 STRONG  (🟢 if score 7+, 🟡 if 5-6.9)
+• [primary edge]
+• [supporting factor]
+• [supporting factor]
+⚠️ _[main risk]_
+
+Divider line between picks. At the end:
+❌ *Skipped:* [matchup] — [one-line reason]
+
+Finish with 1-2 short entertaining sentences — fun and punchy like a friend texting you picks. Hype the slate, roast the public, whatever fits the day.
+
 ## Self-Healing
 If any URLs return 404s or paywalls, update this SKILL.md with working alternatives. Preferred free sources: ActionNetwork free tier, Covers.com, ESPN BET, OddsShark, The Lines.
