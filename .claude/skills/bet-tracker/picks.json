@@ -89,4 +89,44 @@
     "prop_result": null,
     "prop_margin": null
   }
+  ,
+  {
+    "id": "20260420-nhl-oilers-pl",
+    "date": "2026-04-20",
+    "model": "v1-trends",
+    "sport": "NHL",
+    "bet": "Edmonton Oilers -1.5 (Puck Line)",
+    "line": "+140",
+    "units": 2,
+    "score": 7.4,
+    "primary_edge": "ATS trend — Oilers covered puck line 10 of last 11 games (65% ROI); Ducks 2-6-2 in final 10, 4.1 GAA; Oilers 71% win probability",
+    "result": null,
+    "units_won_lost": null
+  },
+  {
+    "id": "20260420-mlb-reds-ml",
+    "date": "2026-04-20",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Cincinnati Reds ML vs TBR",
+    "line": "+100",
+    "units": 1,
+    "score": 6.4,
+    "primary_edge": "ATS trend — MLB's best road team (8-2 SU, 20-13 ATS away); 5-game win streak; even money value",
+    "result": null,
+    "units_won_lost": null
+  },
+  {
+    "id": "20260420-mlb-cubs-ml",
+    "date": "2026-04-20",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Chicago Cubs ML vs PHI",
+    "line": "-110",
+    "units": 1,
+    "score": 6.4,
+    "primary_edge": "Form edge — Cubs 5-game win streak, Phillies dropped 5 straight; Cubs score 5.33 R/G (4th) vs PHI 3.57 (26th); PHI bullpen fatigued",
+    "result": null,
+    "units_won_lost": null
+  }
 ]
