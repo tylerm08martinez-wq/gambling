@@ -223,6 +223,8 @@ After results come in (via `/bet-tracker`), revisit calibration notes and add ou
 
 ## Slack Message Format
 
+**Delivery method**: Use the `mcp__Slack__slack_send_message` MCP tool with `channel_id: "U0ATA0A6NKB"`. Do NOT use curl + webhook — the sandbox egress proxy blocks `hooks.slack.com` (returns 403 `host_not_allowed`).
+
 When sending results via Slack DM to `U0ATA0A6NKB`, use this phone-friendly format. NO markdown tables.
 
 If picks found:
