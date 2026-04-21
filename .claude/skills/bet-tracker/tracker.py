@@ -185,9 +185,18 @@ def model_stats(picks: list) -> dict:
 
 # ── Commands ──────────────────────────────────────────────────────────────────
 
+def roi_emoji(roi: float) -> str:
+    if roi > 0: return "🟢"
+    if roi < 0: return "🔴"
+    return "🟡"
+
+def divider() -> str:
+    return "━" * 34
+
+
 def cmd_stats(_args):
     picks = load_picks()
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now().strftime("%B %d, %Y")
 
     v1_picks = [p for p in picks if p["model"] == "v1-trends"]
     v2_picks = [p for p in picks if p["model"] == "v2-sharp"]
@@ -196,95 +205,70 @@ def cmd_stats(_args):
     v2 = model_stats(v2_picks)
     cb = model_stats(picks)
 
-    # Leading model
+    settled_all = [p for p in picks if p.get("result")]
+    open_picks = [p for p in picks if p.get("result") is None]
+
     diff = v1["units_net"] - v2["units_net"]
     if diff > 0:
-        leader = f"V1-Trends by {diff:.3f}u"
+        leader = f"V1-Trends by {diff:.2f}u"
     elif diff < 0:
-        leader = f"V2-Sharp by {abs(diff):.3f}u"
+        leader = f"V2-Sharp by {abs(diff):.2f}u"
     else:
         leader = "Tied"
 
-    def col(v1_val, v2_val, cb_val, fmt=str):
-        return f"│ {fmt(v1_val):<12} │ {fmt(v2_val):<12} │ {fmt(cb_val):<12} │"
+    print(f"\n📊 BETTING TRACKER — {today}")
+    print(f"{len(picks)} picks tracked · {cb['settled']} settled · {cb['open']} open\n")
+    print(divider())
 
-    print(f"""
-╔══════════════════════════════════════════════════════╗
-║           BETTING MODEL PERFORMANCE TRACKER           ║
-╚══════════════════════════════════════════════════════╝
+    # ── Model cards ──
+    for label, emoji, st in [("V1-TRENDS", "🎯", v1), ("V2-SHARP", "🔪", v2)]:
+        avg = f"{st['avg_score']:.1f}/10" if st['avg_score'] is not None else "—"
+        print(f"\n{emoji} {label}")
+        print(f"Record: {fmt_record(st)} · Win %: {st['win_pct']:.1f}%")
+        print(f"Net: {fmt_net(st['units_net'])} · ROI: {fmt_roi(st['roi'])} {roi_emoji(st['roi'])}")
+        print(f"Avg score: {avg} · {st['open']} open")
 
-📅 Last updated: {today}   |   📊 Total picks tracked: {len(picks)}
+    print(f"\n📈 COMBINED")
+    print(f"Record: {fmt_record(cb)} · Win %: {cb['win_pct']:.1f}%")
+    print(f"Net: {fmt_net(cb['units_net'])} · ROI: {fmt_roi(cb['roi'])} {roi_emoji(cb['roi'])}")
+    print(f"Units wagered: {cb['units_wagered']}u")
 
-┌─────────────────┬──────────────┬──────────────┬──────────────┐
-│ Metric          │ V1-Trends    │ V2-Sharp     │ Combined     │
-├─────────────────┼──────────────┼──────────────┼──────────────┤
-│ Total picks     {col(v1['total'], v2['total'], cb['total'])}
-│ Settled         {col(v1['settled'], v2['settled'], cb['settled'])}
-│ Record (W-L-P)  {col(fmt_record(v1), fmt_record(v2), fmt_record(cb))}
-│ Win %           {col(f"{v1['win_pct']:.1f}%", f"{v2['win_pct']:.1f}%", f"{cb['win_pct']:.1f}%")}
-│ Units wagered   {col(v1['units_wagered'], v2['units_wagered'], cb['units_wagered'])}
-│ Units net       {col(fmt_net(v1['units_net']), fmt_net(v2['units_net']), fmt_net(cb['units_net']))}
-│ ROI             {col(fmt_roi(v1['roi']), fmt_roi(v2['roi']), fmt_roi(cb['roi']))}
-│ Avg pick score  {col(fmt_score(v1['avg_score']), fmt_score(v2['avg_score']), '—')}
-│ Open (pending)  {col(v1['open'], v2['open'], cb['open'])}
-└─────────────────┴──────────────┴──────────────┴──────────────┘
-
-🏆 LEADING MODEL: {leader}
-
-Breakeven win rate (−110): 52.4%""")
+    print(f"\n🏆 Leading: {leader}")
+    if cb['settled'] < 20:
+        print(f"⚠️  Need 20+ settled picks for statistical significance ({cb['settled']} so far)")
+    print(f"Breakeven win rate at −110: 52.4%")
 
     # ── Recent Picks ──
     recent = sorted(picks, key=lambda p: p["date"], reverse=True)[:10]
-    divider = "─" * 86
-    print(f"\nRecent Picks\n{divider}")
-    print(f"{'Date':<12}{'Model':<11}{'Bet':<35}{'Line':<8}{'Units':<7}{'Result':<12}{'P/L'}")
-    print(f"{'':>12}Context")
-    print(divider)
+    print(f"\n{divider()}\n")
+    print("📋 RECENT PICKS\n")
     for p in recent:
-        model_label = "V1-Trends" if p["model"] == "v1-trends" else "V2-Sharp"
-        result_str = RESULT_ICON.get(p.get("result"), "—")
-        pl_str = fmt_net(p.get("units_won_lost") or 0) if p.get("result") else "—"
-        bet_display = p["bet"][:34]
-        print(f"{p['date']:<12}{model_label:<11}{bet_display:<35}{str(p['line']):<8}{str(p['units'])+'u':<7}{result_str:<12}{pl_str}")
+        model_label = "V1" if p["model"] == "v1-trends" else "V2"
+        result = p.get("result")
+        icon = RESULT_ICON.get(result, "—").split()[0]
+        date_short = p["date"][5:]  # MM-DD
+        pl_str = fmt_net(p.get("units_won_lost") or 0) if result else "pending"
+        bet_display = p["bet"][:38]
+        print(f"{icon} {date_short} · {model_label} · {bet_display} · {p['line']} · {p['units']}u · {pl_str}")
         ctx = build_context(p)
-        print(f"{'':>12}{ctx}")
-        print()
-    print(divider)
+        if ctx != "⏳ Pending":
+            print(f"   {ctx}")
+    print()
 
-    # ── Open Picks ──
-    open_picks = [p for p in picks if p.get("result") is None]
+    # ── Open Tonight ──
     if open_picks:
-        print(f"\n⏳ Open Picks — Need Results\n{'─'*72}")
-        print(f"{'ID':<35}{'Model':<12}{'Bet':<25}{'Units'}")
-        print("─" * 72)
+        print(divider())
+        print(f"\n⏳ OPEN / PENDING\n")
         for p in open_picks:
-            model_label = "V1-Trends" if p["model"] == "v1-trends" else "V2-Sharp"
-            print(f"{p['id']:<35}{model_label:<12}{p['bet'][:24]:<25}{p['units']}u")
+            model_label = "V1" if p["model"] == "v1-trends" else "V2"
+            print(f"• {p['bet']} · {p['line']} · {p['units']}u  [{model_label}]")
         print()
 
-    # ── Game Scores ──
-    scored = sorted(
-        [p for p in picks if p.get("result") and p.get("final_score")],
-        key=lambda p: p["date"], reverse=True
-    )
-    if scored:
-        print(f"\nGame Scores\n{'─'*82}")
-        print(f"{'Date':<12}{'Matchup':<38}{'Final Score':<18}Cover Check")
-        print("─" * 82)
-        for p in scored:
-            matchup = extract_matchup(p["bet"])[:37]
-            cover = build_cover_check(p)
-            icon = "✅" if p["result"] == "win" else "❌" if p["result"] == "loss" else "➡️"
-            print(f"{p['date']:<12}{matchup:<38}{p['final_score']:<18}{icon} {cover}")
-        print()
-
-    # ── Edge Type Breakdown ──
-    settled_all = [p for p in picks if p.get("result")]
+    # ── Edge Breakdown ──
     if settled_all:
         edges: dict = {}
         for p in settled_all:
             raw_edge = p.get("primary_edge") or "Unknown"
-            # Normalize: take first word or token before " —"
             edge_key = raw_edge.split("—")[0].split("-")[0].strip().split()[0].upper()
             if edge_key not in edges:
                 edges[edge_key] = {"picks": 0, "wins": 0, "wagered": 0.0, "net": 0.0}
@@ -295,14 +279,12 @@ Breakeven win rate (−110): 52.4%""")
             if p["result"] == "win":
                 e["wins"] += 1
 
-        print(f"\nEdge Type Performance\n{'─'*58}")
-        print(f"{'Edge':<18}{'Picks':<8}{'W%':<9}{'Net':<10}{'ROI'}")
-        print("─" * 58)
+        print(divider())
+        print(f"\n🔍 EDGE BREAKDOWN\n")
         for edge, e in sorted(edges.items(), key=lambda x: -x[1]["net"]):
             wp = e["wins"] / e["picks"] * 100
             roi = e["net"] / e["wagered"] * 100 if e["wagered"] else 0
-            wp_str = f"{wp:.1f}%"
-            print(f"{edge:<18}{e['picks']:<8}{wp_str:<9}{fmt_net(e['net']):<10}{fmt_roi(roi)}")
+            print(f"• {edge}: {e['picks']} picks · {wp:.0f}% W · {fmt_net(e['net'])} ({fmt_roi(roi)}) {roi_emoji(roi)}")
         print()
 
     # ── Sport Breakdown ──
@@ -311,34 +293,20 @@ Breakeven win rate (−110): 52.4%""")
         for p in settled_all:
             s = p.get("sport", "Unknown").upper()
             if s not in sports:
-                sports[s] = {"picks": 0, "wins": 0, "wagered": 0.0, "net": 0.0,
-                             "v1": {"picks": 0, "wins": 0, "net": 0.0},
-                             "v2": {"picks": 0, "wins": 0, "net": 0.0}}
+                sports[s] = {"picks": 0, "wins": 0, "wagered": 0.0, "net": 0.0}
             sp = sports[s]
             sp["picks"] += 1
             sp["wagered"] += p["units"]
-            net = p.get("units_won_lost") or 0
-            sp["net"] += net
+            sp["net"] += p.get("units_won_lost") or 0
             if p["result"] == "win":
                 sp["wins"] += 1
-            model_key = "v1" if p["model"] == "v1-trends" else "v2"
-            sp[model_key]["picks"] += 1
-            sp[model_key]["net"] += net
-            if p["result"] == "win":
-                sp[model_key]["wins"] += 1
 
-        print(f"\nBy Sport\n{'─'*72}")
-        print(f"{'Sport':<8}{'Picks':<7}{'W%':<8}{'Net':<10}{'ROI':<10}{'V1 ROI':<12}{'V2 ROI'}")
-        print("─" * 72)
+        print(divider())
+        print(f"\n🏟️  BY SPORT\n")
         for sport, s in sorted(sports.items(), key=lambda x: -x[1]["net"]):
             wp = s["wins"] / s["picks"] * 100 if s["picks"] else 0
             roi = s["net"] / s["wagered"] * 100 if s["wagered"] else 0
-            v1_roi = (s["v1"]["net"] / s["v1"]["picks"] * 100) if s["v1"]["picks"] else None
-            v2_roi = (s["v2"]["net"] / s["v2"]["picks"] * 100) if s["v2"]["picks"] else None
-            v1_str = fmt_roi(v1_roi) if v1_roi is not None else "—"
-            v2_str = fmt_roi(v2_roi) if v2_roi is not None else "—"
-            wp_str = f"{wp:.1f}%"
-            print(f"{sport:<8}{s['picks']:<7}{wp_str:<8}{fmt_net(s['net']):<10}{fmt_roi(roi):<10}{v1_str:<12}{v2_str}")
+            print(f"• {sport}: {s['picks']} picks · {wp:.0f}% W · {fmt_net(s['net'])} ({fmt_roi(roi)}) {roi_emoji(roi)}")
         print()
 
     # ── Score Calibration ──
@@ -347,39 +315,24 @@ Breakeven win rate (−110): 52.4%""")
         buckets = {"9-10": [], "7-8": [], "5-6": []}
         for p in scored_settled:
             sc = p["score"]
-            if sc >= 9:
-                buckets["9-10"].append(p)
-            elif sc >= 7:
-                buckets["7-8"].append(p)
-            elif sc >= 5:
-                buckets["5-6"].append(p)
+            if sc >= 9: buckets["9-10"].append(p)
+            elif sc >= 7: buckets["7-8"].append(p)
+            elif sc >= 5: buckets["5-6"].append(p)
 
-        print(f"\nScore Calibration\n{'─'*62}")
-        print(f"{'Score':<10}{'Picks':<8}{'W%':<10}{'Net':<12}{'Breakeven'}")
-        print("─" * 62)
-        for bucket, bpicks in buckets.items():
-            if not bpicks:
-                continue
-            wins = sum(1 for p in bpicks if p["result"] == "win")
-            losses = sum(1 for p in bpicks if p["result"] == "loss")
-            net = sum(p.get("units_won_lost") or 0 for p in bpicks)
-            wp = wins / (wins + losses) * 100 if (wins + losses) > 0 else 0
-            # Flag if win% is below breakeven (52.4%) for picks that should be high confidence
-            flag = " ⚠️ Below breakeven" if wp < 52.4 and (wins + losses) >= 3 else ""
-            wp_str = f"{wp:.1f}%"
-            print(f"{bucket:<10}{len(bpicks):<8}{wp_str:<10}{fmt_net(net):<12}52.4%{flag}")
-        print()
-        # Calibration verdict
-        high = buckets["9-10"]
-        low = buckets["5-6"]
-        if len(high) >= 3 and len(low) >= 3:
-            high_wp = sum(1 for p in high if p["result"] == "win") / len(high) * 100
-            low_wp = sum(1 for p in low if p["result"] == "win") / len(low) * 100
-            if high_wp > low_wp:
-                print(f"  ✅ Scores are predictive — high-scored picks winning at {high_wp:.0f}% vs {low_wp:.0f}% for low-scored")
-            else:
-                print(f"  ⚠️  Scores may need recalibration — high-scored picks at {high_wp:.0f}% vs {low_wp:.0f}% for low-scored")
-        print()
+        has_data = any(buckets[k] for k in buckets)
+        if has_data:
+            print(divider())
+            print(f"\n🎯 SCORE CALIBRATION\n")
+            for bucket, bpicks in buckets.items():
+                if not bpicks:
+                    continue
+                wins = sum(1 for p in bpicks if p["result"] == "win")
+                losses = sum(1 for p in bpicks if p["result"] == "loss")
+                net = sum(p.get("units_won_lost") or 0 for p in bpicks)
+                wp = wins / (wins + losses) * 100 if (wins + losses) > 0 else 0
+                flag = " ⚠️" if wp < 52.4 and (wins + losses) >= 3 else ""
+                print(f"• Score {bucket}: {len(bpicks)} picks · {wp:.0f}% W · {fmt_net(net)}{flag}")
+            print()
 
 
 def cmd_open(_args):
