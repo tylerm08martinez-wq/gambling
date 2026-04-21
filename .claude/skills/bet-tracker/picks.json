@@ -128,5 +128,47 @@
     "primary_edge": "Form edge — Cubs 5-game win streak, Phillies dropped 5 straight; Cubs score 5.33 R/G (4th) vs PHI 3.57 (26th); PHI bullpen fatigued",
     "result": null,
     "units_won_lost": null
+  },
+  {
+    "id": "20260421-mlb-cubs-ml",
+    "date": "2026-04-21",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Chicago Cubs ML vs PHI",
+    "line": "-118",
+    "units": 1,
+    "score": 7.0,
+    "primary_edge": "Pitching matchup — Imanaga (2.45 ERA, 0.77 WHIP) punched out 11 PHI in last meeting; Phillies .260 wOBA (28th) / .549 OPS (29th) vs LHP; PHI scored <=2 runs in 5 straight",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
+  },
+  {
+    "id": "20260421-mlb-dbacks-ml",
+    "date": "2026-04-21",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Arizona Diamondbacks ML vs CWS",
+    "line": "-146",
+    "units": 1,
+    "score": 6.8,
+    "primary_edge": "ERA mismatch + form — Merrill Kelly (3.38 ERA) vs Sean Burke (4.43 ERA, 0-2); D-Backs averaging 5.6 R/G over last 5 at home; model win prob 64%",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
+  },
+  {
+    "id": "20260421-nhl-avs-kings-under",
+    "date": "2026-04-21",
+    "model": "v1-trends",
+    "sport": "NHL",
+    "bet": "Kings vs Avalanche Under 5.5",
+    "line": "-122",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "Trend/situational — Game 1 ended 2-1 (3 total goals); Colorado defense locked Kings to perimeter; Kings offense 29th in NHL; expert consensus on Under",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 5.5
   }
 ]
