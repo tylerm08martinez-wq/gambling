@@ -99,6 +99,25 @@ None yet — will populate as data accumulates.
 
 ---
 
+### 2026-04-22 — V1-Trends Session
+
+**Games researched**: 12 across MLB, NBA playoffs, NHL playoffs · **Picks**: 3 (all MLB, avg Score 6.8)
+
+**Signal observations**:
+- Three clean ERA-mismatch spots in MLB today where the bad starter has 7+ ERA (Lauer 7.13, Littell 7.11, Mahle 7.23). This is the same pattern that went 2-0 on Apr 17 (Braves ML 9-0, D-Backs RL 6-3).
+- No qualifying NHL or NBA playoff picks — Pistons -8.5 intentionally skipped given Hornets -3 play-in blowup taught us to reduce confidence on line-movement reads in high-variance playoff contexts.
+- Braves ML at -149 with 84% public is heavy chalk. Historically risky but ERA/rotation edges are real — sized down to 1u to account for juice and trap risk.
+
+**Calibration notes**:
+- Angels ML at Score 7.6 — Soriano's 0.28 ERA is unsustainable but the full-season ERA gap to Lauer is still ~7 runs. Even regression to mean keeps the mismatch dominant. Watch if Lauer actually survives 4+ innings.
+- Dodgers -1.5 RL — Freeman absence is the main downgrade vs what would be a slam-dunk mismatch otherwise. Monitoring whether Freeman-out games still cover -1.5 with Ohtani.
+
+**Patterns reinforced or challenged**:
+- MLB ERA-mismatch pattern getting a third test today (after 2-0 on Apr 17). If 4-of-5 or better across the next 2 weeks, promote to Active Patterns.
+- No-pick in playoff basketball/hockey when line-movement reads are ambiguous. V1 should not force picks — intel log from Apr 18 V2-Sharp session emphasized this too.
+
+---
+
 ### 2026-04-17 — Bet Tracker Results
 
 **Resolved today**: 3 picks (2-1-0)
