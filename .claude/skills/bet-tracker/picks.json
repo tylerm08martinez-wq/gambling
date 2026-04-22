@@ -170,5 +170,47 @@
     "result": null,
     "units_won_lost": null,
     "line_num": 5.5
+  },
+  {
+    "id": "20260422-mlb-angels-ml",
+    "date": "2026-04-22",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Los Angeles Angels ML vs TOR",
+    "line": "-150",
+    "units": 2,
+    "score": 7.6,
+    "primary_edge": "Massive ERA mismatch — Soriano (5-0, 0.28 ERA in 5 starts, Angels 5-0 in his starts) vs Lauer (1-3, 7.13 ERA); Lauer already torched 6-3 last start; home plate advantage",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
+  },
+  {
+    "id": "20260422-mlb-braves-ml",
+    "date": "2026-04-22",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Atlanta Braves ML vs WSH",
+    "line": "-149",
+    "units": 1,
+    "score": 6.2,
+    "primary_edge": "ERA mismatch + depleted rotation — Pérez (2.21 ERA) vs Littell (7.11 ERA, 7 HR in 19 IP); Braves won 6 of last 7; Nats rotation gutted (Herz/Gray/Williams on IL); risk: 84% public",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
+  },
+  {
+    "id": "20260422-mlb-dodgers-rl",
+    "date": "2026-04-22",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Los Angeles Dodgers -1.5 RL vs SFG",
+    "line": "-115",
+    "units": 1,
+    "score": 6.6,
+    "primary_edge": "Pitching mismatch — Ohtani (2-0, 0.50 ERA) vs Mahle (0-3, 7.23 ERA); plus-juice RL with dominant starter; risk: Freeman out of lineup",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 1.5
   }
 ]
