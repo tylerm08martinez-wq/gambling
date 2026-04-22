@@ -81,6 +81,24 @@ None yet — will populate as data accumulates.
 
 ---
 
+### 2026-04-22 — V2-Sharp Session
+
+**Games scanned**: ~15 MLB + 3 NHL playoff + 2 NBA playoff · **Sharp signals found**: 0 confirmed · **Picks**: 0
+
+**Signal observations**:
+- Stars @ Wild Game 3 investigated — Hintz (Stars C) out, but injury long-known (since March 6) and fully priced; Wild -134 home. No unpriced injury edge.
+- Wild Zuccarello status investigated — day-to-day for Game 3 after Myers elbow (Game 1). Too uncertain to price; no line move against Wild to confirm sharps leaning Stars.
+- Thunder -17.5 vs Suns (Game 2) — massive public number after 35-pt Game 1 rout. No RLM data available; huge laying-points spots rarely produce clean sharp signals.
+- MLB slate (Braves/Nats, Guardians/Astros, Angels/BJs, etc.) — primary sharp-tracking sources (Action Network, VSIN, SportsBettingDime, BetQL) all returned 403. Unable to verify public/money splits or opening line movement. Cannot confirm signals without data — correct action is to pass.
+
+**Calibration notes**:
+- Data-access failures on sharp-tracking sites are becoming routine. Consider adding alternative sources (DocSports steam plays, sharp-report mirrors) in SKILL.md self-healing section.
+
+**Patterns reinforced or challenged**:
+- No-pick days are the model working as designed. V2-Sharp's premise is that fewer, cleaner signals beat volume. Sitting out beats forcing a marginal RLM.
+
+---
+
 ### 2026-04-17 — Bet Tracker Results
 
 **Resolved today**: 3 picks (2-1-0)
