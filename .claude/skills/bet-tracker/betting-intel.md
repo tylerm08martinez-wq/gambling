@@ -118,6 +118,31 @@ None yet — will populate as data accumulates.
 
 ---
 
+### 2026-04-24 — V1-Trends Session
+
+**Games researched**: ~15 across MLB, NBA playoffs, NHL playoffs · **Picks**: 3 (2 MLB, 1 NBA; avg Score 6.5)
+
+**Signal observations**:
+- Clean ERA-mismatch in CLE/TOR — Williams (2.12 ERA) vs Scherzer (7.16 ERA). Same template as Apr 17 (Braves/Lauer, D-Backs/Lauer) and Apr 22 (Angels/Lauer, Braves/Littell, Dodgers/Mahle). Fourth test for this pattern — if it hits, consider promoting to Active Patterns.
+- Wemby concussion protocol created a clean injury edge on POR +2.5. Market already repriced series odds (-2000 → -550), but line may not have fully adjusted to his likely absence. Sized down to 1u given Apr 22 intel log caution on playoff basketball.
+- Yankees/Astros at -145 is a borderline lean — mismatch is real (Warren 2.49 vs McCullers 6.20) but juice ate most of the value. Logged at 1u.
+
+**Skipped**:
+- Phillies/Braves (ATL -145) — intel log warns on heavy Braves chalk; Painter (4.42 ERA) vs Holmes (3.42 ERA) not a strong mismatch.
+- Mariners/Cardinals (-160) — Kirby edge real but Mariners 1-8 on road in 2026 is too red-flag for heavy juice.
+- Nats/White Sox — Mikolas 9.15 ERA but 2-0 lifetime vs CWS and Hudson is untested as starter; no clear edge.
+- Oilers/Ducks Game 3 — coin flip after Ducks won Game 2 6-4; no edge at Oilers -137.
+
+**Calibration notes**:
+- Guardians ML at Score 7.4 — rests heavily on Scherzer's collapse being real (velocity decline + .368 xwOBA). If TOR hits HRs early, model underweights Scherzer's Hall-of-Fame mental toughness.
+- Blazers +2.5 at Score 6.8 — if Wemby plays and looks normal, pick is toast. Watching inactives list.
+
+**Patterns reinforced or challenged**:
+- ERA-mismatch pattern goes to its fourth test. Need 4-of-5 hits across next 2 weeks to promote.
+- First playoff NBA injury-edge play since Hornets RLM disaster on Apr 17 (-31 loss). This is injury-based, not RLM-based, so the intel log caution doesn't apply directly — but keeping it at 1u.
+
+---
+
 ### 2026-04-17 — Bet Tracker Results
 
 **Resolved today**: 3 picks (2-1-0)
