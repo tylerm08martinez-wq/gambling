@@ -160,3 +160,23 @@ None yet — will populate as data accumulates.
 **Log maintenance**:
 - No active patterns promoted yet — need 3+ consistent results per edge type.
 
+---
+
+### 2026-04-25 — V2-Sharp Session
+
+**Games scanned**: ~9 MLB · 4 NBA playoff · 3 NHL playoff · **Sharp signals found**: 0 confirmed · **Picks**: 0
+
+**Signal observations**:
+- Senators ML (Game 4 vs CAR, OTT down 0-3 at home) — line moved Senators +155 → +145 across one book. 10-cent move is below 15-cent steam threshold and is fully explainable by desperate-home-elimination dynamics + public chalk on the sweep narrative. Not confirmed sharp.
+- Timberwolves +1.5 home vs Denver (MIN leads 2-1 in series) — counterintuitive line (home team leading the series getting points) is a possible Denver-sharp tell, but no public/money split data accessible to confirm RLM. Pass without confirmation.
+- Diamondbacks vs Padres (Mexico City Series) — book pricing disparity (ARI -112 at one shop vs SD -130 elsewhere) is venue-related (Mexico City altitude/novelty) rather than steam. Not a confirmed sharp signal.
+- Jalen Williams (Thunder, Grade 1 hamstring strain) — injury news public since Wednesday after Game 2; line of OKC -9.5 is fully baked. No unpriced-injury edge.
+- Wembanyama OUT (Spurs Game 3) — already-resolved Friday game, not on today's slate.
+
+**Calibration notes**:
+- Same data-access wall as 2026-04-22 V2-Sharp: Action Network, BetQL, VSIN, Covers, SportsBettingDime, Cleatz all returned 403. The model's premise requires verifiable bet/money splits — cannot confirm RLM without them.
+
+**Patterns reinforced or challenged**:
+- Second consecutive V2-Sharp no-pick day driven by data access. Model is working as designed (sit out without confirmation), but the dependency on a single class of sources is a real systemic limitation. Worth exploring DocSports/sharp-report mirrors or direct sportsbook public-percentage feeds in next SKILL.md self-healing pass.
+- Reinforced: never force a marginal RLM read on a 10-cent move. Steam threshold (≥15 cents ML / ≥1pt spread at multiple books) exists for a reason — the Senators move would have failed it on size alone even if confirmable.
+
