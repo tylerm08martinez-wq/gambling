@@ -180,3 +180,23 @@ None yet — will populate as data accumulates.
 - Second consecutive V2-Sharp no-pick day driven by data access. Model is working as designed (sit out without confirmation), but the dependency on a single class of sources is a real systemic limitation. Worth exploring DocSports/sharp-report mirrors or direct sportsbook public-percentage feeds in next SKILL.md self-healing pass.
 - Reinforced: never force a marginal RLM read on a 10-cent move. Steam threshold (≥15 cents ML / ≥1pt spread at multiple books) exists for a reason — the Senators move would have failed it on size alone even if confirmable.
 
+---
+
+### 2026-04-25 — V1-Trends Session
+
+**Games researched**: ~14 across MLB (10), NBA playoffs (4), NHL playoffs (3) · **Picks**: 2 (both MLB, avg Score 6.0)
+
+**Signal observations**:
+- Garrett Crochet (BOS) at 7.88 ERA is the cleanest "broken pitcher" spot of the week — ranks 72nd of 73 qualified SPs, gave up 11 ER in 1.2 IP last start. Market has him at near-pickem (-116 BAL favorite) which is light pricing relative to a 3.80 ERA gap. This is functionally an ERA-mismatch trade but the broken-ace angle is distinct from the Lauer/Mahle/Littell template — name reputation seems to be holding the line tighter than warranted.
+- Yankees-Astros lined up as a near-twin to yesterday's pick (Warren/McCullers): Weathers (3.18) vs Burrows (6.75), same script different cast. Sized down to 1u given 100% public on NYY across recent ticks and -154 juice eating most of the edge. Same chalk-trap risk that capped Apr 24 at 5.2.
+- No qualifying NBA/NHL playoff picks. Hurricanes/Senators Under 5.5 (-105) was tempting (3-of-3 series Unders, elite goaltending both sides) but scored 4.8 on the rubric and didn't clear threshold. Stars +114 had an attractive price but injury picture (Hintz/Bastian out vs Zuccarello/Trenin out) was too symmetric. Thunder -9.5 was the kind of huge playoff number the V2-Sharp Apr 22 log explicitly flagged as low-signal.
+
+**Calibration notes**:
+- Orioles ML at Score 6.8 — depends on Crochet's collapse being real, not a one-off. Five-start sample (24 IP, 7.88 ERA, 11 ER game on Apr 13) is enough to call it a real regression, not noise. If he settles down for one start, this is toast.
+- Yankees ML at Score 5.2 — same calibration as yesterday's logged 5.2: real mismatch, juice + 100% public makes it a thin lean. Watching whether back-to-back Yankees mismatches at -145+/-154 cash; both at 1u is the right size for chalk-trap exposure.
+
+**Patterns reinforced or challenged**:
+- ERA-mismatch pattern goes to its fifth test (Apr 17 D-Backs/Lauer W, Braves/Walker W; Apr 22 Angels/Lauer, Braves/Littell, Dodgers/Mahle pending; Apr 24 Guardians/Scherzer, Yankees/McCullers pending; Apr 25 Orioles/Crochet, Yankees/Burrows pending). Need to revisit promotion criteria once Apr 22-24 results resolve.
+- New sub-pattern flagged: "broken ace, name still on the line" — Crochet's case is the first cleanly-isolated example. Watch for similar setups (former Cy Young/All-Star with bottom-decile current ERA priced tighter than peripherals warrant).
+- Continued discipline on playoff NBA/NHL no-picks. V1 has now passed on three consecutive playoff slates without a basketball/hockey pick (Apr 22, Apr 24's 1u Blazers was the lone exception, Apr 25 none). The intel log caution from Apr 17 Hornets disaster is holding.
+

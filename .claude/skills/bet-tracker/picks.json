@@ -254,5 +254,33 @@
     "result": null,
     "units_won_lost": null,
     "line_num": 0
+  },
+  {
+    "id": "20260425-mlb-orioles-ml",
+    "date": "2026-04-25",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Baltimore Orioles ML vs BOS",
+    "line": "-116",
+    "units": 2,
+    "score": 6.8,
+    "primary_edge": "Pitcher collapse — Garrett Crochet (2-3, 7.88 ERA, 1.63 WHIP, ranks 72nd of 73 qualified SPs; allowed 11 ER in 1.2 IP last start vs MIN) vs Trevor Rogers (2-2, 4.08 ERA, 1.89 ERA in April); market still pricing Crochet on Cy Young reputation, line at near pick'em despite 3.80 ERA gap; home favorite at Camden Yards",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
+  },
+  {
+    "id": "20260425-mlb-yankees-ml",
+    "date": "2026-04-25",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "New York Yankees ML vs HOU",
+    "line": "-154",
+    "units": 1,
+    "score": 5.2,
+    "primary_edge": "ERA mismatch — Ryan Weathers LHP (1-2, 3.18 ERA; 7.1 shutout IP last start) vs Mike Burrows (1-3, 6.75 ERA, 1-of-5 starts past 6 IP, NL-leading 36 H allowed in 26.2 IP); LHB 8-for-16 with 3 HR vs Burrows' 4-seamer, Yankees lefty-heavy; juice -154 trims edge",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
   }
 ]
