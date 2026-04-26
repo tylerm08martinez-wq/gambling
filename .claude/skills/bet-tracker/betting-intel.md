@@ -200,3 +200,26 @@ None yet — will populate as data accumulates.
 - New sub-pattern flagged: "broken ace, name still on the line" — Crochet's case is the first cleanly-isolated example. Watch for similar setups (former Cy Young/All-Star with bottom-decile current ERA priced tighter than peripherals warrant).
 - Continued discipline on playoff NBA/NHL no-picks. V1 has now passed on three consecutive playoff slates without a basketball/hockey pick (Apr 22, Apr 24's 1u Blazers was the lone exception, Apr 25 none). The intel log caution from Apr 17 Hornets disaster is holding.
 
+---
+
+### 2026-04-26 — V2-Sharp Session
+
+**Games scanned**: ~14 MLB · 4 NBA playoff · 2 NHL playoff · **Sharp signals found**: 1 confirmed · **Picks**: 1
+
+**Signal observations**:
+- Phillies @ Braves Under 8.5 — Cleanest RLM signal in weeks. 94% public tickets and 94.1% public money on Over, line moved Under -120 → -130 (10-cent move toward Under against overwhelming public). Sale (2.79 ERA, 1.00 WHIP) vs Nola (5.06 ERA, 1.46 WHIP). Phillies on 9-game losing streak. Multiple sources confirmed split. Logged at 2u, score 8.0.
+- Yankees @ Astros investigated — VSIN flagged "low bets / high dollars" sharp split on Yankees (89% bets, 99% money), but line drifted from -154 (Saturday) to -132/-140 (Sunday). Movement direction is contradictory (sharps on Yankees but line moving toward Astros). Likely the Saturday number anchored on a different probable starter; Sunday correction may reflect Arrighetti's 2.45 ERA being stronger than Gil's 4.11. Discarded as ambiguous — direction conflict invalidates the signal.
+- Rays @ Twins investigated — Sharps drove Rays from -135 to -145 (75% bets, 99% money on Rays). Public AND sharps on the same side, which is sharp confirmation but NOT RLM. Doesn't qualify under V2-Sharp criteria (which requires line moving against public).
+- Reds vs Tigers investigated — VSIN reported Reds from -105 to -110 (sharp on Reds), but FanDuel research showed Tigers as -160 favorite, contradicting the direction. Conflicting source data, no clean RLM. Discarded.
+- NHL slate down to 2 games (Bruins/Sabres G4, Lightning/Canadiens G4); no public/money split data accessible to confirm RLM. Both lines tight at -111 to -115. Pass.
+- NBA slate (Cavs/Raptors G4, Knicks/Hawks G4, Lakers/Rockets G4, Pacers/Bucks G4-ish) — no actionable sharp split data. Pass on playoff basketball per the standing Apr 17 caution.
+
+**Calibration notes**:
+- Phillies/Braves Under at 8.0 — could have been higher (signal strength is 9/10 with 94% public on wrong side, well above the 70% threshold), but line value docked to ~5.5 because -130 is on the worse end of "acceptable" juice and we're entering after the steam already moved the number. Final 8.0 reflects strong-signal-but-late-entry.
+- Yankees/Astros conflict shows the limit of multi-source synthesis: VSIN's "sharp on Yankees" reading and the actual closing-line drift toward Astros can't both be right. Default position when sources conflict directionally = pass.
+
+**Patterns reinforced or challenged**:
+- MLB total RLM (Under) with elite-vs-broken pitching matchup is a clean signal type. Different from prior V2-Sharp picks (White Sox ML, Hornets spread) — first totals-based RLM logged for V2.
+- Reinforced: when public is at ≥90% and line moves against them, that's the strongest version of RLM and warrants a 2u sizing despite the late-entry juice penalty.
+- Reinforced: VSIN MLB betting splits remained accessible today (unlike Action Network, BetQL, Covers, SportsBettingDime which continue to 403). VSIN + FanDuel Research + Sportsbettingdime article pages are the working source stack right now.
+

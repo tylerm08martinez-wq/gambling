@@ -282,5 +282,19 @@
     "result": null,
     "units_won_lost": null,
     "line_num": 0
+  },
+  {
+    "id": "20260426-mlb-bravesphillies-under",
+    "date": "2026-04-26",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Phillies @ Braves UNDER 8.5",
+    "line": "-130",
+    "units": 2,
+    "score": 8.0,
+    "primary_edge": "RLM — 94% public tickets and 94.1% of money on Over, line moved Under -120 → -130 against the public; sharps backing Sale (4-1, 2.79 ERA, 1.00 WHIP) vs Nola (1-2, 5.06 ERA, 1.46 WHIP); Phillies on 9-game losing streak, no obvious public catalyst for the Under move",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 8.5
   }
 ]
