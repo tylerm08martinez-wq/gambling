@@ -8,7 +8,7 @@
     "line": "+146",
     "units": 2,
     "score": 7.8,
-    "primary_edge": "RLM — 96% public dollars on Blue Jays, line held at ARI -143; Soroka (2.87 ERA) vs Lauer (7.82 ERA)",
+    "primary_edge": "RLM \u2014 96% public dollars on Blue Jays, line held at ARI -143; Soroka (2.87 ERA) vs Lauer (7.82 ERA)",
     "result": "win",
     "units_won_lost": 2.92,
     "final_score": "ARI 6, TOR 3",
@@ -26,7 +26,7 @@
     "line": "-118",
     "units": 2,
     "score": 7.4,
-    "primary_edge": "RLM — 79% public dollars on Phillies, line flipped to ATL -118; Walker 7.36 ERA vs elite Braves offense",
+    "primary_edge": "RLM \u2014 79% public dollars on Phillies, line flipped to ATL -118; Walker 7.36 ERA vs elite Braves offense",
     "result": "win",
     "units_won_lost": 1.695,
     "final_score": "ATL 9, PHI 0",
@@ -44,7 +44,7 @@
     "line": "-110",
     "units": 2,
     "score": 8.0,
-    "primary_edge": "RLM — 74% public bets on Magic, line moved Hornets -2.5 to -3 against them; no injury catalyst",
+    "primary_edge": "RLM \u2014 74% public bets on Magic, line moved Hornets -2.5 to -3 against them; no injury catalyst",
     "result": "loss",
     "units_won_lost": -2.0,
     "final_score": "CHA 90, ORL 121",
@@ -62,7 +62,7 @@
     "line": "+105",
     "units": 1,
     "score": 7.8,
-    "primary_edge": "Injury — Dallas missing Seguin (out season), Hintz (out G1-2), Heiskanen (questionable); 12 of last 18 meetings went Under; plus-money on Under",
+    "primary_edge": "Injury \u2014 Dallas missing Seguin (out season), Hintz (out G1-2), Heiskanen (questionable); 12 of last 18 meetings went Under; plus-money on Under",
     "result": null,
     "units_won_lost": null,
     "final_score": null,
@@ -80,7 +80,7 @@
     "line": "+140",
     "units": 1,
     "score": 7.75,
-    "primary_edge": "RLM — 67% public tickets on Athletics, 65% of money on White Sox; Fedde (3.38 ERA) vs Severino (5.59 ERA)",
+    "primary_edge": "RLM \u2014 67% public tickets on Athletics, 65% of money on White Sox; Fedde (3.38 ERA) vs Severino (5.59 ERA)",
     "result": null,
     "units_won_lost": null,
     "final_score": null,
@@ -88,8 +88,7 @@
     "line_num": 0,
     "prop_result": null,
     "prop_margin": null
-  }
-  ,
+  },
   {
     "id": "20260420-nhl-oilers-pl",
     "date": "2026-04-20",
@@ -99,7 +98,7 @@
     "line": "+140",
     "units": 2,
     "score": 7.4,
-    "primary_edge": "ATS trend — Oilers covered puck line 10 of last 11 games (65% ROI); Ducks 2-6-2 in final 10, 4.1 GAA; Oilers 71% win probability",
+    "primary_edge": "ATS trend \u2014 Oilers covered puck line 10 of last 11 games (65% ROI); Ducks 2-6-2 in final 10, 4.1 GAA; Oilers 71% win probability",
     "result": null,
     "units_won_lost": null
   },
@@ -112,7 +111,7 @@
     "line": "+100",
     "units": 1,
     "score": 6.4,
-    "primary_edge": "ATS trend — MLB's best road team (8-2 SU, 20-13 ATS away); 5-game win streak; even money value",
+    "primary_edge": "ATS trend \u2014 MLB's best road team (8-2 SU, 20-13 ATS away); 5-game win streak; even money value",
     "result": null,
     "units_won_lost": null
   },
@@ -125,7 +124,7 @@
     "line": "-110",
     "units": 1,
     "score": 6.4,
-    "primary_edge": "Form edge — Cubs 5-game win streak, Phillies dropped 5 straight; Cubs score 5.33 R/G (4th) vs PHI 3.57 (26th); PHI bullpen fatigued",
+    "primary_edge": "Form edge \u2014 Cubs 5-game win streak, Phillies dropped 5 straight; Cubs score 5.33 R/G (4th) vs PHI 3.57 (26th); PHI bullpen fatigued",
     "result": null,
     "units_won_lost": null
   },
@@ -138,7 +137,7 @@
     "line": "-118",
     "units": 1,
     "score": 7.0,
-    "primary_edge": "Pitching matchup — Imanaga (2.45 ERA, 0.77 WHIP) punched out 11 PHI in last meeting; Phillies .260 wOBA (28th) / .549 OPS (29th) vs LHP; PHI scored <=2 runs in 5 straight",
+    "primary_edge": "Pitching matchup \u2014 Imanaga (2.45 ERA, 0.77 WHIP) punched out 11 PHI in last meeting; Phillies .260 wOBA (28th) / .549 OPS (29th) vs LHP; PHI scored <=2 runs in 5 straight",
     "result": null,
     "units_won_lost": null,
     "line_num": 0
@@ -152,7 +151,7 @@
     "line": "-146",
     "units": 1,
     "score": 6.8,
-    "primary_edge": "ERA mismatch + form — Merrill Kelly (3.38 ERA) vs Sean Burke (4.43 ERA, 0-2); D-Backs averaging 5.6 R/G over last 5 at home; model win prob 64%",
+    "primary_edge": "ERA mismatch + form \u2014 Merrill Kelly (3.38 ERA) vs Sean Burke (4.43 ERA, 0-2); D-Backs averaging 5.6 R/G over last 5 at home; model win prob 64%",
     "result": null,
     "units_won_lost": null,
     "line_num": 0
@@ -166,7 +165,7 @@
     "line": "-122",
     "units": 1,
     "score": 6.0,
-    "primary_edge": "Trend/situational — Game 1 ended 2-1 (3 total goals); Colorado defense locked Kings to perimeter; Kings offense 29th in NHL; expert consensus on Under",
+    "primary_edge": "Trend/situational \u2014 Game 1 ended 2-1 (3 total goals); Colorado defense locked Kings to perimeter; Kings offense 29th in NHL; expert consensus on Under",
     "result": null,
     "units_won_lost": null,
     "line_num": 5.5
@@ -180,7 +179,7 @@
     "line": "-150",
     "units": 2,
     "score": 7.6,
-    "primary_edge": "Massive ERA mismatch — Soriano (5-0, 0.28 ERA in 5 starts, Angels 5-0 in his starts) vs Lauer (1-3, 7.13 ERA); Lauer already torched 6-3 last start; home plate advantage",
+    "primary_edge": "Massive ERA mismatch \u2014 Soriano (5-0, 0.28 ERA in 5 starts, Angels 5-0 in his starts) vs Lauer (1-3, 7.13 ERA); Lauer already torched 6-3 last start; home plate advantage",
     "result": null,
     "units_won_lost": null,
     "line_num": 0
@@ -194,7 +193,7 @@
     "line": "-149",
     "units": 1,
     "score": 6.2,
-    "primary_edge": "ERA mismatch + depleted rotation — Pérez (2.21 ERA) vs Littell (7.11 ERA, 7 HR in 19 IP); Braves won 6 of last 7; Nats rotation gutted (Herz/Gray/Williams on IL); risk: 84% public",
+    "primary_edge": "ERA mismatch + depleted rotation \u2014 P\u00e9rez (2.21 ERA) vs Littell (7.11 ERA, 7 HR in 19 IP); Braves won 6 of last 7; Nats rotation gutted (Herz/Gray/Williams on IL); risk: 84% public",
     "result": null,
     "units_won_lost": null,
     "line_num": 0
@@ -208,7 +207,7 @@
     "line": "-115",
     "units": 1,
     "score": 6.6,
-    "primary_edge": "Pitching mismatch — Ohtani (2-0, 0.50 ERA) vs Mahle (0-3, 7.23 ERA); plus-juice RL with dominant starter; risk: Freeman out of lineup",
+    "primary_edge": "Pitching mismatch \u2014 Ohtani (2-0, 0.50 ERA) vs Mahle (0-3, 7.23 ERA); plus-juice RL with dominant starter; risk: Freeman out of lineup",
     "result": null,
     "units_won_lost": null,
     "line_num": 1.5
@@ -222,7 +221,7 @@
     "line": "-125",
     "units": 2,
     "score": 7.4,
-    "primary_edge": "ERA mismatch — Gavin Williams (3-1, 2.12 ERA, 40 K, team 4-1 ATS in his starts) vs Max Scherzer (1-2, 7.16 ERA, 1-3 ATS in his starts, declining 93.2 mph fastball, .368 xwOBA allowed)",
+    "primary_edge": "ERA mismatch \u2014 Gavin Williams (3-1, 2.12 ERA, 40 K, team 4-1 ATS in his starts) vs Max Scherzer (1-2, 7.16 ERA, 1-3 ATS in his starts, declining 93.2 mph fastball, .368 xwOBA allowed)",
     "result": null,
     "units_won_lost": null,
     "line_num": 0
@@ -236,7 +235,7 @@
     "line": "-110",
     "units": 1,
     "score": 6.8,
-    "primary_edge": "Injury — Wembanyama in concussion protocol, expected to miss Game 3; Spurs series odds collapsed from -2000 to -550; Blazers won Game 2 on road 106-103; RLM from SAS -2.5 to -1.5 range",
+    "primary_edge": "Injury \u2014 Wembanyama in concussion protocol, expected to miss Game 3; Spurs series odds collapsed from -2000 to -550; Blazers won Game 2 on road 106-103; RLM from SAS -2.5 to -1.5 range",
     "result": null,
     "units_won_lost": null,
     "line_num": 2.5
@@ -250,7 +249,7 @@
     "line": "-145",
     "units": 1,
     "score": 5.2,
-    "primary_edge": "ERA mismatch — Will Warren (2-0, 2.49 ERA, 172 ERA+) vs Lance McCullers Jr (1-1, 6.20 ERA, 1.33 WHIP); Yankees on 3-game road win streak; Astros 10-16 ATS overall",
+    "primary_edge": "ERA mismatch \u2014 Will Warren (2-0, 2.49 ERA, 172 ERA+) vs Lance McCullers Jr (1-1, 6.20 ERA, 1.33 WHIP); Yankees on 3-game road win streak; Astros 10-16 ATS overall",
     "result": null,
     "units_won_lost": null,
     "line_num": 0
@@ -264,7 +263,7 @@
     "line": "-116",
     "units": 2,
     "score": 6.8,
-    "primary_edge": "Pitcher collapse — Garrett Crochet (2-3, 7.88 ERA, 1.63 WHIP, ranks 72nd of 73 qualified SPs; allowed 11 ER in 1.2 IP last start vs MIN) vs Trevor Rogers (2-2, 4.08 ERA, 1.89 ERA in April); market still pricing Crochet on Cy Young reputation, line at near pick'em despite 3.80 ERA gap; home favorite at Camden Yards",
+    "primary_edge": "Pitcher collapse \u2014 Garrett Crochet (2-3, 7.88 ERA, 1.63 WHIP, ranks 72nd of 73 qualified SPs; allowed 11 ER in 1.2 IP last start vs MIN) vs Trevor Rogers (2-2, 4.08 ERA, 1.89 ERA in April); market still pricing Crochet on Cy Young reputation, line at near pick'em despite 3.80 ERA gap; home favorite at Camden Yards",
     "result": null,
     "units_won_lost": null,
     "line_num": 0
@@ -278,7 +277,7 @@
     "line": "-154",
     "units": 1,
     "score": 5.2,
-    "primary_edge": "ERA mismatch — Ryan Weathers LHP (1-2, 3.18 ERA; 7.1 shutout IP last start) vs Mike Burrows (1-3, 6.75 ERA, 1-of-5 starts past 6 IP, NL-leading 36 H allowed in 26.2 IP); LHB 8-for-16 with 3 HR vs Burrows' 4-seamer, Yankees lefty-heavy; juice -154 trims edge",
+    "primary_edge": "ERA mismatch \u2014 Ryan Weathers LHP (1-2, 3.18 ERA; 7.1 shutout IP last start) vs Mike Burrows (1-3, 6.75 ERA, 1-of-5 starts past 6 IP, NL-leading 36 H allowed in 26.2 IP); LHB 8-for-16 with 3 HR vs Burrows' 4-seamer, Yankees lefty-heavy; juice -154 trims edge",
     "result": null,
     "units_won_lost": null,
     "line_num": 0
@@ -292,9 +291,37 @@
     "line": "-130",
     "units": 2,
     "score": 8.0,
-    "primary_edge": "RLM — 94% public tickets and 94.1% of money on Over, line moved Under -120 → -130 against the public; sharps backing Sale (4-1, 2.79 ERA, 1.00 WHIP) vs Nola (1-2, 5.06 ERA, 1.46 WHIP); Phillies on 9-game losing streak, no obvious public catalyst for the Under move",
+    "primary_edge": "RLM \u2014 94% public tickets and 94.1% of money on Over, line moved Under -120 \u2192 -130 against the public; sharps backing Sale (4-1, 2.79 ERA, 1.00 WHIP) vs Nola (1-2, 5.06 ERA, 1.46 WHIP); Phillies on 9-game losing streak, no obvious public catalyst for the Under move",
     "result": null,
     "units_won_lost": null,
     "line_num": 8.5
+  },
+  {
+    "id": "20260426-mlb-royals-ml",
+    "date": "2026-04-26",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Kansas City Royals ML vs LAA",
+    "line": "-122",
+    "units": 1,
+    "score": 6.4,
+    "primary_edge": "ERA mismatch \u2014 Seth Lugo (1-1, 1.15 ERA, 0.93 WHIP, 2nd-lowest ERA in MLB) vs Reid Detmers (1-2, 4.08 ERA); Angels 1-7 SU L7 and 0-7 covering RL in their last 7 night games vs sub-.500 teams; Royals 6-3 SU L9 vs LAA; Royals 8-7 at home; risk: line moved -142 \u2192 -122 against KC",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
+  },
+  {
+    "id": "20260426-mlb-astros-ml",
+    "date": "2026-04-26",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Houston Astros ML vs NYY",
+    "line": "+118",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "Contrarian ERA edge \u2014 Spencer Arrighetti (2-0, 2.45 ERA) vs Luis Gil (1-1, 4.11 ERA); 88% of MLB public hammering Yankees ML chalk Saturday at -146, same chalk pattern at -140 today; Astros home, ERA edge flipped vs yesterday's NYY pick (Warren/McCullers); plus-money on home dog with pitching advantage",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
   }
 ]

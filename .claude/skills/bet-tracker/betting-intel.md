@@ -223,3 +223,25 @@ None yet — will populate as data accumulates.
 - Reinforced: when public is at ≥90% and line moves against them, that's the strongest version of RLM and warrants a 2u sizing despite the late-entry juice penalty.
 - Reinforced: VSIN MLB betting splits remained accessible today (unlike Action Network, BetQL, Covers, SportsBettingDime which continue to 403). VSIN + FanDuel Research + Sportsbettingdime article pages are the working source stack right now.
 
+
+---
+
+### 2026-04-26 — V1-Trends Session
+
+**Games researched**: ~14 across MLB (8), NBA playoffs (4), NHL playoffs (2) · **Picks**: 2 (both MLB, avg Score 6.2)
+
+**Signal observations**:
+- Royals/Angels ERA mismatch (Lugo 1.15 vs Detmers 4.08) is the cleanest spot of the slate. Lugo holds the 2nd-lowest ERA in MLB. Multiple ATS trends align: Angels 0-7 covering RL in last 7 night games vs sub-.500 teams, Royals 6-3 SU L9 vs LAA, Royals 8-7 home. Line moved -142 → -122 over two days, which is a yellow flag (market correcting toward Angels) but the underlying mismatch is too large to dismiss. Sized at 1u given the line drift.
+- Astros/Yankees presents an interesting INVERSE setup vs Apr 24/25 picks. Yesterday Yankees had the pitching edge (Warren 2.49 vs McCullers 6.20, Weathers 3.18 vs Burrows 6.75). Today the script flips: Arrighetti (2.45) vs Gil (4.11). Public is still 88%+ on Yankees from yesterday's chalk pattern but the edge has moved to Houston. Line drifted from NYY -154 (Sat) to -140 (Sun) — direction supports the pitching-edge flip read. Note: V2-Sharp investigated the same spot and discarded as ambiguous (VSIN flagged sharps on NYY at 99% money but line moved opposite direction). V1 takes the trend/situational side at +118; sized 1u to acknowledge the conflicting V2 read.
+- Padres/Diamondbacks Mexico City Series — pricing distortions from altitude/venue make this hard to handicap; passed without confirmation.
+- Red Sox/Orioles (Early 2.88 vs Bradish 3.96 with 1.76 WHIP) tempting at +119 but edge too small to clear threshold; passed.
+- No qualifying NBA/NHL playoff picks. Cavs/Raptors had Quickley OUT-for-series injury edge but Cavs poor ATS as -3.5+ favorite (22-35-1) makes the spread risky; ML at -170 is heavy chalk. Avalanche -1.5 PL closeout spot is too rich a number on Kings desperation. Wemby remains questionable; stayed out per Apr 24 intel log on playoff NBA caution.
+
+**Calibration notes**:
+- Royals ML at Score 6.4 — line drift (-142 → -122) cost a point of confidence. If Lugo dominates and line was just market-correcting AL vs NL pricing, this is a strong play. If sharps were peeling away from KC for an unseen reason (lineup news, bullpen fatigue from sweep-attempt), the drop was warranted.
+- Astros ML at Score 6.0 — pitching edge is real but V2 discarded same spot as ambiguous. Test of whether trend/contrarian-dog read holds despite the sharp-money signal pointing the other way. If this loses, document it as evidence that V2's discipline on conflicting signals is worth respecting even for V1 trend plays.
+
+**Patterns reinforced or challenged**:
+- ERA-mismatch pattern goes to its sixth test. Royals/Angels is a clean test (Lugo-elite vs Detmers-mediocre).
+- New observation: when V1 and V2 disagree on the same game (V1 sees trend/value, V2 sees ambiguous-RLM), the model-on-model conflict itself is data. Astros pick will be the first explicit test of this divergence type.
+
