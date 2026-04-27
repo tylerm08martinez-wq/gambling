@@ -263,3 +263,32 @@ None yet — will populate as data accumulates.
 **Patterns reinforced or challenged**:
 - Money/ticket divergence on big underdog ML in NBA playoffs is NOT equivalent to MLB money/ticket divergence. MLB pattern is supported by pitching mismatch; NBA elimination-game dog handle can be single-whale lottery tickets. Note for future: require RLM confirmation (line moving against public) for NBA money-split signals before flagging.
 
+---
+
+### 2026-04-27 — V1-Trends Session
+
+**Games researched**: ~14 across MLB (10), NBA playoffs (3), NHL playoffs (2) · **Picks**: 3 (all MLB, avg Score 6.1)
+
+**Signal observations**:
+- Three ERA-mismatch spots logged: Guardians ML -145 (Messick 1.76 vs Matz 4.81), Angels ML -120 (Kochanowicz 3.10 vs Kay 5.57), Padres ML -110 (Vasquez 1.88 vs Boyd 5.79). Seventh test of the ERA-mismatch pattern. Average ERA gap ~2.6 runs across the three picks.
+- Padres was sized down to lean (5.5) explicitly because the intel log earlier in the day flagged Vasquez xERA 4.32 = regression candidate. Demonstrates intel log being applied to score calibration as designed.
+- Guardians H2H wrinkle: Matz 1.71 lifetime ERA vs CLE in 31.2 IP. Treated as a small-sample concern (~5 starts spread across 2016/2019/2021), not enough to override 2026 ERA mismatch but enough to drop confidence by ~1 point.
+- Angels: Kochanowicz 1.80 ERA across his four April starts is the cleanest in-form signal. Kay coming off 8 ER in 3.2 IP last start = broken-pitcher angle layered on top.
+
+**No-pick rationales**:
+- Pirates/Cardinals — Pirates were attractive on ERA gap (May 5.84) but Pittsburgh is using opener-bulk (Montgomery 1 inning, Dotel as bulk reliever). Removes the clean SP ERA-edge read; passed.
+- Yankees @ Rangers — Schlittler 1.77-1.95 ERA vs deGrom 2.13 ERA is functionally a coin flip on the mound. Yankees lineup advantage real but -175 juice eats the edge. Pass.
+- Marlins @ Dodgers — Yamamoto 2.48 ERA but Dodgers -295 is unbettable chalk territory.
+- NBA playoffs all skipped per standing playoff caution: Wolves +10.5 has Edwards/DiVincenzo OUT but injuries are public and priced (V2-Sharp Apr 27 logged this same read). Thunder -10.5 sweep number too rich + Jalen Williams OUT. Pistons -2.5 a coin flip with no edge.
+- NHL playoffs both skipped: Flyers/Pens G5 has PIT desperate at home but no pricing edge. Vegas/Mammoth G4 a coin flip at -115.
+
+**Calibration notes**:
+- Guardians ML at Score 6.5 — flagged as "best of slate" if Matz H2H magic is noise (more likely than not given his 4.81 season ERA). If he posts a quality start vs CLE again, this loses and the H2H concern was real.
+- Angels ML at Score 6.4 — depends on Kochanowicz holding April form. If Kay catches the Angels' offensive funk (17 R in 7 G), score was overconfident.
+- Padres ML at Score 5.5 — explicit test of "did intel log save us from a bad bet" or "did it cause us to size down on a winner." Vasquez peripherals favor regression but Boyd 5.79 ERA is bad regardless.
+
+**Patterns reinforced or challenged**:
+- ERA-mismatch pattern at seventh test. Three more data points coming today. Need to revisit promotion criteria after Apr 22-26 results all resolve.
+- First explicit instance of intel log directly altering a pick's size (Padres at 1u lean instead of 1u play). Document outcome: did the warning prove correct?
+- Continued discipline on playoff NBA/NHL no-picks. V1 has now passed on five consecutive playoff slates without taking a clean basketball/hockey play (Apr 22, 24's Blazers was the lone NBA pick, 25, 26, 27).
+

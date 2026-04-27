@@ -323,5 +323,47 @@
     "result": null,
     "units_won_lost": null,
     "line_num": 0
+  },
+  {
+    "id": "20260427-mlb-guardians-ml",
+    "date": "2026-04-27",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Cleveland Guardians ML vs TB",
+    "line": "-145",
+    "units": 1,
+    "score": 6.5,
+    "primary_edge": "ERA mismatch \u2014 Parker Messick (3-0, 1.76 ERA, 30.2 IP, 29 K) vs Steven Matz (3-1, 4.81 ERA); Messick top-3 ERA in MLB, Matz still rebuilding starter workload after two years in bullpen; Guardians at home in favorite role; risk: Matz 3-0 with 1.71 lifetime ERA vs CLE in 31.2 IP (small-sample H2H concern); -145 juice trims value",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
+  },
+  {
+    "id": "20260427-mlb-angels-ml",
+    "date": "2026-04-27",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Los Angeles Angels ML vs CWS",
+    "line": "-120",
+    "units": 1,
+    "score": 6.4,
+    "primary_edge": "ERA mismatch \u2014 Jack Kochanowicz (2-0, 3.10 ERA; 1.80 ERA across four April starts / 25 IP) vs Anthony Kay (1-1, 5.57 ERA, allowed 8 ER in 3.2 IP last start vs ARI); Kochanowicz 2.77 lifetime ERA vs CWS in 4 starts; ERA gap 2.47; risk: Angels offense slumping (17 R in 7 G), Murakami HR threat in CWS lineup",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
+  },
+  {
+    "id": "20260427-mlb-padres-ml",
+    "date": "2026-04-27",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "San Diego Padres ML vs CHC",
+    "line": "-110",
+    "units": 1,
+    "score": 5.5,
+    "primary_edge": "ERA mismatch \u2014 Randy Vasquez (1.88 ERA) vs Matthew Boyd (5.79 ERA); Padres home with elite bullpen at near-pickem juice; risk: intel log flags Vasquez xERA 4.32 (prime regression candidate), confidence sized to lean; Boyd LHP could disrupt Padres lineup",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
   }
 ]
