@@ -245,3 +245,21 @@ None yet — will populate as data accumulates.
 - ERA-mismatch pattern goes to its sixth test. Royals/Angels is a clean test (Lugo-elite vs Detmers-mediocre).
 - New observation: when V1 and V2 disagree on the same game (V1 sees trend/value, V2 sees ambiguous-RLM), the model-on-model conflict itself is data. Astros pick will be the first explicit test of this divergence type.
 
+---
+
+### 2026-04-27 — V2-Sharp Session
+
+**Games scanned**: 3 NBA playoff · 2 NHL playoff · ~12 MLB · **Sharp signals investigated**: 4 · **Picks**: 0
+
+**Signal observations**:
+- Phoenix Suns +375 ML vs OKC (Game 4) — 12% public tickets, 44.5% money handle on PHX. Money/ticket divergence is sharp-style, but spread moved OKC -9.5 → -10.5 (with public), not against. No RLM confirmation. Discarded.
+- Minnesota +380 ML vs Denver (Game 5) — 56.2% money on MIN vs 76.3% public on DEN. Fully explained by Edwards (knee) + DiVincenzo (Achilles) both ruled OUT — public injury info, line already adjusted. Not sharp action. Discarded.
+- Pittsburgh ML vs Philadelphia (Game 5) — Line bounced -134 → -137 (~3 cents, below 15-cent steam threshold). Single book noise, not coordinated steam. Discarded.
+- Penguins-Flyers Under 5.5/6 — 70% money on Under, but total moved 6 → 5.5 with the money (no RLM). Public Under bias rather than sharp signal. Discarded.
+
+**Calibration notes**:
+- Phoenix money/handle split was tempting (mirrors 4/18 White Sox pattern), but NBA playoff context with team down 0-3 lacks the pitching-mismatch confirmation that made the WSOX play clean. Big-dog handle on +375 likely reflects one whale taking a value swing, not a syndicate position. Held the line at the 6.0 threshold.
+
+**Patterns reinforced or challenged**:
+- Money/ticket divergence on big underdog ML in NBA playoffs is NOT equivalent to MLB money/ticket divergence. MLB pattern is supported by pitching mismatch; NBA elimination-game dog handle can be single-whale lottery tickets. Note for future: require RLM confirmation (line moving against public) for NBA money-split signals before flagging.
+
