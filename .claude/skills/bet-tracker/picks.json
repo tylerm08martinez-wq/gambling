@@ -365,5 +365,33 @@
     "result": null,
     "units_won_lost": null,
     "line_num": 0
+  },
+  {
+    "id": "20260428-mlb-brewers-ml",
+    "date": "2026-04-28",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Milwaukee Brewers ML vs ARI",
+    "line": "-112",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "ERA mismatch (broken-ace template) \u2014 Chad Patrick (1-1, 2.35 ERA, 1 ER over 14.2 IP across three previous starts) vs Merrill Kelly (1-1, 9.31 ERA, returning from IL/intercostal injury, allowed 8 ER on 3 HR in 4.1 IP last start vs CWS); Brewers home favorites at near-pickem juice (-112) despite ~7-run ERA gap; numberFire 57.6% MIL win prob vs 52.8% implied (~4.8% edge); risk: ARI 19-8 ATS as a betting team, both pitchers small sample",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
+  },
+  {
+    "id": "20260428-mlb-astros-ml",
+    "date": "2026-04-28",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Houston Astros ML vs BAL",
+    "line": "+114",
+    "units": 1,
+    "score": 5.4,
+    "primary_edge": "Contrarian ERA edge \u2014 Kai-Wei Teng (1-1, 2.16 ERA, 0.90 WHIP) vs Shane Baz (0-2, 5.08 ERA, 1.55 WHIP); ~3-run ERA gap with Astros as plus-money road underdog; public hammering Baltimore on the run line, contrarian dog price at +114; numberFire 51.3% HOU win prob vs 46.7% implied (~4.5% edge); risk: HOU 11-18 SU and 11-18 ATS this season \u2014 bad team trend offsets pitching edge",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
   }
 ]

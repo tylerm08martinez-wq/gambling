@@ -292,3 +292,25 @@ None yet — will populate as data accumulates.
 - First explicit instance of intel log directly altering a pick's size (Padres at 1u lean instead of 1u play). Document outcome: did the warning prove correct?
 - Continued discipline on playoff NBA/NHL no-picks. V1 has now passed on five consecutive playoff slates without taking a clean basketball/hockey play (Apr 22, 24's Blazers was the lone NBA pick, 25, 26, 27).
 
+---
+
+### 2026-04-28 — V1-Trends Session
+
+**Games researched**: ~15 across MLB (12), NBA playoffs (3), NHL playoffs (3) · **Picks**: 2 (both MLB, avg Score 5.7)
+
+**Signal observations**:
+- Brewers ML -112 vs Arizona — Kelly 9.31 ERA is the broken-ace template (returning from IL, 8 ER in 4.1 IP last start vs CWS) but the sample is only 2 starts so the headline number is noisier than past picks (Crochet 7.88 over 5 starts, Lauer 7.82 over multiple). Light juice (-112) on the home favorite is the value driver. ARI is 19-8 ATS this year — strong counter-signal on the team-level trend, kept score at 6.0 not higher.
+- Astros ML +114 @ Baltimore — Teng (2.16) vs Baz (5.08) is a clean 3-run ERA edge with HOU as plus-money road dog. Public heavy on BAL run line. Direct echo of Apr 26 Astros ML +118 vs NYY pick (Arrighetti 2.45 vs Gil 4.11, also score 6.0). Different from Apr 24-25 Yankees picks where NYY had the pitcher edge — this template flips back to Houston this week. Sized to 1u lean given HOU 11-18 SU/ATS trend offsets the pitching edge.
+- Yankees @ Rangers (Schlittler 1.77 vs deGrom 2.13) is the cleanest game on the slate but pitcher edge is symmetric — both elite. -175 NYY juice eats whatever lineup edge exists. Same chalk-trap risk that capped Apr 24/25 NYY at 5.2; today it doesn't even clear that bar.
+- Mets -185 vs Nationals (Holmes 2.10 vs Littell 7.56) had a massive ERA gap but line moved -175 → -194 already, eating the value. Same Littell broken-ace was logged as part of Apr 22 Braves/Littell pick at -149 (pending result). Skip due to juice.
+- Cubs -125 @ Padres (Cabrera 2.73 vs Buehler 5.75) is a real 3-run ERA gap but model only gives 53% Cubs vs implied 55.6% — near breakeven, name-pitcher-recovering risk on Buehler similar to Kelly. Skip per chalk-trap discipline.
+
+**Calibration notes**:
+- Brewers ML at Score 6.0 — depends on whether Kelly's 9.31 is real collapse or 1-bad-start noise. Veterans with proven track records (Career ~3.50 ERA) often regress toward mean fast. Watch for any Arizona lineup news that could suggest sharps know something.
+- Astros ML at Score 5.4 — explicit second test of "Apr 26 Astros template" (contrarian +money dog with pitching edge over public NYY chalk). Apr 26 result still pending; today is essentially the same setup with a different ace pitcher. If both lose, document as evidence that "contrarian +money dog" is a thinner edge than the rubric suggests.
+
+**Patterns reinforced or challenged**:
+- ERA-mismatch pattern at eighth and ninth tests today. Two more data points; need to revisit promotion criteria after the Apr 22-27 backlog of pending picks resolves.
+- Continued discipline on playoff NBA/NHL no-picks. V1 has now passed on six consecutive playoff slates without a basketball/hockey play (other than Apr 24's lone Blazers).
+- Chalk-trap discipline held: skipped Yankees -175, Mets -185, Reds -200, Dodgers -295, Cubs -125. Heavy juice on legitimate mismatches keeps getting cut.
+
