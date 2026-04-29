@@ -314,3 +314,35 @@ None yet — will populate as data accumulates.
 - Continued discipline on playoff NBA/NHL no-picks. V1 has now passed on six consecutive playoff slates without a basketball/hockey play (other than Apr 24's lone Blazers).
 - Chalk-trap discipline held: skipped Yankees -175, Mets -185, Reds -200, Dodgers -295, Cubs -125. Heavy juice on legitimate mismatches keeps getting cut.
 
+---
+
+### 2026-04-29 — V1-Trends Session
+
+**Games researched**: ~14 across MLB (10), NBA playoffs (3 G5s), NHL playoffs (3) · **Picks**: 3 (all MLB, avg Score 6.3)
+
+**Signal observations**:
+- Cubs/Padres ERA-mismatch is the cleanest spot of the slate — Waldron 12.46 ERA / 2.31 WHIP over 8.2 IP, Padres staff at 8.13 ERA over the last 7 days (worst in MLB) and 15% K rate (lowest in MLB). Apr 28 intel log skipped Cubs/Padres at -125 with Buehler (5.75) due to "name-pitcher recovery" risk; today's Waldron has no such overhang and the gap is ~8 runs vs ~3. Picked at -118 / score 6.5.
+- Royals ML +102 with Wacha (2.51) vs Severino (5.17, 7.11 home ERA at hitter-friendly Sutter Health). Plus money on better-pitcher side compounded by ballpark factor. Inverse of Apr 26 Royals/Angels -122 pick (line had drifted toward the better side then; today the better side is plus money).
+- Diamondbacks ML +110 — E-Rod (2.89) vs Sproat (6.45) on paper, but E-Rod allowed 8 ER over last 2 starts so the headline edge overstates current form. Saved by ARI 19-8 ATS team-level trend (strongest in the slate). Sized to 1u lean given E-Rod regression risk.
+- Astros ML +104 vs BAL (Lambert 3.27 vs Bassitt 6.75) is the third consecutive day of the contrarian-Astros-pitching-edge template (Apr 26 +118 win pending, Apr 28 +114 pending). Skipped today to avoid concentration on a still-pending pattern test — wait for results before adding a third leg.
+
+**No-pick rationales**:
+- Tigers/Braves — Skubal (2x Cy Young, 2.72 ERA) vs JR Ritchie (2.57 ERA in 7 IP MLB sample) is a name-vs-unproven setup, but Braves are 21-9 (best record in MLB) and -144 juice on Detroit eats most of the headline edge. Passed.
+- Yankees @ Rangers — Warren/Elmer Rodriguez (TBD) vs Eovaldi (5.79 ERA) looks like a pitching edge but starter uncertainty + -154+ juice keeps this in chalk-trap territory. Continued discipline on heavy NYY juice.
+- Mets/Nats — Holmes 2.10 vs Littell 7.56 was the headline mismatch but line moved -175 → -194, eating the value. Same Apr 28 pass logic.
+- Phillies/Giants — Sanchez 2.94 ERA but 1.60 WHIP is a major red flag (44 hits in 33.2 IP); -149 juice on a starter with that kind of baserunner traffic is a fade signal not a play.
+- Mariners/Twins — Kirby (2.97) vs Bradley (2.91) is symmetric, no edge.
+- Blue Jays/Red Sox — Both starters >6.50 ERA (Lauer 6.75, Bello 9.00); Bello 1-4 ATS as BOS dog this year is a clean fade signal but Lauer's 6.75 isn't reliably better. Coin flip at the margin, passed.
+- All NBA G5s skipped per standing playoff caution: Pistons -9.5 / Magic, Cavs -8.5 / Raptors, Lakers -4.5 / Rockets (Durant OUT priced in, Reaves Q). No clean injury or RLM edges.
+- All NHL games skipped: Lightning -1.5 / Canadiens, Penguins / Flyers G6 (-122 toss-up), Vegas / Mammoth — no clean pricing edges.
+
+**Calibration notes**:
+- Cubs ML at Score 6.5 — depends on Waldron's 12.46 ERA being real and not 1-bad-start noise. Sample is 8.2 IP so it's small, but knuckleballer is also a high-variance archetype. If he throws a quality start, this is toast and we'll have evidence that the small-sample-on-bad-pitcher edge is thinner than the rubric suggests.
+- Diamondbacks ML at Score 6.0 — first explicit test of "ATS-trend-strong-enough-to-override-pitcher-regression" setup. If E-Rod posts another 4+ ER outing and ARI loses, document as evidence that team-level ATS trends shouldn't outweigh in-form pitcher quality.
+- Royals ML at Score 6.4 — Severino's 7.11 home ERA at Sutter Health is the value driver. If Severino throws a quality start, ballpark-factor edge was overweighted.
+
+**Patterns reinforced or challenged**:
+- ERA-mismatch pattern at tenth (or higher) test today (Cubs/Padres-Waldron, Royals/Athletics-Severino, Diamondbacks/Brewers-Sproat all variants of the template). Need to revisit promotion criteria once the Apr 22-28 backlog of pending picks resolves.
+- Continued discipline on playoff NBA/NHL no-picks. V1 has now passed on seven consecutive playoff slates without a basketball/hockey play (other than Apr 24 Blazers).
+- Chalk-trap discipline held: skipped Yankees -154+, Mets -194, Dodgers -225, Tigers -144. Heavy juice on legitimate mismatches keeps getting cut even when the underlying matchup is real.
+

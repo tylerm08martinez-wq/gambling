@@ -393,5 +393,47 @@
     "result": null,
     "units_won_lost": null,
     "line_num": 0
+  },
+  {
+    "id": "20260429-mlb-cubs-ml",
+    "date": "2026-04-29",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Chicago Cubs ML vs SD",
+    "line": "-118",
+    "units": 1,
+    "score": 6.5,
+    "primary_edge": "ERA mismatch \u2014 Jameson Taillon (1-1, 4.55 ERA) vs Matt Waldron (0-1, 12.46 ERA, 2.31 WHIP across 8.2 IP); ~7.9-run ERA gap with Padres staff at 8.13 ERA over last 7 days (worst in MLB) and 15% K rate (lowest in MLB); modest -118 juice on the better-pitcher side; line moved CHC -110 to -118 with public; risk: Waldron sample only 8.2 IP, knuckleballer variance, Cubs already 0-2 in series",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
+  },
+  {
+    "id": "20260429-mlb-royals-ml",
+    "date": "2026-04-29",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Kansas City Royals ML vs ATH",
+    "line": "+102",
+    "units": 1,
+    "score": 6.4,
+    "primary_edge": "ERA mismatch + ballpark \u2014 Michael Wacha (2-1, 2.51 ERA, 0.93 WHIP, 20 hits in 32.1 IP) vs Luis Severino (1-2, 5.17 ERA; 7.11 home ERA at hitter-friendly Sutter Health Park); 2.66 ERA gap compounded by Severino's home struggles in extreme hitters' park; plus-money KC dog at +102 with public 57% on Athletics; risk: Royals 1-8 on road earlier this year per intel log, A's productive at home",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
+  },
+  {
+    "id": "20260429-mlb-dbacks-ml",
+    "date": "2026-04-29",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Arizona Diamondbacks ML vs MIL",
+    "line": "+110",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "ERA mismatch + team trend \u2014 Eduardo Rodriguez (2-0, 2.89 ERA, 1.32 WHIP across 28 IP) vs Brandon Sproat (0-1, 6.45 ERA, 5.74 career ERA, 1.42 WHIP); 3.56 ERA gap with ARI as plus-money road dog; ARI 19-8 ATS this season is strongest team-level betting trend on the slate; risk: E-Rod allowed 8 ER over last 2 starts (regression in progress), Brewers won game 1 of series 3-2",
+    "result": null,
+    "units_won_lost": null,
+    "line_num": 0
   }
 ]
