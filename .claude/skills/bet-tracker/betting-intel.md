@@ -346,3 +346,28 @@ None yet — will populate as data accumulates.
 - Continued discipline on playoff NBA/NHL no-picks. V1 has now passed on seven consecutive playoff slates without a basketball/hockey play (other than Apr 24 Blazers).
 - Chalk-trap discipline held: skipped Yankees -154+, Mets -194, Dodgers -225, Tigers -144. Heavy juice on legitimate mismatches keeps getting cut even when the underlying matchup is real.
 
+---
+
+### 2026-04-30 — V2-Sharp Session
+
+**Games scanned**: ~12 MLB · 3 NBA playoff Game 6s · 2 NHL playoff Game 6s · **Sharp signals investigated**: 6 · **Picks**: 0
+
+**Signal observations**:
+- D-Backs @ Brewers (ML) — Money/ticket divergence (60% public bets MIL, 62% money on ARI) but line held firm at MIL -120/-125 across the cycle. No actual line movement against public to confirm RLM. Adding to that, the run-line splits flip the other way (sharps 68% on MIL +1.5), which signals a coherent "close game" sharp position rather than a clean ML steam play. Same direction-conflict pattern flagged on Apr 26 Yankees/Astros = pass.
+- Nuggets @ Timberwolves Game 6 — Line moved DEN -6.5 → -5.5 (1pt toward MIN) which is a steam-sized move, but no accessible public/money splits to confirm whether move was sharp or simply public homedog buying after MIN went down 3-1 → 3-2. Edwards (knee) + DiVincenzo (Achilles) injuries are publicly known and already priced (logged as such on Apr 27). Cannot confirm sharp catalyst for the move. Pass without confirmation.
+- Celtics @ 76ers Game 6 — Opened BOS -5.5 (-115), drifted to BOS -6.5 (-218 to -245 ML). Line moved with the public chalk side; not RLM. Discarded.
+- Knicks @ Hawks Game 6 — Mixed line direction across books (NYK -2 open, current -1.5 to -2.5). No clean steam direction. Discarded.
+- Orioles vs Astros (DH) — Public hammering Astros (multiple snapshots at 100%), line moved HOU -120 → -122 (with public). Not RLM. Discarded.
+- Cardinals @ Pirates — Public and money both on PIT (Skenes 77% bets / 71% money on -1.5; ML moved toward PIT as Skenes start firmed up). Sharp/public alignment, not RLM. Same pattern as Apr 26 Rays/Twins discard — sharp confirmation ≠ RLM under V2-Sharp criteria.
+- Stars @ Wild Game 6 — Line drifted MIN -102 → -125 across books with no accessible splits. Could be public homedog momentum + sharps; can't confirm direction. Discarded.
+
+**Calibration notes**:
+- Brewers/D-Backs at score ~5.0–5.5 ceiling absent line movement. The Apr 18 White Sox playbook (money/ticket divergence + pitching edge) needed a confirmed line shift OR pitching mismatch to clear the bar. Today's Soroka vs Woodruff is too even on the mound for the divergence to stand alone.
+- Nuggets/Wolves -1pt move would qualify as steam if confirmed at multiple books with public/money splits showing public on DEN. Without those splits the move is uncategorizable. Marking as "would have been investigated harder if VSIN/Action Network were accessible" — same data-access issue logged on Apr 22, 25.
+
+**Patterns reinforced or challenged**:
+- Third V2-Sharp no-pick day in the last six sessions (Apr 22, 25, 30). Selectivity working as designed.
+- Reinforced Apr 26 rule: when split data conflicts directionally (e.g., sharps on Side A ML but Side B run line), default to pass. Today's D-Backs/Brewers fit this exactly.
+- Reinforced Apr 27 rule: NBA playoff line moves without verified public-side data are NOT actionable as sharp signals — could equally be public homedog buying or whale lottery tickets. Nuggets/Wolves -1pt move is a textbook example of why we need splits, not just movement.
+- Reinforced data-access pattern: Action Network, BetQL, Covers, Scores&Odds, OddsShark, SportsBettingDime, FanDuel Research all 403'd today. VSIN article also 403'd (in contrast to Apr 26 when VSIN was the working source). Working source stack continues to shrink.
+
