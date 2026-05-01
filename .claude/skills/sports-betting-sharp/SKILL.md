@@ -23,16 +23,7 @@ This model is deliberately selective. Fewer picks, higher bar. If there are no s
 
 ### 0. Read Betting Intelligence Log
 
-Before searching for any signals, read `.claude/skills/bet-tracker/betting-intel.md`.
-
-Extract and apply:
-- **Active Patterns**: If a confirmed pattern applies to a game today, note it in the pick breakdown and adjust signal strength accordingly.
-- **Patterns to Avoid**: If a pick matches a logged failure pattern, flag it and reduce the score by 1–2 points — or discard if the pattern is strong.
-- **Edge Type Patterns**: If RLM or steam moves have been systematically over/underperforming, recalibrate your threshold for confirming those signals.
-- **Score Calibration Notes**: Adjust scoring if past calibration notes show systematic inflation or deflation for specific signal types.
-- **Market Notes**: Apply any book-specific or line movement behavior observations.
-
-If the log is empty or has no relevant entries, proceed normally.
+Read the **Active Intelligence** section of `.claude/skills/bet-tracker/betting-intel.md` (skip the session log). Apply all listed signals, avoids, source notes, and calibration rules before evaluating any signals today.
 
 ### 1. Find Steam Moves & Sharp Action
 
@@ -145,7 +136,7 @@ Only recommend bets with Overall Score ≥ 6.0.
 
 | # | Bet | Line | Best Book | Sport | Signal | Strength | Line Value | Score |
 |---|-----|------|-----------|-------|--------|----------|------------|-------|
-| 1 | Team A +3.5 | −108 | FanDuel | NBA | RLM | 🟢 9/10 | 🟢 9/10 | 9.0 |
+*(populate with today's confirmed sharp picks)*
 
 ---
 
@@ -165,13 +156,6 @@ For each pick:
 
 ### Signals Investigated But Discarded
 - **[Matchup]**: [Why it was discarded — e.g., "RLM explained by Embiid injury report, not sharp action"]
-
----
-
-### 💡 Model Notes
-- This model produces **fewer picks** than V1. That is intentional.
-- Track both models via `/bet-tracker` to compare long-term ROI.
-- A week with 2–3 picks is normal. A week with 10+ picks means the bar slipped.
 
 ---
 

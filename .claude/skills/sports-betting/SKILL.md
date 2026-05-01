@@ -18,16 +18,7 @@ Research today's games across all major sports, identify value bets where the od
 
 ### 0. Read Betting Intelligence Log
 
-Before researching any games, read `.claude/skills/bet-tracker/betting-intel.md`.
-
-Extract and apply:
-- **Active Patterns**: Treat these as confirmed priors — if a pattern applies to a game today, adjust that game's confidence score up or down accordingly and note it in the pick breakdown.
-- **Patterns to Avoid**: If today's pick matches a logged failure pattern, flag it explicitly and reduce the score by 1–2 points.
-- **Edge Type Patterns**: If certain signal types have been underperforming, downweight them in scoring.
-- **Sport-Specific Observations**: Apply any relevant sport/league notes to today's candidates.
-- **Score Calibration Notes**: If past scores have been inflated/deflated for certain edge types, recalibrate.
-
-If the log is empty or has no relevant entries, proceed normally.
+Read the **Active Intelligence** section of `.claude/skills/bet-tracker/betting-intel.md` (skip the session log). Apply all listed signals, avoids, and calibration notes to today's research — adjust confidence scores and note any pattern matches in pick breakdowns.
 
 ### 1. Find Today's Games & Odds
 
@@ -59,7 +50,7 @@ For each game found, collect:
 
 ### 2. Research Contextual Factors
 
-For each promising game, search for relevant factors:
+For the **top 6 most promising games** (prioritize any with RLM, steam, or injury signals), search for relevant factors:
 
 ```
 WebSearch: "[Team] injury report today"
@@ -137,11 +128,7 @@ Sort picks by Overall Score, highest first. Only include bets with Overall Score
 
 | # | Bet | Line | Book | Sport | Conf | Value | Score | Rec |
 |---|-----|------|------|-------|------|-------|-------|-----|
-| 1 | Team A −3.5 | −110 | DraftKings | NBA | 🟢 8/10 | 🟢 8/10 | 8.0 | ✅ **Strong** |
-| 2 | Over 214.5 | −108 | FanDuel | NBA | 🟢 7/10 | 🟡 6/10 | 6.6 | ✅ **Play** |
-| 3 | Team B ML | +145 | BetMGM | MLB | 🟡 6/10 | 🟡 6/10 | 6.0 | ⚠️ **Lean** |
-
-**Color key:** 🟢 7–10 · 🟡 4–6 · 🔴 0–3
+*(populate with today's picks — 🟢 7–10 · 🟡 4–6 · 🔴 0–3)*
 
 ---
 
@@ -168,11 +155,6 @@ For each top pick, provide:
 
 ### ❌ Games Researched But Skipped
 - **[Matchup]**: [1-line reason — e.g., "No edge, public side, line moved too far"]
-
-### 💡 Bankroll Notes
-- **1 unit** = your standard flat bet size (e.g., 1–2% of bankroll)
-- Never bet more than 3 units on a single game
-- Avoid parlays unless specifically noted as correlated value
 
 ### 📝 Log Your Picks
 After presenting picks, ask the user: **"Which of these are you betting? I'll log them to the tracker."**
