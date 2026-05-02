@@ -463,5 +463,41 @@
     "result": null,
     "units_won_lost": null,
     "line_num": 0
+  },
+  {
+    "id": "20260502-mlb-twins-ml",
+    "date": "2026-05-02",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Twins ML vs TOR",
+    "line": "+110",
+    "units": 1,
+    "score": 6.6,
+    "primary_edge": "RLM — line moved -135 to -130 toward Twins despite 91.2% money on Toronto; sharp money fading Cease/public chalk",
+    "result": null,
+    "units_won_lost": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260502-mlb-reds-ml",
+    "date": "2026-05-02",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Reds ML vs PIT",
+    "line": "+120",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "Pitching edge on plus money — Lowder (3.18 ERA) vs Mlodzinski (4.13 ERA); template echoes Apr 29 Royals/A's +102 (Wacha/Severino)",
+    "result": null,
+    "units_won_lost": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
