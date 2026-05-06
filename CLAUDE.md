@@ -9,8 +9,9 @@ Help Tyler identify +EV (positive expected value) betting opportunities across s
 ## Approach
 
 - Focus on **value**, not just picking winners — a bad line on a favorite is worse than a good line on an underdog
-- Track all bets (win/loss, odds, stake, result) to measure actual vs. expected performance over time
-- Use sharp money indicators, line movement, and public betting % to contextualize picks
+- Track all bets (win/loss, odds, stake, result) **and closing line value (CLV)** — CLV is the process signal; ROI is the outcome signal; both should trend positive
+- Primary edge: **player props + cross-book line gaps** — books set props with less precision and adjust them slower than game lines
+- Secondary edge: **RLM (70%+ threshold)** and **steam moves confirmed at 3+ books simultaneously** — single-book moves are noise
 - Avoid emotional bets (favorite teams, recency bias, chasing losses)
 
 ## Sports in Scope
@@ -22,28 +23,32 @@ Help Tyler identify +EV (positive expected value) betting opportunities across s
 
 ## Bet Types
 
-- Moneyline
-- Spread
-- Totals (over/under)
-- Player props
-- Parlays (use sparingly — only when legs are correlated or independently strong)
+| Priority | Type | Notes |
+|----------|------|-------|
+| 🥇 Primary | Player props | Cross-book gaps and prop steam are the most accessible retail edge |
+| 🥇 Primary | Alternate lines | Cross-book gaps common here too |
+| 🥈 Secondary | Spread / Moneyline / Total | Only with confirmed RLM (70%+) or 3+ book steam |
+| 🥈 Secondary | 1st half / 1st quarter | Same signals as game lines |
+| ⚠️ Use sparingly | Parlays | Only when legs have confirmed independent signals |
 
 ## Skills
 
 | Skill | Purpose |
 |-------|---------|
 | `/sports-betting` | V1-Trends: picks using ATS trends, expert consensus, situational angles, line movement |
-| `/sports-betting-sharp` | V2-Sharp: picks using sharp money, steam moves, reverse line movement only — high selectivity |
+| `/sports-betting-sharp` | V2-Sharp: props + cross-book gaps first; RLM (70%+) and steam (3+ books) for game lines — high selectivity |
 | `/bet-tracker` | Log picks, record results, and compare ROI between V1 and V2 models |
 
 All picks are stored in `.claude/skills/bet-tracker/picks.json`. Use `/bet-tracker stats` to see the full performance dashboard.
 
-## Key Concepts to Apply
+## Key Concepts
 
-- **Closing line value (CLV):** Did the line move in your direction after you bet? Consistent CLV = good process
+- **Closing line value (CLV):** Compare your bet line vs. the closing line (both converted to implied probability). Positive CLV = you got a better price than the market settled at = good process. Consistent positive CLV long-term means the model has real edge, regardless of short-term win/loss variance. Tracked automatically in `picks.json`.
+- **Props + cross-book gaps:** Books set prop lines with less precision. A 0.5+ unit gap across DK / FanDuel / BetMGM means sharps have already hit one book — target the stale price before it closes.
+- **RLM threshold is 70%+:** Below 70% public lean is too noisy. 70%+ with line moving the wrong way is a genuine sharp signal.
+- **Steam requires 3+ books:** A line move at 1-2 books is a single book adjusting. A simultaneous move at 3+ books is a sharp syndicate.
 - **Kelly Criterion:** Size bets proportionally to edge — avoid overbetting
 - **Bankroll:** Track as units, not dollars, to stay disciplined
-- **Fade the public:** Heavy public sides often move lines away from value
 
 ## Automation
 
