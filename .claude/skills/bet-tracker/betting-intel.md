@@ -314,3 +314,102 @@ None yet — will populate as data accumulates.
 - Continued discipline on playoff NBA/NHL no-picks. V1 has now passed on six consecutive playoff slates without a basketball/hockey play (other than Apr 24's lone Blazers).
 - Chalk-trap discipline held: skipped Yankees -175, Mets -185, Reds -200, Dodgers -295, Cubs -125. Heavy juice on legitimate mismatches keeps getting cut.
 
+---
+
+### 2026-04-29 — V1-Trends Session
+
+**Games researched**: ~14 across MLB (10), NBA playoffs (3 G5s), NHL playoffs (3) · **Picks**: 3 (all MLB, avg Score 6.3)
+
+**Signal observations**:
+- Cubs/Padres ERA-mismatch is the cleanest spot of the slate — Waldron 12.46 ERA / 2.31 WHIP over 8.2 IP, Padres staff at 8.13 ERA over the last 7 days (worst in MLB) and 15% K rate (lowest in MLB). Apr 28 intel log skipped Cubs/Padres at -125 with Buehler (5.75) due to "name-pitcher recovery" risk; today's Waldron has no such overhang and the gap is ~8 runs vs ~3. Picked at -118 / score 6.5.
+- Royals ML +102 with Wacha (2.51) vs Severino (5.17, 7.11 home ERA at hitter-friendly Sutter Health). Plus money on better-pitcher side compounded by ballpark factor. Inverse of Apr 26 Royals/Angels -122 pick (line had drifted toward the better side then; today the better side is plus money).
+- Diamondbacks ML +110 — E-Rod (2.89) vs Sproat (6.45) on paper, but E-Rod allowed 8 ER over last 2 starts so the headline edge overstates current form. Saved by ARI 19-8 ATS team-level trend (strongest in the slate). Sized to 1u lean given E-Rod regression risk.
+- Astros ML +104 vs BAL (Lambert 3.27 vs Bassitt 6.75) is the third consecutive day of the contrarian-Astros-pitching-edge template (Apr 26 +118 win pending, Apr 28 +114 pending). Skipped today to avoid concentration on a still-pending pattern test — wait for results before adding a third leg.
+
+**No-pick rationales**:
+- Tigers/Braves — Skubal (2x Cy Young, 2.72 ERA) vs JR Ritchie (2.57 ERA in 7 IP MLB sample) is a name-vs-unproven setup, but Braves are 21-9 (best record in MLB) and -144 juice on Detroit eats most of the headline edge. Passed.
+- Yankees @ Rangers — Warren/Elmer Rodriguez (TBD) vs Eovaldi (5.79 ERA) looks like a pitching edge but starter uncertainty + -154+ juice keeps this in chalk-trap territory. Continued discipline on heavy NYY juice.
+- Mets/Nats — Holmes 2.10 vs Littell 7.56 was the headline mismatch but line moved -175 → -194, eating the value. Same Apr 28 pass logic.
+- Phillies/Giants — Sanchez 2.94 ERA but 1.60 WHIP is a major red flag (44 hits in 33.2 IP); -149 juice on a starter with that kind of baserunner traffic is a fade signal not a play.
+- Mariners/Twins — Kirby (2.97) vs Bradley (2.91) is symmetric, no edge.
+- Blue Jays/Red Sox — Both starters >6.50 ERA (Lauer 6.75, Bello 9.00); Bello 1-4 ATS as BOS dog this year is a clean fade signal but Lauer's 6.75 isn't reliably better. Coin flip at the margin, passed.
+- All NBA G5s skipped per standing playoff caution: Pistons -9.5 / Magic, Cavs -8.5 / Raptors, Lakers -4.5 / Rockets (Durant OUT priced in, Reaves Q). No clean injury or RLM edges.
+- All NHL games skipped: Lightning -1.5 / Canadiens, Penguins / Flyers G6 (-122 toss-up), Vegas / Mammoth — no clean pricing edges.
+
+**Calibration notes**:
+- Cubs ML at Score 6.5 — depends on Waldron's 12.46 ERA being real and not 1-bad-start noise. Sample is 8.2 IP so it's small, but knuckleballer is also a high-variance archetype. If he throws a quality start, this is toast and we'll have evidence that the small-sample-on-bad-pitcher edge is thinner than the rubric suggests.
+- Diamondbacks ML at Score 6.0 — first explicit test of "ATS-trend-strong-enough-to-override-pitcher-regression" setup. If E-Rod posts another 4+ ER outing and ARI loses, document as evidence that team-level ATS trends shouldn't outweigh in-form pitcher quality.
+- Royals ML at Score 6.4 — Severino's 7.11 home ERA at Sutter Health is the value driver. If Severino throws a quality start, ballpark-factor edge was overweighted.
+
+**Patterns reinforced or challenged**:
+- ERA-mismatch pattern at tenth (or higher) test today (Cubs/Padres-Waldron, Royals/Athletics-Severino, Diamondbacks/Brewers-Sproat all variants of the template). Need to revisit promotion criteria once the Apr 22-28 backlog of pending picks resolves.
+- Continued discipline on playoff NBA/NHL no-picks. V1 has now passed on seven consecutive playoff slates without a basketball/hockey play (other than Apr 24 Blazers).
+- Chalk-trap discipline held: skipped Yankees -154+, Mets -194, Dodgers -225, Tigers -144. Heavy juice on legitimate mismatches keeps getting cut even when the underlying matchup is real.
+
+---
+
+### 2026-04-30 — V2-Sharp Session
+
+**Games scanned**: ~12 MLB · 3 NBA playoff Game 6s · 2 NHL playoff Game 6s · **Sharp signals investigated**: 6 · **Picks**: 0
+
+**Signal observations**:
+- D-Backs @ Brewers (ML) — Money/ticket divergence (60% public bets MIL, 62% money on ARI) but line held firm at MIL -120/-125 across the cycle. No actual line movement against public to confirm RLM. Adding to that, the run-line splits flip the other way (sharps 68% on MIL +1.5), which signals a coherent "close game" sharp position rather than a clean ML steam play. Same direction-conflict pattern flagged on Apr 26 Yankees/Astros = pass.
+- Nuggets @ Timberwolves Game 6 — Line moved DEN -6.5 → -5.5 (1pt toward MIN) which is a steam-sized move, but no accessible public/money splits to confirm whether move was sharp or simply public homedog buying after MIN went down 3-1 → 3-2. Edwards (knee) + DiVincenzo (Achilles) injuries are publicly known and already priced (logged as such on Apr 27). Cannot confirm sharp catalyst for the move. Pass without confirmation.
+- Celtics @ 76ers Game 6 — Opened BOS -5.5 (-115), drifted to BOS -6.5 (-218 to -245 ML). Line moved with the public chalk side; not RLM. Discarded.
+- Knicks @ Hawks Game 6 — Mixed line direction across books (NYK -2 open, current -1.5 to -2.5). No clean steam direction. Discarded.
+- Orioles vs Astros (DH) — Public hammering Astros (multiple snapshots at 100%), line moved HOU -120 → -122 (with public). Not RLM. Discarded.
+- Cardinals @ Pirates — Public and money both on PIT (Skenes 77% bets / 71% money on -1.5; ML moved toward PIT as Skenes start firmed up). Sharp/public alignment, not RLM. Same pattern as Apr 26 Rays/Twins discard — sharp confirmation ≠ RLM under V2-Sharp criteria.
+- Stars @ Wild Game 6 — Line drifted MIN -102 → -125 across books with no accessible splits. Could be public homedog momentum + sharps; can't confirm direction. Discarded.
+
+**Calibration notes**:
+- Brewers/D-Backs at score ~5.0–5.5 ceiling absent line movement. The Apr 18 White Sox playbook (money/ticket divergence + pitching edge) needed a confirmed line shift OR pitching mismatch to clear the bar. Today's Soroka vs Woodruff is too even on the mound for the divergence to stand alone.
+- Nuggets/Wolves -1pt move would qualify as steam if confirmed at multiple books with public/money splits showing public on DEN. Without those splits the move is uncategorizable. Marking as "would have been investigated harder if VSIN/Action Network were accessible" — same data-access issue logged on Apr 22, 25.
+
+**Patterns reinforced or challenged**:
+- Third V2-Sharp no-pick day in the last six sessions (Apr 22, 25, 30). Selectivity working as designed.
+- Reinforced Apr 26 rule: when split data conflicts directionally (e.g., sharps on Side A ML but Side B run line), default to pass. Today's D-Backs/Brewers fit this exactly.
+- Reinforced Apr 27 rule: NBA playoff line moves without verified public-side data are NOT actionable as sharp signals — could equally be public homedog buying or whale lottery tickets. Nuggets/Wolves -1pt move is a textbook example of why we need splits, not just movement.
+- Reinforced data-access pattern: Action Network, BetQL, Covers, Scores&Odds, OddsShark, SportsBettingDime, FanDuel Research all 403'd today. VSIN article also 403'd (in contrast to Apr 26 when VSIN was the working source). Working source stack continues to shrink.
+
+---
+
+### 2026-05-06 — V1-Trends Session
+
+**Games researched**: ~12 across MLB (9), NBA playoffs (1), NHL playoffs (1) · **Picks**: 3 (all MLB, avg Score 6.5)
+
+**Signal observations**:
+- Three ERA-mismatch spots identified: Cardinals ML +103 (Pallante 3.73 vs Sproat 6.75), Guardians ML +116 (Cantillo 3.67 vs Ragans 5.29), Red Sox ML ~+100 (Gray 4.30 vs Flaherty 5.90). ERA-mismatch pattern now at its 11th–13th test depending on how unresolved Apr picks settled.
+- Dodgers -220 vs HOU (Glasnow 2.56 vs McCullers 6.32) was the largest ERA gap on the slate (~3.8 runs) but chalk-trap discipline held — skipped at -220. Same discipline applied Apr 24–29 on heavy chalk.
+- Cardinals and Guardians are both road underdogs with better pitchers. The "plus-money better pitcher" template (seen on Apr 29 Royals ML +102) is getting a second and third test today.
+- Red Sox ML included as a borderline lean (score 6.0) — the ERA gap (1.6 runs) is the smallest of the three picks and Flaherty's small sample (29 IP) adds uncertainty.
+- Spurs/MIN Game 2 (-9.5) skipped per standing NBA playoff caution. MIN won G1 as +10.5 road dogs; no sharp confirmation available.
+- BUF/MTL NHL total (DK opened 6.5, now 5.5) investigated for V1 totals angle but no situational edge strong enough to clear threshold — playoff debut game, total movement explained by defensive context.
+
+**Calibration notes**:
+- Cardinals ML at Score 7.0 — hinges on Sproat's 6.75 ERA being real over only 2 starts. If Sproat settles down (veteran regression-to-mean), this is toast. If the sample reflects a broken pitcher, it cashes easily.
+- Guardians ML at Score 6.4 — Ragans is 1-4 and struggling all season, but KC home field is real. If Ragans finds his Apr 2025 form for one start, the ERA signal is overweighted.
+- Red Sox ML at Score 6.0 — borderline inclusion. Flaherty's 1.79 WHIP is the red flag, not just ERA. Watch: if Flaherty walks batters early and BOS capitalizes, this is the right call; if he throws a clean 5 innings, the score was inflated.
+
+**Patterns reinforced or challenged**:
+- ERA-mismatch pattern now extended to 11-13 tests (pending prior unresolved). First session with three ERA-mismatch picks simultaneously — watching whether three concurrent picks dilutes the edge or compounds it.
+- "Plus-money better pitcher as road dog" sub-template getting its clearest back-to-back test (Cardinals +103, Guardians +116). If both hit, worth promoting to a named sub-pattern.
+- Chalk-trap discipline held: Dodgers -220 skipped despite the largest ERA gap on the slate. Consistent with Apr 24–29 discipline.
+
+---
+
+### 2026-05-06 — V2-Sharp Session
+
+**Games scanned**: ~12 MLB · 1 NBA playoff · 1 NHL playoff · **Sharp signals found**: 0 confirmed · **Picks**: 0
+
+**Signal observations**:
+- BUF/MTL total (DK opened 6.5, now 5.5) — 1-goal drop is steam-sized, but could not confirm at 3+ books. Playoff defensive tightening is a clean public explanation for the opener setting it at 5.5 rather than the H2H historical 6.5. Over is -130, Under is +106 — the book still sees heavy public action on the Over (consistent with the H2H history of 6+ goals in 8 straight). Without public/money splits confirming the public is on the Over and the line moved the opposite way, this does not qualify as RLM. Discarded.
+- Spurs/MIN Game 2 (-9.5) — MIN won G1 as +10.5 road dogs. No public/money split data accessible. Standing intel log caution on NBA playoff spreads applies. Discarded.
+- MLB full slate — Action Network, BetQL, VSIN, Covers, FanDuel Research all 403. No public/money splits accessible. Cannot confirm RLM on any MLB game. Discarded by default.
+
+**Calibration notes**:
+- BUF/MTL total would have been worth investigating harder if public splits were available. A 1-goal drop against what should be a public Over (6+ goals in 8 straight H2H) would be a meaningful signal if confirmed. Data-access wall blocked further investigation.
+
+**Patterns reinforced or challenged**:
+- Seventh consecutive session where data-access failures on sharp-tracking sites (Action Network, BetQL, VSIN, Covers) result in 0 V2 picks. Model is working as designed — sitting out beats guessing.
+- NHL total moves require the same verification standard as MLB ML moves: need public/money splits AND confirmation at 3+ books. A single-source 1-goal drop is insufficient even if steam-sized on paper.
+
