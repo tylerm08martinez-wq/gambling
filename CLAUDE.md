@@ -13,12 +13,14 @@ Help Tyler identify +EV (positive expected value) betting opportunities across s
 - Primary edge: **player props + cross-book line gaps** — books set props with less precision and adjust them slower than game lines
 - Secondary edge: **RLM (70%+ threshold)** and **steam moves confirmed at 3+ books simultaneously** — single-book moves are noise
 - Avoid emotional bets (favorite teams, recency bias, chasing losses)
+- **Long-run calibration targets:** 55%+ win rate on spread/total bets; 5–7% ROI over 500+ bets
 
 ## Sports in Scope
 
 - NFL / College Football
 - NBA / College Basketball
 - MLB
+- NHL
 - Add others as needed
 
 ## Bet Types
@@ -39,36 +41,66 @@ Help Tyler identify +EV (positive expected value) betting opportunities across s
 | `/sports-betting-sharp` | V2-Sharp: props + cross-book gaps first; RLM (70%+) and steam (3+ books) for game lines — high selectivity |
 | `/bet-tracker` | Log picks, record results, and compare ROI between V1 and V2 models |
 
-All picks are stored in `.claude/skills/bet-tracker/picks.json`. Use `/bet-tracker stats` to see the full performance dashboard.
+## Data File
+
+All picks are stored in `C:/Users/metro/Claude/gambling/.claude/skills/bet-tracker/picks.json`.
+
+This file is the single source of truth — it is read and written by:
+- `/sports-betting` and `/sports-betting-sharp` when logging new picks (pull before read, push after write)
+- The nightly auto-resolve agent (pushes results to GitHub every night at 11pm Phoenix)
+- `/bet-tracker` for stats and manual result entry (pull before read, push after write)
+
+**Never edit picks.json manually** — always go through the skills or the nightly agent.
+
+## Dashboard
+
+Live betting dashboard at `C:/Users/metro/Claude/gambling/dashboard.html`.
+
+To open: start a local server from the gambling folder, then open `http://localhost:8090/dashboard.html`.
+```
+cd "C:\Users\metro\Claude\gambling"
+python -m http.server 8090
+```
+
+The dashboard fetches picks directly from GitHub (always live, auto-refreshes every 5 min). Tabs:
+- **Overview** — KPI strip, cumulative P&L, win rate by sport, bet type breakdown, score distribution
+- **V1 vs V2** — side-by-side model comparison with H2H stats and units P&L by sport
+- **Edge Breakdown** — picks and performance by edge type and sport
+- **Pick Log** — filterable full pick history with results and P&L
 
 ## Key Concepts
 
-- **Closing line value (CLV):** Compare your bet line vs. the closing line (both converted to implied probability). Positive CLV = you got a better price than the market settled at = good process. Consistent positive CLV long-term means the model has real edge, regardless of short-term win/loss variance. Tracked automatically in `picks.json`.
+- **Closing line value (CLV):** Compare your bet line vs. the closing line (both converted to implied probability). Positive CLV = you got a better price than the market settled at = good process. Consistent positive CLV long-term means the model has real edge, regardless of short-term win/loss variance.
 - **Props + cross-book gaps:** Books set prop lines with less precision. A 0.5+ unit gap across DK / FanDuel / BetMGM means sharps have already hit one book — target the stale price before it closes.
-- **RLM threshold is 70%+:** Below 70% public lean is too noisy. 70%+ with line moving the wrong way is a genuine sharp signal.
-- **Steam requires 3+ books:** A line move at 1-2 books is a single book adjusting. A simultaneous move at 3+ books is a sharp syndicate.
-- **Kelly Criterion:** Size bets proportionally to edge — avoid overbetting
-- **Bankroll:** Track as units, not dollars, to stay disciplined
+- **RLM threshold is 70%+ with line move confirmation:** Splits show # of bets not dollar handle — 80/20 on tickets may be 55/45 on dollars. Always require actual line movement to confirm RLM.
+- **Steam requires 3+ books simultaneously:** A line move at 1-2 books is noise. 4+ books = "mega sharp" signal.
+- **Never chase steam:** If the book already moved, you're entering at the new market price, not the edge.
+- **Late moves carry more weight:** Line moves in the final 2–3 hours before game time reflect higher limits and fresher info.
+- **Head fakes:** Sharps sometimes make small bets to move a line, then bet the other side when limits rise. A move followed by a reversal is a manipulation tactic, not a signal.
+- **Underdog/under value:** Public systematically overweights favorites and overs — sharps consistently find value on dogs and unders.
+- **Kelly Criterion:** Size bets proportionally to edge — avoid overbetting. Use fractional Kelly (half-Kelly) to reduce volatility.
+- **Bankroll:** Track as units, not dollars, to stay disciplined.
 
 ## Automation
 
-Both models run automatically every day at **9am Arizona time** via remote triggers in Anthropic's cloud (PC does not need to be on).
+| Routine | Schedule | Purpose |
+|---------|----------|---------|
+| V1-Trends Daily | 9am Arizona | Research + post picks to Slack #bet-picks |
+| V2-Sharp Daily (via Daily Bet Picks) | 9am Arizona | Research + post picks to Slack #bet-picks |
+| Nightly Auto-Resolve | 11pm Arizona | Look up final scores, calculate CLV, commit results to GitHub |
 
-| Trigger | ID |
+All routines run in Anthropic's cloud — PC does not need to be on.
+
+Manage routines: https://claude.ai/code/routines
+
+| Routine | ID |
 |---------|-----|
-| V1-Trends Daily | `trig_01Nb7FSHC71b7mKnubppSJUp` |
-| V2-Sharp Daily | `trig_016TZJHhwzkiWPA3czAc5sUq` |
-
-Results are sent to Tyler's Slack DM each morning. Picks are committed to this repo automatically — run `git pull` after getting the Slack message to sync locally.
-
-Manage triggers: https://claude.ai/code/scheduled
+| Nightly Bet Tracker — Auto-Resolve Picks | `trig_01SwKt54TorHpUVWSbsrnP2m` |
+| Daily Bet Picks (V1 + V2) | `trig_01QNkgETT87ZP2HnzT56HL7P` |
+| Sports Betting V1-Trends Daily | `trig_01QRp3Hb7gRVFDqdWxcCkDFL` |
 
 ## GitHub Repo
 
 Private repo: `https://github.com/tylerm08martinez-wq/gambling`
-All picks are version-controlled here. The remote triggers clone this repo, run research, append to `picks.json`, and push.
 
-## Notes
-
-- Tyler's bankroll and unit size tracked in `bet-log.md`
-- Output sharp picks or analysis to this folder; finalized strategy frameworks → Second Brain `decisions/`
+All picks are version-controlled here. The nightly agent resolves results and pushes to main automatically. The dashboard reads directly from GitHub — no manual sync needed.
