@@ -1,14 +1,40 @@
 # Betting Intelligence Log
 
-Cumulative observations from V1-Trends, V2-Sharp, and Bet Tracker sessions. All three skills read this at the start and append new insights at the end. Use this to calibrate scores, prioritize signals, and avoid repeating mistakes.
+Cumulative observations from V1-Trends, V2-Sharp, and Bet Tracker sessions.
+
+---
+
+## Active Intelligence — Skills: Read this section, skip the session log
+
+**Signals confirmed working:**
+- **MLB ERA-mismatch (V1):** Apr 17 went 2-for-2 (Braves 9-0, D-Backs 6-3). 10+ additional tests Apr 22–29 pending. Promote to Active Pattern once results show 4-of-5+.
+- **Broken-ace sub-pattern (V1):** Former ace with bottom-decile current ERA (Crochet, Kelly, Scherzer 2026) held tighter by market than peripherals warrant. Target when plus-money or light juice.
+- **MLB ML RLM (V2):** 2-for-2 Apr 17. Primary V2 signal. Requires 60%+ public + confirmed line movement against. 70%+ public is the stronger version.
+
+**Confirmed avoids:**
+- **Playoff NBA/NHL RLM/spreads:** Failed badly (Hornets -3 lost -31 in play-in). Elimination-game motivation distorts line reads. Injury-based edges only in playoffs, size 1u.
+- **Chalk traps >-145:** Real ERA gaps don't overcome heavy juice consistently. Skip even on strong mismatches.
+- **NBA playoff ML handle divergence without line movement (V2):** Big-dog handle at +375 = single whale, not a syndicate. Require confirmed line movement against public — handle split alone fails the bar.
+- **Direction conflict (V2):** Sharps appear on ML side A but line moves toward side B = pass immediately.
+
+**V2-Sharp data sources:**
+- **403 consistently:** Action Network, BetQL, Covers, SportsBettingDime, Scores&Odds, OddsShark
+- **Currently working:** VSIN, FanDuel Research — try these first; fall back to DocSports steam reports
+
+**Score calibration:**
+- Scores 5.0–5.4 = thin leans, 1u only
+- Broken-ace setups with <3-start ERA sample: reduce confidence by 1 point
+- Late entry after steam already moved the line: dock Line Value 1–2 points
+
+**ERA-mismatch pattern count:** Apr 17: 2-for-2 ✅ | Apr 22–29: 10+ tests pending — check results before adding more
 
 ---
 
 ## How to Use This Log (for skills)
 
-**On read:** Scan all sections before making any picks or analysis. Apply relevant patterns to today's games. If a sport, team, edge type, or market condition matches a logged observation, adjust confidence accordingly.
+**On read:** Read only the **Active Intelligence** section above — skip the full session log. Apply listed signals, avoids, and calibration notes to today's games.
 
-**On write:** After presenting picks or resolving results, append a dated entry to the Session Log. Be specific — name teams, lines, signals, and outcomes. Vague observations don't help future decisions.
+**On write:** After presenting picks or resolving results, append a dated entry to the Session Log. Be specific — name teams, lines, signals, and outcomes.
 
 ---
 
