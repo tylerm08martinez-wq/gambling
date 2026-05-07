@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "id": "20260507-mlb-nation-ml",
+    "date": "2026-05-07",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Nationals ML vs MIN",
+    "line": "-110",
+    "units": 1,
+    "score": 6.6,
+    "primary_edge": "ERA mismatch + RLM",
+    "result": null,
+    "units_won_lost": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260507-mlb-marlin-ml",
+    "date": "2026-05-07",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Marlins ML vs BAL",
+    "line": "-118",
+    "units": 1,
+    "score": 6.6,
+    "primary_edge": "ERA mismatch + sharp money",
+    "result": null,
+    "units_won_lost": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.0,
+    "prop_result": null,
+    "prop_margin": null
+  }
+]
