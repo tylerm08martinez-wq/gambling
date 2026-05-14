@@ -83,24 +83,19 @@ The dashboard fetches picks directly from GitHub (always live, auto-refreshes ev
 
 ## Automation
 
-| Routine | Schedule | Purpose |
-|---------|----------|---------|
-| V1-Trends Daily | 9am Arizona | Research + post picks to Slack #bet-picks |
-| V2-Sharp Daily (via Daily Bet Picks) | 9am Arizona | Research + post picks to Slack #bet-picks |
-| Nightly Auto-Resolve | 11pm Arizona | Look up final scores, calculate CLV, commit results to GitHub |
+| Routine | Schedule | Purpose | ID |
+|---------|----------|---------|-----|
+| Daily Bet Picks (V1 + V2) | 10am Arizona | V1 + V2 research; log picks, commit/push to GitHub, post summary to Slack #bet-picks | `trig_01Q4jLHo9e2Zp6iqA7ZA5wcS` |
+| Nightly Bet Tracker — Auto-Resolve Picks | 11pm Arizona | Look up final scores, calculate CLV, commit results to GitHub | `trig_01SwKt54TorHpUVWSbsrnP2m` |
 
 All routines run in Anthropic's cloud — PC does not need to be on.
 
 Manage routines: https://claude.ai/code/routines
 
-| Routine | ID |
-|---------|-----|
-| Nightly Bet Tracker — Auto-Resolve Picks | `trig_01SwKt54TorHpUVWSbsrnP2m` |
-| Daily Bet Picks (V1 + V2) | `trig_01QNkgETT87ZP2HnzT56HL7P` |
-| Sports Betting V1-Trends Daily | `trig_01QRp3Hb7gRVFDqdWxcCkDFL` |
-
 ## GitHub Repo
 
-Private repo: `https://github.com/tylerm08martinez-wq/gambling`
+Public repo: `https://github.com/tylerm08martinez-wq/gambling`
+
+Live dashboard (auto-deployed): https://tylerm08martinez-wq.github.io/gambling/dashboard.html
 
 All picks are version-controlled here. The nightly agent resolves results and pushes to main automatically. The dashboard reads directly from GitHub — no manual sync needed.
