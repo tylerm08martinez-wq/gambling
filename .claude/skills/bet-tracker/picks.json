@@ -66,5 +66,39 @@
     "units_won_lost": null,
     "closing_line": null,
     "clv": null
+  },
+  {
+    "id": "20260514-mlb-sale-o45h-v1",
+    "date": "2026-05-14",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet_type": "prop",
+    "bet": "Chris Sale Over 4.5 Hits Allowed (Braves vs Cubs)",
+    "line": "-137 @ DraftKings",
+    "units": 1,
+    "score": 7.0,
+    "primary_edge": "Season-trend prop edge — over 4.5 hits allowed in 4 of last 6 starts",
+    "notes": "Single-book verified — line shopping incomplete",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null
+  },
+  {
+    "id": "20260514-mlb-hoerner-2tb-v1",
+    "date": "2026-05-14",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet_type": "prop",
+    "bet": "Nico Hoerner 2+ Total Bases (Cubs vs Braves)",
+    "line": "+128 @ DraftKings",
+    "units": 1,
+    "score": 6.8,
+    "primary_edge": "Matchup edge vs LHP (.327 BA / .905 OPS / 159 wRC+ vs lefties) + plus-money entry",
+    "notes": "Single-book verified — line shopping incomplete",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null
   }
 ]
