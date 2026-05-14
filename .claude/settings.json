@@ -3,5 +3,17 @@
     "allow": [
       "Edit(~/.claude/skills/bet-tracker/**)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"c:/Users/metro/Claude/Gambling\" && out=$(git pull --rebase 2>&1); rc=$?; if [ $rc -ne 0 ]; then echo \"[gambling auto-pull] FAILED (exit $rc):\"; echo \"$out\"; elif ! echo \"$out\" | grep -qi \"already up to date\"; then echo \"[gambling auto-pull] updated:\"; echo \"$out\"; fi"
+          }
+        ]
+      }
+    ]
   }
 }

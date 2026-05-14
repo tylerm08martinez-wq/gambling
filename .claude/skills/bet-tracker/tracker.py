@@ -56,6 +56,19 @@ def needed_to_cover(line_num: float) -> int:
     """Minimum whole-number margin needed to cover a spread/RL."""
     return math.ceil(abs(line_num))
 
+def american_to_implied_prob(line_str: str) -> float:
+    """Convert American odds (e.g. '+120', '-110', '+120 @ FanDuel') to implied probability (0–1)."""
+    raw = str(line_str).split("@")[0].strip().replace("+", "")
+    line = int(raw)
+    if line < 0:
+        return abs(line) / (abs(line) + 100)
+    return 100 / (line + 100)
+
+def calc_clv(bet_line: str, closing_line: str) -> float:
+    """CLV in percentage points (closing_implied_prob - bet_implied_prob) * 100.
+    Positive = you got a better price than the market settled at = good process."""
+    return round((american_to_implied_prob(closing_line) - american_to_implied_prob(bet_line)) * 100, 2)
+
 
 # ── Formatting ────────────────────────────────────────────────────────────────
 
@@ -379,6 +392,8 @@ def cmd_log(args):
         "primary_edge": args.edge or "",
         "result": None,
         "units_won_lost": None,
+        "closing_line": None,
+        "clv": None,
         "final_score": None,
         "game_margin": None,
         "line_num": args.line_num,
@@ -400,6 +415,13 @@ def cmd_resolve(args):
 
     pick["result"] = args.outcome
     pick["units_won_lost"] = calc_units_won_lost(pick["line"], pick["units"], args.outcome)
+    if args.closing_line:
+        pick["closing_line"] = args.closing_line
+        try:
+            pick["clv"] = calc_clv(pick["line"], args.closing_line)
+        except (ValueError, ZeroDivisionError) as e:
+            print(f"⚠️  CLV calc failed ({e}); stored closing_line but clv=null", file=sys.stderr)
+            pick["clv"] = None
     if args.final_score:
         pick["final_score"] = args.final_score
     if args.game_margin is not None:
@@ -439,6 +461,8 @@ def main():
     res_p = sub.add_parser("resolve", help="Record a result for an open pick")
     res_p.add_argument("id", help="Pick ID")
     res_p.add_argument("outcome", choices=["win", "loss", "push"])
+    res_p.add_argument("--closing-line", default="",
+                       help="American odds at close, e.g. '-110' or '+105'. Used to compute CLV.")
     res_p.add_argument("--final-score", default="", help="e.g. 'ARI 6, TOR 3'")
     res_p.add_argument("--game-margin", type=int, default=None,
                        help="Actual game margin (positive = our team won by X)")

@@ -51,6 +51,7 @@ Confirm the logged pick to the user.
 Look up the pick by ID, then run:
 ```bash
 python ".claude/skills/bet-tracker/tracker.py" resolve <id> <outcome> \
+  --closing-line "<american_odds>" \
   --final-score "<score>" \
   --game-margin <int> \
   --line-num <float> \
@@ -58,6 +59,7 @@ python ".claude/skills/bet-tracker/tracker.py" resolve <id> <outcome> \
   [--prop-margin <int>]
 ```
 
+- `--closing-line`: American odds for this exact bet at game start, from a sharp book (Pinnacle preferred, then DK/FanDuel consensus). E.g. `-110`, `+105`. Used to compute CLV automatically.
 - `--game-margin`: actual whole-number game margin, positive = our team won by X (e.g. won 6-3 → 3; lost 90-121 → -31)
 - `--line-num`: the spread number for cover check display (e.g. 3 for -3 spread; 0 for ML)
 - `--prop-result`: for player props, the stat line (e.g. "3/9 from three")
@@ -77,13 +79,16 @@ For each open pick where `date <= today`, web search for the result in parallel:
 - Team bets: `"[teams] final score [date]"`
 - Player props: `"[player name] [stat] [date] [opponent]"`
 
-Determine win/loss/push from the result. Then for each resolved pick, run:
+Determine win/loss/push from the result. For each resolved pick, ALSO web-search for the closing line of the exact bet (e.g. "MLB closing line Cardinals -1.5 [date]" or "[player] [prop] closing line [date]"). Prefer Pinnacle; fall back to DK/FanDuel consensus. Then run:
 ```bash
 python ".claude/skills/bet-tracker/tracker.py" resolve <id> <outcome> \
+  --closing-line "<american_odds>" \
   --final-score "<score>" \
   --game-margin <int> \
   --line-num <float>
 ```
+
+If the closing line cannot be found, omit `--closing-line` — the pick will resolve without CLV (better than blocking the whole resolve).
 
 If a result can't be found (game postponed, future game), skip and leave open.
 
