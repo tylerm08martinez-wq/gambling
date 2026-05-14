@@ -348,15 +348,14 @@ function fmtSigned(v, suffix = '') {
 }
 
 // ── GitHub fetch ─────────────────────────────────────────────────
-const GH_TOKEN = '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';
-const GH_API   = 'https://api.github.com/repos/tylerm08martinez-wq/gambling/contents/.claude/skills/bet-tracker/picks.json';
+// Repo is public — fetch raw picks.json directly, no auth.
+// Cache-buster prevents stale data after a recent push.
+const PICKS_URL = 'https://raw.githubusercontent.com/tylerm08martinez-wq/gambling/main/.claude/skills/bet-tracker/picks.json';
 
 async function loadPicks() {
   document.getElementById('last-updated').textContent = 'Loading...';
   try {
-    const res = await fetch(GH_API, {
-      headers: { Authorization: `token ${GH_TOKEN}`, Accept: 'application/vnd.github.v3.raw' }
-    });
+    const res = await fetch(`${PICKS_URL}?t=${Date.now()}`);
     if (!res.ok) throw new Error(`GitHub ${res.status}`);
     picks = await res.json();
     const now = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
