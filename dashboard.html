@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tyler's Betting Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+    --orange: #ffa657;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; }
+  header { padding: 20px 28px 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  header h1 { font-size: 18px; font-weight: 600; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .header-right span { color: var(--muted); font-size: 13px; }
+  .tabs { display: flex; gap: 2px; padding: 12px 28px 0; border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 18px; cursor: pointer; border-radius: 6px 6px 0 0; color: var(--muted); font-size: 13px; border-bottom: 2px solid transparent; }
+  .tab.active { color: var(--text); border-bottom-color: var(--blue); }
+  .tab:hover:not(.active) { color: var(--text); }
+  .page { display: none; padding: 24px 28px; }
+  .page.active { display: block; }
+
+  /* KPI Strip */
+  .kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+  .kpi-value { font-size: 26px; font-weight: 700; line-height: 1; }
+  .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .blue { color: var(--blue); }
+
+  /* Grid layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .card h2 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; }
+
+  /* Model comparison */
+  .model-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .model-row:last-child { border-bottom: none; }
+  .model-label { font-size: 13px; color: var(--muted); }
+  .model-vals { display: flex; gap: 24px; }
+  .model-val { text-align: right; }
+  .model-val .badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 99px; }
+  .badge-v1 { background: #1f3a5f; color: var(--blue); }
+  .badge-v2 { background: #3b1f5f; color: var(--purple); }
+  .model-val .num { font-size: 15px; font-weight: 600; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding: 0 8px 10px 8px; }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.03); }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+  .pill-green { background: #1a3d2b; color: var(--green); }
+  .pill-red { background: #3d1a1a; color: var(--red); }
+  .pill-yellow { background: #3d2e1a; color: var(--yellow); }
+
+  /* Bar chart rows */
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .bar-label { width: 110px; font-size: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; background: var(--border); border-radius: 3px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .bar-count { font-size: 12px; color: var(--muted); width: 30px; text-align: right; flex-shrink: 0; }
+
+  /* Picks table */
+  .picks-table { overflow-x: auto; }
+  .picks-table table { min-width: 800px; }
+  .result-w { color: var(--green); font-weight: 600; }
+  .result-l { color: var(--red); font-weight: 600; }
+  .result-p { color: var(--yellow); font-weight: 600; }
+  .result-o { color: var(--muted); }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-item { padding: 12px; background: rgba(255,255,255,.03); border-radius: 6px; }
+  .stat-item .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .stat-item .val { font-size: 18px; font-weight: 700; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .filter-bar select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+
+  .notice { background: #1f2d3d; border: 1px solid #2d4a6b; border-radius: 8px; padding: 14px 18px; color: var(--blue); font-size: 13px; margin-bottom: 20px; }
+  .breakeven { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+  canvas { max-height: 220px; }
+
+  /* Refresh button */
+  .refresh-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: border-color .2s, color .2s; }
+  .refresh-btn:hover:not(:disabled) { border-color: var(--text); color: var(--text); }
+  .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin-icon { display: inline-block; }
+  .spin-icon.spinning { animation: spin 0.8s linear infinite; }
+
+  /* Today callout */
+  .today-callout { background: #0d1f3c; border: 1px solid #1f4496; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; }
+  .today-title { color: var(--blue); font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+  .today-bets { display: flex; flex-wrap: wrap; gap: 8px; }
+  .today-bet-chip { background: rgba(255,255,255,.05); border: 1px solid var(--border); padding: 3px 10px; border-radius: 12px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 56px 20px; color: var(--muted); }
+  .empty-state .es-icon { font-size: 48px; margin-bottom: 14px; }
+  .empty-state p { font-size: 14px; max-width: 380px; margin: 0 auto; line-height: 1.6; }
+  .empty-state code { background: var(--surface); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--blue); }
+
+  /* Rotating quote */
+  #quote { font-style: italic; color: var(--muted); font-size: 12px; opacity: 1; transition: opacity 0.5s; flex: 1; text-align: center; padding: 0 20px; }
+
+  /* Confetti */
+  .confetti-piece { position: fixed; width: 6px; height: 10px; top: -10px; pointer-events: none; z-index: 9999; animation: confetti-fall 2.5s ease-in forwards; }
+  @keyframes confetti-fall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+  /* Sharp Score */
+  .sharp-bar-track { background: var(--border); border-radius: 4px; height: 12px; overflow: hidden; margin-top: 14px; }
+  .sharp-bar-fill { height: 100%; border-radius: 4px; transition: width 0.7s ease; }
+  .sharp-degen   { background: var(--red); }
+  .sharp-casual  { background: var(--yellow); }
+  .sharp-sharp   { background: var(--blue); }
+  .sharp-certified { background: var(--green); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔪 Tyler's Betting Dashboard</h1>
+  <div id="quote"></div>
+  <div class="header-right">
+    <span id="last-updated">Loading...</span>
+    <button id="refreshBtn" class="refresh-btn" onclick="manualRefresh()">
+      <span class="spin-icon" id="spinIcon">↻</span> Refresh
+    </button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('overview', this)">Overview</div>
+  <div class="tab" onclick="showTab('models', this)">V1 vs V2</div>
+  <div class="tab" onclick="showTab('edges', this)">Edge Breakdown</div>
+  <div class="tab" onclick="showTab('log', this)">Pick Log</div>
+</div>
+
+<div id="tab-overview" class="page active">
+  <div id="todayCallout"></div>
+  <div id="overviewContent">
+    <div class="kpi-strip" id="kpi-strip"></div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card">
+        <h2>Cumulative Units (P&L)</h2>
+        <canvas id="plChart"></canvas>
+      </div>
+      <div class="card">
+        <h2>Win Rate by Sport</h2>
+        <canvas id="sportChart"></canvas>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h2>Picks by Bet Type</h2>
+        <div id="betTypeBar"></div>
+      </div>
+      <div class="card">
+        <h2>Score Distribution</h2>
+        <canvas id="scoreChart"></canvas>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>🔪 Sharp Score</h2>
+      <div id="sharpScoreInner">
+        <div style="display:flex;align-items:center;gap:20px">
+          <div id="sharpScoreValue" style="font-size:52px;font-weight:700;line-height:1">—</div>
+          <div>
+            <div id="sharpScoreLabel" style="font-size:20px;font-weight:600">Calculating…</div>
+            <div style="color:var(--muted);font-size:12px;margin-top:4px">Win Rate (40pts) + CLV (35pts) + ROI (25pts)</div>
+          </div>
+        </div>
+        <div class="sharp-bar-track"><div id="sharpScoreBar" class="sharp-bar-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-models" class="page">
+  <div class="notice">🎯 <strong>CLV is the process signal.</strong> Positive CLV = good lines regardless of short-term results. ROI is the outcome signal. Both should trend green over 50+ settled picks.</div>
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <h2>🎯 V1-Trends</h2>
+      <div id="v1-stats"></div>
+    </div>
+    <div class="card">
+      <h2>🔪 V2-Sharp</h2>
+      <div id="v2-stats"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Head to Head</h2>
+    <div id="h2h-table"></div>
+    <p class="breakeven">Breakeven win rate at −110: 52.4% &nbsp;|&nbsp; Target ROI: 5–7% over 500+ bets &nbsp;|&nbsp; Need 20+ settled picks per model for significance</p>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Units P&L by Sport × Model</h2>
+    <canvas id="modelChart"></canvas>
+  </div>
+</div>
+
+<div id="tab-edges" class="page">
+  <div class="grid-2">
+    <div class="card">
+      <h2>Picks by Edge Type</h2>
+      <div id="edgeBar"></div>
+    </div>
+    <div class="card">
+      <h2>Edge Performance (settled picks)</h2>
+      <div id="edgePerf"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Sport Breakdown</h2>
+    <div id="sportBreakdown"></div>
+  </div>
+</div>
+
+<div id="tab-log" class="page">
+  <div class="filter-bar">
+    <select id="filter-model" onchange="renderLog()">
+      <option value="">All Models</option>
+      <option value="v1-trends">V1-Trends</option>
+      <option value="v2-sharp">V2-Sharp</option>
+    </select>
+    <select id="filter-result" onchange="renderLog()">
+      <option value="">All Results</option>
+      <option value="win">Wins</option>
+      <option value="loss">Losses</option>
+      <option value="push">Pushes</option>
+      <option value="open">Open</option>
+    </select>
+    <select id="filter-sport" onchange="renderLog()">
+      <option value="">All Sports</option>
+    </select>
+    <select id="filter-edge" onchange="renderLog()">
+      <option value="">All Edges</option>
+    </select>
+  </div>
+  <div class="picks-table card">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Model</th>
+          <th>Sport</th>
+          <th>Bet</th>
+          <th>Type</th>
+          <th>Line</th>
+          <th>Units</th>
+          <th>Score</th>
+          <th>Edge</th>
+          <th>Result</th>
+          <th>CLV</th>
+          <th>P&L</th>
+        </tr>
+      </thead>
+      <tbody id="log-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+let picks = [];
+
+// Chart instances — destroy before recreating to prevent re-render bug
+let plChart = null, sportChart = null, scoreChart = null, modelChart = null;
+
+// ── Helpers ──────────────────────────────────────────────────────
+function inferBetType(bet) {
+  if (!bet) return 'Unknown';
+  const b = bet.toLowerCase();
+  if (b.includes(' rl ') || b.includes('run line') || b.includes('-1.5') || b.includes('+1.5')) return 'Run Line';
+  if (b.includes('puck line')) return 'Puck Line';
+  if (b.includes('moneyline') || b.includes(' ml') || / ml$/i.test(b)) return 'Moneyline';
+  if (b.includes('under') || b.includes('over')) return 'Total';
+  if (/[+-]\d+(\.\d+)?/.test(b) && (b.includes('spread') || b.includes(' vs ') || b.includes(' @ '))) return 'Spread';
+  if (b.includes('prop') || b.includes('strikeout') || b.includes('hits') || b.includes('yards') || b.includes('points') || b.includes('assists') || b.includes('rebounds')) return 'Prop';
+  return 'Moneyline';
+}
+
+function edgeType(raw) {
+  if (!raw) return 'Unknown';
+  const r = raw.trim();
+  if (r.startsWith('RLM')) return 'RLM';
+  if (r.startsWith('Injury')) return 'Injury';
+  if (r.startsWith('Steam')) return 'Steam';
+  if (r.startsWith('ATS')) return 'ATS Trend';
+  if (r.startsWith('Prop')) return 'Prop';
+  if (r.startsWith('Contrarian') || r.startsWith('Underdog')) return 'Underdog fade';
+  if (r.startsWith('ERA') || r.startsWith('Pitching')) return 'Pitching Edge';
+  const sep = r.indexOf(' — ');
+  return sep > 0 ? r.slice(0, sep) : r.split(',')[0].slice(0, 22);
+}
+
+const settled = () => picks.filter(p => p.result !== null);
+const byModel = m => picks.filter(p => p.model === m);
+const settledByModel = m => settled().filter(p => p.model === m);
+
+function roi(ps) {
+  const wagered = ps.reduce((a, p) => a + (p.units || 0), 0);
+  const net = ps.reduce((a, p) => a + (p.units_won_lost || 0), 0);
+  return wagered > 0 ? (net / wagered * 100).toFixed(1) : '—';
+}
+function winRate(ps) {
+  const wins = ps.filter(p => p.result === 'win').length;
+  const losses = ps.filter(p => p.result === 'loss').length;
+  return wins + losses > 0 ? (wins / (wins + losses) * 100).toFixed(1) : '—';
+}
+function avgClv(ps) {
+  const clvs = ps.filter(p => p.clv !== null && p.clv !== undefined).map(p => p.clv);
+  return clvs.length > 0 ? (clvs.reduce((a, b) => a + b, 0) / clvs.length).toFixed(2) : '—';
+}
+function netUnits(ps) {
+  return ps.reduce((a, p) => a + (p.units_won_lost || 0), 0).toFixed(2);
+}
+function colorNum(v) {
+  const n = parseFloat(v);
+  if (isNaN(n)) return '';
+  return n > 0 ? 'green' : n < 0 ? 'red' : 'yellow';
+}
+function fmtSigned(v, suffix = '') {
+  const n = parseFloat(v);
+  if (isNaN(n) || v === '—') return '—';
+  return (n >= 0 ? '+' : '') + v + suffix;
+}
+
+// ── GitHub fetch ─────────────────────────────────────────────────
+const GH_TOKEN = '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';
+const GH_API   = 'https://api.github.com/repos/tylerm08martinez-wq/gambling/contents/.claude/skills/bet-tracker/picks.json';
+
+async function loadPicks() {
+  document.getElementById('last-updated').textContent = 'Loading...';
+  try {
+    const res = await fetch(GH_API, {
+      headers: { Authorization: `token ${GH_TOKEN}`, Accept: 'application/vnd.github.v3.raw' }
+    });
+    if (!res.ok) throw new Error(`GitHub ${res.status}`);
+    picks = await res.json();
+    const now = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    document.getElementById('last-updated').textContent = `${picks.length} picks · synced ${now}`;
+  } catch (e) {
+    document.getElementById('last-updated').textContent = `Fetch failed: ${e.message}`;
+    picks = [];
+  }
+  render();
+}
+
+async function manualRefresh() {
+  const btn = document.getElementById('refreshBtn');
+  const icon = document.getElementById('spinIcon');
+  btn.disabled = true;
+  icon.classList.add('spinning');
+  await loadPicks();
+  icon.classList.remove('spinning');
+  btn.disabled = false;
+}
+
+// ── Today's picks callout ────────────────────────────────────────
+function renderTodayCallout() {
+  const today = new Date().toISOString().slice(0, 10);
+  const todayPicks = picks.filter(p => p.date === today);
+  const el = document.getElementById('todayCallout');
+  const capUsed = todayPicks.length;
+
+  if (todayPicks.length === 0) {
+    el.innerHTML = `<div class="today-callout"><div class="today-title">📅 Today — No picks logged yet (0/4 daily cap)</div></div>`;
+  } else {
+    const chips = todayPicks.map(p => {
+      const badge = p.model === 'v1-trends'
+        ? '<span class="badge badge-v1" style="font-size:10px;margin-right:4px">V1</span>'
+        : '<span class="badge badge-v2" style="font-size:10px;margin-right:4px">V2</span>';
+      const truncBet = p.bet && p.bet.length > 40 ? p.bet.slice(0, 40) + '…' : (p.bet || '—');
+      return `<span class="today-bet-chip">${badge}${truncBet}</span>`;
+    }).join('');
+    const capColor = capUsed >= 4 ? 'var(--red)' : capUsed >= 3 ? 'var(--yellow)' : 'var(--blue)';
+    el.innerHTML = `
+      <div class="today-callout">
+        <div class="today-title">📅 Today — <span style="color:${capColor}">${capUsed}/4 daily cap used</span></div>
+        <div class="today-bets">${chips}</div>
+      </div>`;
+  }
+}
+
+// ── KPI Strip ────────────────────────────────────────────────────
+function calcStreak() {
+  const s = [...settled()].sort((a, b) => a.date > b.date ? -1 : 1);
+  if (!s.length) return { text: '—', cls: '' };
+  const first = s[0].result;
+  let count = 0;
+  for (const p of s) {
+    if (p.result === first) count++;
+    else break;
+  }
+  if (first === 'win') return { text: `🔥 W${count}`, cls: 'green' };
+  if (first === 'loss') return { text: `❄️ L${count}`, cls: 'red' };
+  return { text: `P${count}`, cls: 'yellow' };
+}
+
+function renderKPIs() {
+  const s = settled();
+  const wins = s.filter(p => p.result === 'win').length;
+  const losses = s.filter(p => p.result === 'loss').length;
+  const pushes = s.filter(p => p.result === 'push').length;
+  const net = parseFloat(netUnits(s));
+  const r = roi(s);
+  const wr = winRate(s);
+  const clv = avgClv(s);
+  const open = picks.filter(p => p.result === null).length;
+  const streak = calcStreak();
+  const avgScore = (() => {
+    const sc = picks.filter(p => p.score).map(p => p.score);
+    return sc.length ? (sc.reduce((a, b) => a + b, 0) / sc.length).toFixed(1) + '/10' : '—';
+  })();
+
+  const rNum = parseFloat(r);
+  const mood = isNaN(rNum) || !s.length ? { icon: '😐', label: 'Neutral' }
+    : rNum > 10  ? { icon: '🔥', label: 'On Fire' }
+    : rNum > 0   ? { icon: '📈', label: 'Trending Up' }
+    : rNum === 0 ? { icon: '😐', label: 'Neutral' }
+    :              { icon: '🩸', label: 'In the Red' };
+
+  const kpis = [
+    { label: 'ROI', value: s.length ? fmtSigned(r, '%') : '—', cls: colorNum(r), sub: `${s.length} settled picks` },
+    { label: 'Net Units', value: s.length ? fmtSigned(net.toFixed(2), 'u') : '—', cls: colorNum(net), sub: `${picks.reduce((a,p)=>a+(p.units||0),0).toFixed(1)}u wagered` },
+    { label: 'Win Rate', value: wr !== '—' ? wr + '%' : '—', cls: parseFloat(wr) >= 52.4 ? 'green' : wr !== '—' ? 'red' : '', sub: `${wins}W–${losses}L–${pushes}P` },
+    { label: 'Avg CLV', value: clv !== '—' ? fmtSigned(clv, '%') : '—', cls: colorNum(clv), sub: 'closing line value' },
+    { label: 'Streak', value: streak.text, cls: streak.cls, sub: 'recent results' },
+    { label: 'Open Picks', value: open, cls: 'blue', sub: `${picks.length} total` },
+    { label: 'Avg Score', value: avgScore, cls: '', sub: 'confidence rating' },
+    { label: 'Bankroll Mood', value: mood.icon, cls: '', sub: mood.label, big: true },
+  ];
+
+  document.getElementById('kpi-strip').innerHTML = kpis.map(k =>
+    `<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value ${k.cls}" style="${k.big ? 'font-size:32px' : ''}">${k.value}</div><div class="kpi-sub">${k.sub}</div></div>`
+  ).join('');
+
+  // Confetti if profitable
+  if (net > 0) triggerConfetti();
+
+  // Animate numeric KPI values
+  document.querySelectorAll('#kpi-strip .kpi-value').forEach(el => {
+    const text = el.textContent.trim();
+    if (text === '—' || /[🔥📈😐🩸❄️W L P]/u.test(text)) return;
+    const match = text.match(/^([+-]?)(\d+\.?\d*)(.*)/);
+    if (!match) return;
+    const sign = match[1];
+    const endVal = parseFloat(match[2]);
+    const suffix = match[3];
+    animateValue(el, 0, endVal, 350, v => (sign || '') + v.toFixed(suffix.includes('%') || suffix.includes('u') ? 1 : 0) + suffix);
+  });
+}
+
+// ── Empty state ──────────────────────────────────────────────────
+function renderEmptyState() {
+  document.getElementById('overviewContent').style.display = 'none';
+  document.getElementById('todayCallout').innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'empty-state';
+  el.innerHTML = `
+    <div class="es-icon">📭</div>
+    <p>No picks logged yet. Run <code>/sports-betting</code> or <code>/sports-betting-sharp</code> to generate today's picks.</p>`;
+  document.getElementById('tab-overview').appendChild(el);
+}
+
+// ── P&L Chart ────────────────────────────────────────────────────
+function renderPLChart() {
+  const sorted = [...settled()].sort((a, b) => a.date > b.date ? 1 : -1);
+  let cumV1 = 0, cumV2 = 0, cumAll = 0;
+  const labels = [], v1Data = [], v2Data = [], allData = [];
+  sorted.forEach(p => {
+    labels.push(p.date.slice(5)); // MM-DD
+    cumAll += (p.units_won_lost || 0);
+    if (p.model === 'v1-trends') cumV1 += (p.units_won_lost || 0);
+    if (p.model === 'v2-sharp')  cumV2 += (p.units_won_lost || 0);
+    v1Data.push(+cumV1.toFixed(3));
+    v2Data.push(+cumV2.toFixed(3));
+    allData.push(+cumAll.toFixed(3));
+  });
+  if (!labels.length) { labels.push('—'); v1Data.push(0); v2Data.push(0); allData.push(0); }
+
+  if (plChart) plChart.destroy();
+  plChart = new Chart(document.getElementById('plChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'Combined', data: allData, borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,.1)', tension: .3, pointRadius: 2, fill: true },
+      { label: 'V1-Trends', data: v1Data, borderColor: '#3fb950', backgroundColor: 'transparent', tension: .3, pointRadius: 2, borderDash: [4,2] },
+      { label: 'V2-Sharp',  data: v2Data, borderColor: '#bc8cff', backgroundColor: 'transparent', tension: .3, pointRadius: 2, borderDash: [4,2] },
+    ]},
+    options: { plugins: { legend: { labels: { color: '#8b949e', font: { size: 11 } } } }, scales: { x: { display: false }, y: { ticks: { color: '#8b949e', callback: v => (v >= 0 ? '+' : '') + v + 'u' }, grid: { color: '#30363d' } } }, responsive: true, maintainAspectRatio: true }
+  });
+}
+
+// ── Sport Chart ──────────────────────────────────────────────────
+function renderSportChart() {
+  const sports = [...new Set(picks.map(p => p.sport))].filter(Boolean);
+  const data = sports.map(s => {
+    const sp = settled().filter(p => p.sport === s);
+    const wins = sp.filter(p => p.result === 'win').length;
+    const total = sp.filter(p => p.result === 'win' || p.result === 'loss').length;
+    return total ? +(wins / total * 100).toFixed(1) : null;
+  });
+  const colors = data.map(d => d === null ? '#30363d' : d >= 52.4 ? 'rgba(63,185,80,.7)' : 'rgba(248,81,73,.7)');
+
+  if (sportChart) sportChart.destroy();
+  sportChart = new Chart(document.getElementById('sportChart'), {
+    type: 'bar',
+    data: { labels: sports, datasets: [{ data, backgroundColor: colors, borderRadius: 4 }] },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { min: 0, max: 100, ticks: { color: '#8b949e', callback: v => v + '%' }, grid: { color: '#30363d' } }, y: { ticks: { color: '#8b949e' } } }, responsive: true, maintainAspectRatio: true }
+  });
+}
+
+// ── Bet Type Bar ─────────────────────────────────────────────────
+function renderBetTypeBar() {
+  const counts = {};
+  picks.forEach(p => { const t = inferBetType(p.bet); counts[t] = (counts[t] || 0) + 1; });
+  const max = Math.max(...Object.values(counts), 1);
+  document.getElementById('betTypeBar').innerHTML = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `
+      <div class="bar-row">
+        <div class="bar-label">${k}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${v/max*100}%;background:var(--blue)"></div></div>
+        <div class="bar-count">${v}</div>
+      </div>`).join('') || '<div style="color:var(--muted);font-size:13px">No data</div>';
+}
+
+// ── Score Distribution ───────────────────────────────────────────
+function renderScoreChart() {
+  const bins = {};
+  picks.filter(p => p.score).forEach(p => { const b = Math.floor(p.score); bins[b] = (bins[b] || 0) + 1; });
+  const labels = Object.keys(bins).sort();
+
+  if (scoreChart) scoreChart.destroy();
+  scoreChart = new Chart(document.getElementById('scoreChart'), {
+    type: 'bar',
+    data: { labels: labels.map(l => l + '.0–' + (+l + 1) + '.0'), datasets: [{ data: labels.map(l => bins[l]), backgroundColor: 'rgba(88,166,255,.6)', borderRadius: 4 }] },
+    options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#8b949e', font: { size: 10 } } }, y: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' } } }, responsive: true, maintainAspectRatio: true }
+  });
+}
+
+// ── Model Cards ──────────────────────────────────────────────────
+function renderModels() {
+  ['v1-trends', 'v2-sharp'].forEach(m => {
+    const ps = byModel(m);
+    const sp = settledByModel(m);
+    const wins = sp.filter(p => p.result === 'win').length;
+    const losses = sp.filter(p => p.result === 'loss').length;
+    const pushes = sp.filter(p => p.result === 'push').length;
+    const net = netUnits(sp);
+    const r = roi(sp);
+    const wr = winRate(sp);
+    const clv = avgClv(sp);
+    const id = m === 'v1-trends' ? 'v1' : 'v2';
+    const avgSc = (() => { const sc = ps.filter(p => p.score).map(p => p.score); return sc.length ? (sc.reduce((a, b) => a + b, 0) / sc.length).toFixed(1) + '/10' : '—'; })();
+    document.getElementById(`${id}-stats`).innerHTML = `
+      <div class="stat-grid">
+        <div class="stat-item"><div class="label">Record</div><div class="val">${wins}W–${losses}L–${pushes}P</div></div>
+        <div class="stat-item"><div class="label">Win Rate</div><div class="val ${colorNum(parseFloat(wr)-52.4)}">${wr !== '—' ? wr + '%' : '—'}</div></div>
+        <div class="stat-item"><div class="label">ROI</div><div class="val ${colorNum(r)}">${fmtSigned(r, '%')}</div></div>
+        <div class="stat-item"><div class="label">Net Units</div><div class="val ${colorNum(net)}">${fmtSigned(net, 'u')}</div></div>
+        <div class="stat-item"><div class="label">Avg CLV</div><div class="val ${colorNum(clv)}">${fmtSigned(clv, '%')}</div></div>
+        <div class="stat-item"><div class="label">Avg Score</div><div class="val">${avgSc}</div></div>
+        <div class="stat-item"><div class="label">Total Picks</div><div class="val">${ps.length}</div></div>
+        <div class="stat-item"><div class="label">Open</div><div class="val blue">${ps.filter(p => p.result === null).length}</div></div>
+      </div>`;
+  });
+
+  const metrics = [
+    ['Record',      m => { const s = settledByModel(m); return `${s.filter(p=>p.result==='win').length}W–${s.filter(p=>p.result==='loss').length}L`; }],
+    ['Win Rate',    m => { const r = winRate(settledByModel(m)); return r !== '—' ? r + '%' : '—'; }],
+    ['ROI',         m => fmtSigned(roi(settledByModel(m)), '%')],
+    ['Net Units',   m => fmtSigned(netUnits(settledByModel(m)), 'u')],
+    ['Avg CLV',     m => fmtSigned(avgClv(settledByModel(m)), '%')],
+    ['Total Picks', m => byModel(m).length],
+    ['Avg Score',   m => { const sc = byModel(m).filter(p=>p.score).map(p=>p.score); return sc.length ? (sc.reduce((a,b)=>a+b,0)/sc.length).toFixed(1) : '—'; }],
+  ];
+
+  document.getElementById('h2h-table').innerHTML =
+    `<div class="model-row" style="padding-bottom:10px">
+       <div class="model-label"></div>
+       <div class="model-vals">
+         <div class="model-val"><span class="badge badge-v1">V1-Trends</span></div>
+         <div class="model-val"><span class="badge badge-v2">V2-Sharp</span></div>
+       </div>
+     </div>` +
+    metrics.map(([label, fn]) => `
+      <div class="model-row">
+        <div class="model-label">${label}</div>
+        <div class="model-vals">
+          <div class="model-val"><span class="num">${fn('v1-trends')}</span></div>
+          <div class="model-val"><span class="num">${fn('v2-sharp')}</span></div>
+        </div>
+      </div>`).join('');
+
+  const sports = [...new Set(picks.map(p => p.sport))].filter(Boolean);
+  if (modelChart) modelChart.destroy();
+  modelChart = new Chart(document.getElementById('modelChart'), {
+    type: 'bar',
+    data: { labels: sports, datasets: [
+      { label: 'V1-Trends', data: sports.map(s => +netUnits(settledByModel('v1-trends').filter(p => p.sport === s))), backgroundColor: 'rgba(63,185,80,.7)', borderRadius: 4 },
+      { label: 'V2-Sharp',  data: sports.map(s => +netUnits(settledByModel('v2-sharp').filter(p => p.sport === s))),  backgroundColor: 'rgba(188,140,255,.7)', borderRadius: 4 },
+    ]},
+    options: { plugins: { legend: { labels: { color: '#8b949e', font: { size: 11 } } } }, scales: { x: { ticks: { color: '#8b949e' } }, y: { ticks: { color: '#8b949e', callback: v => (v >= 0 ? '+' : '') + v + 'u' }, grid: { color: '#30363d' } } }, responsive: true, maintainAspectRatio: true }
+  });
+}
+
+// ── Edge Breakdown ───────────────────────────────────────────────
+function renderEdges() {
+  const counts = {};
+  picks.forEach(p => {
+    const e = edgeType(p.primary_edge);
+    if (!counts[e]) counts[e] = { total: 0, wins: 0, losses: 0, units: 0 };
+    counts[e].total++;
+    if (p.result === 'win')  counts[e].wins++;
+    if (p.result === 'loss') counts[e].losses++;
+    counts[e].units += (p.units_won_lost || 0);
+  });
+  const max = Math.max(...Object.values(counts).map(v => v.total), 1);
+
+  document.getElementById('edgeBar').innerHTML = Object.entries(counts)
+    .sort((a, b) => b[1].total - a[1].total)
+    .map(([k, v]) => `
+      <div class="bar-row">
+        <div class="bar-label" style="width:140px;font-size:11px">${k}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${v.total/max*100}%;background:var(--orange)"></div></div>
+        <div class="bar-count">${v.total}</div>
+      </div>`).join('') || '<div style="color:var(--muted);font-size:13px">No data</div>';
+
+  document.getElementById('edgePerf').innerHTML = `
+    <table>
+      <thead><tr><th>Edge</th><th>Picks</th><th>W–L</th><th>Net</th></tr></thead>
+      <tbody>${Object.entries(counts).filter(([,v]) => v.wins + v.losses > 0)
+        .sort((a, b) => b[1].units - a[1].units)
+        .map(([k, v]) => `
+          <tr>
+            <td>${k}</td>
+            <td>${v.total}</td>
+            <td>${v.wins}–${v.losses}</td>
+            <td class="${v.units >= 0 ? 'green' : 'red'}">${fmtSigned(v.units.toFixed(2), 'u')}</td>
+          </tr>`).join('') || '<tr><td colspan="4" style="color:var(--muted)">No settled picks yet</td></tr>'}
+      </tbody>
+    </table>`;
+
+  const sports = [...new Set(picks.map(p => p.sport))].filter(Boolean);
+  document.getElementById('sportBreakdown').innerHTML = `
+    <table>
+      <thead><tr><th>Sport</th><th>Picks</th><th>Settled</th><th>W–L–P</th><th>Win%</th><th>Net</th><th>ROI</th></tr></thead>
+      <tbody>${sports.map(s => {
+        const sp = picks.filter(p => p.sport === s);
+        const ss = settled().filter(p => p.sport === s);
+        const w = ss.filter(p => p.result === 'win').length;
+        const l = ss.filter(p => p.result === 'loss').length;
+        const pu = ss.filter(p => p.result === 'push').length;
+        const net = +netUnits(ss);
+        const r = roi(ss);
+        const wr = winRate(ss);
+        return `<tr>
+          <td>${s}</td><td>${sp.length}</td><td>${ss.length}</td>
+          <td>${w}–${l}–${pu}</td>
+          <td class="${parseFloat(wr) >= 52.4 ? 'green' : parseFloat(wr) > 0 ? 'red' : ''}">${wr !== '—' ? wr + '%' : '—'}</td>
+          <td class="${net >= 0 ? 'green' : 'red'}">${fmtSigned(net.toFixed(2), 'u')}</td>
+          <td class="${parseFloat(r) >= 0 ? 'green' : 'red'}">${fmtSigned(r, '%')}</td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ── Pick Log ─────────────────────────────────────────────────────
+function renderLog() {
+  const mf = document.getElementById('filter-model').value;
+  const rf = document.getElementById('filter-result').value;
+  const sf = document.getElementById('filter-sport').value;
+  const ef = document.getElementById('filter-edge').value;
+
+  let rows = [...picks].sort((a, b) => b.date > a.date ? 1 : -1);
+  if (mf) rows = rows.filter(p => p.model === mf);
+  if (rf === 'open') rows = rows.filter(p => p.result === null);
+  else if (rf) rows = rows.filter(p => p.result === rf);
+  if (sf) rows = rows.filter(p => p.sport === sf);
+  if (ef) rows = rows.filter(p => edgeType(p.primary_edge) === ef);
+
+  document.getElementById('log-body').innerHTML = rows.map(p => {
+    const rClass = p.result === 'win' ? 'result-w' : p.result === 'loss' ? 'result-l' : p.result === 'push' ? 'result-p' : 'result-o';
+    const rText = p.result ? p.result.toUpperCase() : '⏳';
+    const pl = p.units_won_lost !== null
+      ? `<span class="${p.units_won_lost >= 0 ? 'green' : 'red'}">${fmtSigned(p.units_won_lost.toFixed(2), 'u')}</span>`
+      : '—';
+    const clvCell = p.clv !== null && p.clv !== undefined
+      ? `<span class="${p.clv >= 0 ? 'green' : 'red'}">${fmtSigned(p.clv.toFixed(2), '%')}</span>`
+      : '—';
+    const modelBadge = p.model === 'v1-trends'
+      ? '<span class="badge badge-v1">V1</span>'
+      : '<span class="badge badge-v2">V2</span>';
+    const scoreVal = p.score || 0;
+    const scorePill = p.score
+      ? `<span class="pill ${scoreVal >= 8 ? 'pill-green' : 'pill-yellow'}">${p.score}</span>`
+      : '—';
+    return `<tr>
+      <td>${p.date || '—'}</td>
+      <td>${modelBadge}</td>
+      <td>${p.sport || '—'}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}</td>
+      <td>${inferBetType(p.bet)}</td>
+      <td>${p.line || '—'}</td>
+      <td>${p.units || '—'}u</td>
+      <td>${scorePill}</td>
+      <td style="font-size:11px;color:var(--muted)">${edgeType(p.primary_edge)}</td>
+      <td class="${rClass}">${rText}</td>
+      <td>${clvCell}</td>
+      <td>${pl}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="12" style="color:var(--muted);text-align:center;padding:20px">No picks match filters</td></tr>';
+}
+
+function populateFilters() {
+  const sports = [...new Set(picks.map(p => p.sport).filter(Boolean))];
+  const edges  = [...new Set(picks.map(p => edgeType(p.primary_edge)).filter(Boolean))];
+  document.getElementById('filter-sport').innerHTML = '<option value="">All Sports</option>' + sports.map(s => `<option>${s}</option>`).join('');
+  document.getElementById('filter-edge').innerHTML  = '<option value="">All Edges</option>'  + edges.map(e => `<option>${e}</option>`).join('');
+}
+
+// ── Animated counter helper ──────────────────────────────────────
+function animateValue(el, start, end, duration, formatter) {
+  const t0 = performance.now();
+  (function step(now) {
+    const p = Math.min((now - t0) / duration, 1);
+    el.textContent = formatter(start + (end - start) * p);
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = formatter(end);
+  })(t0);
+}
+
+// ── Confetti burst ───────────────────────────────────────────────
+function triggerConfetti() {
+  const colors = ['#3fb950','#58a6ff','#bc8cff','#ffa657','#d29922'];
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (8 + Math.random() * 84) + '%';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.animationDelay = (Math.random() * 0.6).toFixed(2) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 3200);
+  }
+}
+
+// ── Sharp Score ──────────────────────────────────────────────────
+function renderSharpScore() {
+  const s = settled();
+  const wins = s.filter(p => p.result === 'win').length;
+  const losses = s.filter(p => p.result === 'loss').length;
+  const wrPct = wins + losses > 0 ? wins / (wins + losses) * 100 : 0;
+  const clvVals = s.filter(p => p.clv !== null && p.clv !== undefined).map(p => p.clv);
+  const clvAvg = clvVals.length ? clvVals.reduce((a, b) => a + b, 0) / clvVals.length : null;
+  const roiVal = parseFloat(roi(s));
+
+  let score = 0;
+  // Win rate component (0–40)
+  if (wrPct >= 55) score += 40;
+  else if (wrPct >= 52.4) score += 30;
+  else if (wrPct >= 48) score += 15;
+
+  // CLV component (0–35)
+  if (clvAvg === null) score += 15; // no data yet — neutral
+  else if (clvAvg >= 2) score += 35;
+  else if (clvAvg >= 0) score += 20;
+
+  // ROI component (0–25)
+  if (!isNaN(roiVal)) {
+    if (roiVal >= 10) score += 25;
+    else if (roiVal >= 5) score += 18;
+    else if (roiVal >= 0) score += 10;
+  } else {
+    score += 10; // no data yet
+  }
+
+  const tiers = [
+    { min: 75, label: 'Certified Sharp', cls: 'sharp-certified', color: 'var(--green)' },
+    { min: 50, label: 'Sharp',           cls: 'sharp-sharp',     color: 'var(--blue)'  },
+    { min: 25, label: 'Casual',          cls: 'sharp-casual',    color: 'var(--yellow)'},
+    { min: 0,  label: 'Degen',           cls: 'sharp-degen',     color: 'var(--red)'   },
+  ];
+  const tier = tiers.find(t => score >= t.min);
+
+  document.getElementById('sharpScoreValue').textContent = score;
+  document.getElementById('sharpScoreValue').style.color = tier.color;
+  document.getElementById('sharpScoreLabel').textContent = tier.label;
+  document.getElementById('sharpScoreLabel').style.color = tier.color;
+  const bar = document.getElementById('sharpScoreBar');
+  bar.className = 'sharp-bar-fill ' + tier.cls;
+  setTimeout(() => bar.style.width = score + '%', 50);
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────
+function showTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+function render() {
+  // Remove any prior empty-state element
+  const old = document.querySelector('.empty-state');
+  if (old) old.remove();
+  document.getElementById('overviewContent').style.display = '';
+
+  if (picks.length === 0) {
+    renderEmptyState();
+    renderLog();
+    return;
+  }
+
+  renderTodayCallout();
+  renderKPIs();
+  renderSharpScore();
+  renderPLChart();
+  renderSportChart();
+  renderBetTypeBar();
+  renderScoreChart();
+  renderModels();
+  renderEdges();
+  populateFilters();
+  renderLog();
+}
+
+loadPicks();
+setInterval(loadPicks, 5 * 60 * 1000);
+
+// ── Rotating quotes ───────────────────────────────────────────────
+const QUOTES = [
+  'The line is the truth. Beat it or go home.',
+  'Sharps don\'t chase. Sharps wait.',
+  'CLV today, ROI tomorrow.',
+  'Fade the public. Trust the process.',
+  'Variance is not your enemy. Losing CLV is.',
+  'A winning bet and a good bet are not the same thing.',
+  'If the book already moved, you\'re not getting the edge.',
+  'Props are the market inefficiency books haven\'t closed yet.',
+  'Volume kills bankrolls. Selectivity builds them.',
+  'Patience is the only edge that never goes stale.',
+  'You don\'t need to bet every game. You need to beat every line.',
+  'The sharpest pick is sometimes no pick at all.',
+  'Steam at three books means sharps agree. Steam at one means nothing.',
+  'Closing line value is the scoreboard that actually matters.',
+  'Bet the number, not the team.',
+];
+let quoteIdx = Math.floor(Math.random() * QUOTES.length);
+const quoteEl = document.getElementById('quote');
+quoteEl.textContent = QUOTES[quoteIdx];
+setInterval(() => {
+  quoteEl.style.opacity = '0';
+  setTimeout(() => {
+    quoteIdx = (quoteIdx + 1) % QUOTES.length;
+    quoteEl.textContent = QUOTES[quoteIdx];
+    quoteEl.style.opacity = '1';
+  }, 500);
+}, 10000);
+</script>
+</body>
+</html>

@@ -46,7 +46,7 @@ def calc_units_won_lost(line_str: str, units: int, result: str) -> float:
         return 0.0
     if result == "loss":
         return float(-units)
-    line = int(str(line_str).replace("+", ""))
+    line = int(str(line_str).split("@")[0].strip().replace("+", ""))
     if line < 0:
         return round((100 / abs(line)) * units, 3)
     else:
