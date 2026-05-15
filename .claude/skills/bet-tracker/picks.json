@@ -95,10 +95,13 @@
     "score": 7.0,
     "primary_edge": "Season-trend prop edge \u2014 over 4.5 hits allowed in 4 of last 6 starts",
     "notes": "Single-book verified \u2014 line shopping incomplete",
-    "result": null,
-    "units_won_lost": null,
-    "closing_line": null,
-    "clv": null
+    "result": "win",
+    "units_won_lost": 0.730,
+    "closing_line": "Over 4.5 hits at -140",
+    "clv": 0.52,
+    "final_score": "CHC 2, ATL 0",
+    "prop_result": "5 hits allowed in 6 IP",
+    "prop_margin": 0.5
   },
   {
     "id": "20260514-mlb-hoerner-2tb-v1",
