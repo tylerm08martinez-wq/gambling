@@ -390,6 +390,7 @@ def cmd_log(args):
         "units": args.units,
         "score": args.score,
         "primary_edge": args.edge or "",
+        "game_time": args.game_time or None,
         "result": None,
         "units_won_lost": None,
         "closing_line": None,
@@ -457,6 +458,8 @@ def main():
     log_p.add_argument("--edge", default="", help="Primary edge type")
     log_p.add_argument("--line-num", type=float, default=None,
                        help="Spread/RL number (e.g. 1.5 for -1.5 RL, 0 for ML)")
+    log_p.add_argument("--game-time", default="",
+                       help="Game start time in Arizona time, e.g. '5:10 PM' or '1:05 PM'")
 
     res_p = sub.add_parser("resolve", help="Record a result for an open pick")
     res_p.add_argument("id", help="Pick ID")

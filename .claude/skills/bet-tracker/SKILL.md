@@ -39,7 +39,8 @@ python ".claude/skills/bet-tracker/tracker.py" log \
   --units <units> \
   --score <score_or_omit> \
   --edge "<primary edge>" \
-  --line-num <spread_number>
+  --line-num <spread_number> \
+  --game-time "<start time in AZ time, e.g. '5:10 PM'>"
 ```
 
 Confirm the logged pick to the user.

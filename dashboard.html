@@ -264,6 +264,7 @@
       <thead>
         <tr>
           <th>Date</th>
+          <th>Game Time</th>
           <th>Model</th>
           <th>Sport</th>
           <th>Bet</th>
@@ -718,8 +719,12 @@ function renderLog() {
     const scorePill = p.score
       ? `<span class="pill ${scoreVal >= 8 ? 'pill-green' : 'pill-yellow'}">${p.score}</span>`
       : '—';
+    const gameTime = p.game_time
+      ? `<span style="white-space:nowrap">${p.game_time}</span>`
+      : '<span style="color:var(--muted)">—</span>';
     return `<tr>
       <td>${p.date || '—'}</td>
+      <td>${gameTime}</td>
       <td>${modelBadge}</td>
       <td>${p.sport || '—'}</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}</td>
@@ -732,7 +737,7 @@ function renderLog() {
       <td>${clvCell}</td>
       <td>${pl}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="12" style="color:var(--muted);text-align:center;padding:20px">No picks match filters</td></tr>';
+  }).join('') || '<tr><td colspan="13" style="color:var(--muted);text-align:center;padding:20px">No picks match filters</td></tr>';
 }
 
 function populateFilters() {
