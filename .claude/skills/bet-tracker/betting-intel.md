@@ -413,3 +413,39 @@ None yet — will populate as data accumulates.
 - Seventh consecutive session where data-access failures on sharp-tracking sites (Action Network, BetQL, VSIN, Covers) result in 0 V2 picks. Model is working as designed — sitting out beats guessing.
 - NHL total moves require the same verification standard as MLB ML moves: need public/money splits AND confirmation at 3+ books. A single-source 1-goal drop is insufficient even if steam-sized on paper.
 
+---
+
+### 2026-05-15 — V1-Trends Session
+
+**Games researched**: ~10 across MLB (8), NBA playoffs (2 G6s), NHL playoffs (1 G5) · **Picks**: 1 (MLB, Score 5.5)
+
+**Signal observations**:
+- Kelly (ARI) has 9.92 xERA / 7.62 ERA over 5 starts — extreme broken-pitcher spot. One improved last start (7 IP, 1 ER vs NYM) lowered ERA from 9.95 to 7.62 but did not change underlying peripherals. xERA is the reliable predictor; picking COL ML +106 on xERA mismatch (Kelly 9.92 vs Freeland 5.18) at Coors.
+- Yankees vs Mets (Schlittler 1.35 ERA vs Holmes 1.86 ERA): symmetric elite pitching matchup, no mismatch. Line moved -140/-145 toward -160 (public AND sharp aligned on NYY). Not a V1 pick — no ERA gap and chalk territory.
+- Spurs -4.5 to -5.5 road favorites vs Wolves Game 6: 73% bets + 84% money on Spurs = public AND sharp money aligned on same side (not RLM). Standing playoff NBA/NHL caution applied. Skipped.
+- Cavaliers -3.5 (-120) vs Pistons Game 6: Robinson/Huerter/LeVert all questionable, but Robinson missed Game 5 already — injuries public and priced into line. -120 juice reduces value further. Skipped.
+- NHL: Canadiens/Sabres Game 5 was May 14; no NHL game on May 15.
+
+**Calibration notes**:
+- COL ML at Score 5.5 — borderline inclusion, below usual 6.0+ bar, due to Kelly's one improved start. If Kelly reverts to peripherals (5+ ER) and COL wins, xERA-over-recent-ERA methodology is validated. If Kelly replicates his last start, revisit whether one good outing is enough to disqualify the broken-pitcher angle entirely.
+
+**Patterns reinforced or challenged**:
+- ERA-mismatch (xERA variant) pattern extended. First time using xERA as primary signal when ERA and xERA diverge sharply post-one-improvement-start.
+- Continued discipline on playoff NBA/NHL no-picks. V1 has now passed on eight consecutive playoff slates without a basketball/hockey play (other than Apr 24 Blazers injury-based).
+
+---
+
+### 2026-05-15 — V2-Sharp Session
+
+**Games scanned**: ~10 MLB · 2 NBA playoff G6s · **Sharp signals found**: 0 confirmed · **Picks**: 0
+
+**Signal observations**:
+- Spurs/Wolves G6: 73% bets, 84% money on Spurs — public AND sharp aligned on same side. Not RLM; no contrarian sharp value.
+- Yankees/Mets: Line moved -140/-145 to -160 WITH the public (60% on NYY). Both public and sharp on NYY — not RLM.
+- All MLB sharp-tracking sources (Action Network, VSIN, BetQL, SportsBettingDime, Covers) returned 403 — consistent with 8+ consecutive sessions.
+- No unpriced injuries identified.
+
+**Patterns reinforced or challenged**:
+- Eighth+ consecutive V2-Sharp no-pick driven by data-access failures. Model working as designed.
+- Reinforced: when money % > ticket % (84 > 73 on Spurs), sharps are MORE bullish than public — this is sharp confirmation on the chalk side, not a contrarian RLM signal.
+

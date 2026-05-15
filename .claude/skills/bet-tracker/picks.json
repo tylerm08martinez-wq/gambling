@@ -96,7 +96,7 @@
     "primary_edge": "Season-trend prop edge \u2014 over 4.5 hits allowed in 4 of last 6 starts",
     "notes": "Single-book verified \u2014 line shopping incomplete",
     "result": "win",
-    "units_won_lost": 0.730,
+    "units_won_lost": 0.73,
     "closing_line": "Over 4.5 hits at -140",
     "clv": 0.52,
     "final_score": "CHC 2, ATL 0",
@@ -119,5 +119,26 @@
     "units_won_lost": null,
     "closing_line": null,
     "clv": null
+  },
+  {
+    "id": "20260515-mlb-colora-ml",
+    "date": "2026-05-15",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Colorado Rockies ML vs Arizona Diamondbacks (at Coors Field)",
+    "line": "+106 @ FanDuel",
+    "units": 1,
+    "score": 5.5,
+    "primary_edge": "ERA-mismatch: Kelly 9.92 xERA at Coors vs Freeland 5.18 xERA; plus-money on better xERA pitcher at home",
+    "game_time": null,
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
