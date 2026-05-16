@@ -96,6 +96,9 @@
   /* Filter bar */
   .filter-bar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
   .filter-bar select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+  .date-toggle { display: flex; gap: 2px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .date-toggle button { background: transparent; border: none; color: var(--muted); padding: 6px 12px; font-size: 13px; cursor: pointer; }
+  .date-toggle button.active { background: var(--border); color: var(--text); }
 
   .notice { background: #1f2d3d; border: 1px solid #2d4a6b; border-radius: 8px; padding: 14px 18px; color: var(--blue); font-size: 13px; margin-bottom: 20px; }
   .breakeven { font-size: 11px; color: var(--muted); margin-top: 8px; }
@@ -250,6 +253,11 @@
 
 <div id="tab-log" class="page">
   <div class="filter-bar">
+    <div class="date-toggle">
+      <button onclick="setDateRange('all', this)" class="active">All</button>
+      <button onclick="setDateRange('month', this)">Month</button>
+      <button onclick="setDateRange('week', this)">Week</button>
+    </div>
     <select id="filter-model" onchange="renderLog()">
       <option value="">All Models</option>
       <option value="v1-trends">V1-Trends</option>
@@ -574,6 +582,23 @@ function renderCLVChart() {
   let sum = 0;
   withClv.forEach((p, i) => { sum += p.clv; cumAvg.push(+(sum / (i + 1)).toFixed(2)); });
 
+  if (!withClv.length) {
+    if (clvChart) { clvChart.destroy(); clvChart = null; }
+    document.getElementById('clvChart').style.display = 'none';
+    const el = document.getElementById('clvChart');
+    if (!el.nextElementSibling || !el.nextElementSibling.classList.contains('clv-empty')) {
+      const msg = document.createElement('div');
+      msg.className = 'clv-empty';
+      msg.style.cssText = 'color:var(--muted);font-size:13px;text-align:center;padding:40px 0';
+      msg.textContent = 'CLV data pending — nightly resolver fills this once closing lines are available.';
+      el.parentNode.insertBefore(msg, el.nextSibling);
+    }
+    return;
+  }
+  document.getElementById('clvChart').style.display = '';
+  const prev = document.querySelector('.clv-empty');
+  if (prev) prev.remove();
+
   if (clvChart) clvChart.destroy();
   clvChart = new Chart(document.getElementById('clvChart'), {
     type: 'bar',
@@ -726,8 +751,10 @@ function renderLog() {
   const rf = document.getElementById('filter-result').value;
   const sf = document.getElementById('filter-sport').value;
   const ef = document.getElementById('filter-edge').value;
+  const cutoff = dateRangeCutoff();
 
-  let rows = [...picks].sort((a, b) => b.date > a.date ? 1 : -1);
+  let rows = [...picks].sort((a, b) => b.date < a.date ? 1 : -1);
+  if (cutoff) rows = rows.filter(p => p.date >= cutoff);
   if (mf) rows = rows.filter(p => p.model === mf);
   if (rf === 'open') rows = rows.filter(p => p.result === null);
   else if (rf) rows = rows.filter(p => p.result === rf);
@@ -880,6 +907,22 @@ function renderSharpScore() {
   const bar = document.getElementById('sharpScoreBar');
   bar.className = 'sharp-bar-fill ' + tier.cls;
   setTimeout(() => bar.style.width = score + '%', 50);
+}
+
+// ── Date range filter ────────────────────────────────────────────
+let activeDateRange = 'all';
+function setDateRange(range, btn) {
+  activeDateRange = range;
+  document.querySelectorAll('.date-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLog();
+}
+function dateRangeCutoff() {
+  if (activeDateRange === 'all') return null;
+  const d = new Date();
+  if (activeDateRange === 'week')  d.setDate(d.getDate() - 7);
+  if (activeDateRange === 'month') d.setDate(d.getDate() - 30);
+  return d.toISOString().slice(0, 10);
 }
 
 // ── Pick row expand/collapse ──────────────────────────────────────
