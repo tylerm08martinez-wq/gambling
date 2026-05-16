@@ -449,3 +449,52 @@ None yet — will populate as data accumulates.
 - Eighth+ consecutive V2-Sharp no-pick driven by data-access failures. Model working as designed.
 - Reinforced: when money % > ticket % (84 > 73 on Spurs), sharps are MORE bullish than public — this is sharp confirmation on the chalk side, not a contrarian RLM signal.
 
+---
+
+### 2026-05-16 — V1-Trends Session
+
+**Games researched**: ~14 across MLB (12), NBA playoffs (0 — no games today), NHL playoffs (1 G6) · **Picks**: 2 (both MLB, avg Score 6.1)
+
+**Signal observations**:
+- CWS ML (Martin 1.62 ERA vs Taillon 3.87 ERA): Cleanest ERA-mismatch spot on the slate. Martin has 5-1 record, 1.00 WHIP, 7+ Ks in each of last 4 starts — genuinely elite. Line essentially pickem (-104 CWS at FanDuel). "Broken pitcher on public side, near-pickem on dominant home arm" is the exact ERA-mismatch template. 1u.
+- NYM ML (Brazoban 2.14 ERA vs Rodon 6.23 ERA): Rodon is one start back from elbow surgery, issued 5 walks in 4.1 IP in his return — severe command issues. 4.09-run ERA gap is the largest on the slate. Mets at +110 home represents value even accounting for NYY lineup strength. Counter: Mets hit .216 vs LHP; line moved slightly toward NYY (-131→-136) with heavy public (85-88% on NYY ML). Sized 1u (not 2u) because of the line-move-against caution. "Broken ace returning from surgery" pattern.
+- TEX (deGrom -145 to -152): chalk-trap discipline. Skip.
+- PHI (Sanchez vs Chandler -184): heavy chalk. Skip.
+- ARI @ COL (E-Rod 2.25 vs Sugano 4.07 at Coors): ARI edge is real but -140+ territory; also COL was just blown out 9-1 yesterday (public-trap momentum for ARI). Skip.
+- NAT ML (Cavalli 4.02 vs Bassitt 5.22, pickem): borderline at 5.2. ATS record (NAT 27-17) is strong, but 1.2-run ERA gap is smaller than usual, and model projects only 51.3% NAT. Skip.
+- MIL ML (Henderson 2.11 FIP vs Prielipp 4.37 FIP, -125): sharp+public aligned on MIL (78% bets, 88% money), and Buxton (MIN CF) is out. But road chalk at -125 violates chalk-trap discipline. Skip.
+- NHL BUF @ MTL G6 (MTL -172): no situational edge; closing out a playoff series has compressed line. Skip.
+- No NBA games scheduled today (G7s tomorrow).
+
+**Calibration notes**:
+- CWS at 6.4: depends on Martin's elite form being real and not one-week hot streak. 50 IP is a meaningful sample. If he posts another quality start, intel log ERA-mismatch pattern advances to test 14+.
+- NYM at 5.8: weaker signal than CWS due to line-move-against and Mets LHP batting weakness. If Rodon implodes early, this cashes easily; if he survives 5 innings command issues aside, NYY lineup will grind it out. The surgery-return angle is the deciding factor.
+
+**Patterns reinforced or challenged**:
+- ERA-mismatch pattern continues. CWS is a clean test; NYM adds the "broken ace surgery return" sub-pattern (tested previously with Kelly/Apr 28, Crochet/Apr 25).
+- Chalk-trap discipline held: MIL -125, ARI chalk, deGrom -145, PHI -184 all skipped despite real pitching edges.
+- Buxton injury (MIN CF out) noted but treated as already-priced given multi-game absence. Did not elevate MIN's opponent to a pick on its own.
+
+---
+
+### 2026-05-16 — V2-Sharp Session
+
+**Games scanned**: ~14 MLB · 0 NBA (no games) · 1 NHL G6 · **Sharp signals found**: 0 confirmed · **Picks**: 0
+
+**Signal observations**:
+- Brewers ML (-125 vs Twins): 78% bets, 88% money on MIL — line moved -120 → -125 WITH the public. Sharp and public aligned on same side. NOT RLM. Discard.
+- Rays ML (-140 vs Marlins): 84% bets, 86% money on TB — line moved -130 → -140 with public. NOT RLM. Discard.
+- Athletics ML (-135 vs Giants): 71% bets, 85% money on OAK — line moved -130 → -135 with public. NOT RLM. Discard.
+- Yankees/Mets: 85-88% bets AND handle on NYY; line moved -131 → -136 WITH public. NOT RLM. Discard.
+- NAT/BAL total: 94% of handle on Over-9.5/10 — public Over at 94% is extreme. However, line direction for the total not independently confirmed; no VSIN/Action Network splits accessible to verify if the total moved toward Under against the public wave. Cannot confirm RLM without directional movement data. Discard.
+- All primary sources (Action Network, VSIN, BetQL, Covers, SportsBettingDime) returned 403 — ninth+ consecutive session.
+
+**Calibration notes**:
+- NAT/BAL total Over at 94% handle was the closest thing to an RLM signal today. Would have needed confirmed total movement (e.g., line dropping from 10.5 to 10.0 against the 94% public Over volume) to qualify. Without it, passing is correct.
+- "Public + sharp aligned on the same side" was the dominant pattern across Brewers, Rays, Athletics, and Yankees today — four games where both public and professional money pointed the same direction. None qualify as RLM under V2 criteria.
+
+**Patterns reinforced or challenged**:
+- Ninth+ consecutive V2 no-pick day driven by data-access failures. Model working as designed.
+- Reinforced: line movement WITH 70%+ public = market correction or public/sharp consensus, NOT RLM. All four investigated signals today confirmed this.
+- Note for self-healing: NAT/BAL totals angle is worth watching. If totals-RLM (public 90%+ on Over, total actually drops) becomes a recurring pattern, it could open a new V2 signal type — but requires confirmed movement data, not just the public split.
+
