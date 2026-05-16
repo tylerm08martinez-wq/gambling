@@ -188,8 +188,8 @@
         <div id="betTypeBar"></div>
       </div>
       <div class="card">
-        <h2>Score Distribution</h2>
-        <canvas id="scoreChart"></canvas>
+        <h2>CLV Over Time</h2>
+        <canvas id="clvChart"></canvas>
       </div>
     </div>
     <div class="card" style="margin-top:16px">
@@ -297,7 +297,7 @@
 let picks = [];
 
 // Chart instances — destroy before recreating to prevent re-render bug
-let plChart = null, sportChart = null, scoreChart = null, modelChart = null;
+let plChart = null, sportChart = null, clvChart = null, modelChart = null;
 
 // ── Helpers ──────────────────────────────────────────────────────
 function inferBetType(pick) {
@@ -450,12 +450,12 @@ function renderKPIs() {
     return sc.length ? (sc.reduce((a, b) => a + b, 0) / sc.length).toFixed(1) + '/10' : '—';
   })();
 
-  const rNum = parseFloat(r);
-  const mood = isNaN(rNum) || !s.length ? { icon: '😐', label: 'Neutral' }
-    : rNum > 10  ? { icon: '🔥', label: 'On Fire' }
-    : rNum > 0   ? { icon: '📈', label: 'Trending Up' }
-    : rNum === 0 ? { icon: '😐', label: 'Neutral' }
-    :              { icon: '🩸', label: 'In the Red' };
+  const last10 = [...s].sort((a, b) => a.date > b.date ? -1 : 1).slice(0, 10);
+  const l10w = last10.filter(p => p.result === 'win').length;
+  const l10l = last10.filter(p => p.result === 'loss').length;
+  const l10p = last10.filter(p => p.result === 'push').length;
+  const l10cls = last10.length ? (l10w > l10l ? 'green' : l10w < l10l ? 'red' : 'yellow') : '';
+  const l10val = last10.length ? `${l10w}W–${l10l}L${l10p ? '–' + l10p + 'P' : ''}` : '—';
 
   const kpis = [
     { label: 'ROI', value: s.length ? fmtSigned(r, '%') : '—', cls: colorNum(r), sub: `${s.length} settled picks` },
@@ -463,9 +463,9 @@ function renderKPIs() {
     { label: 'Win Rate', value: wr !== '—' ? wr + '%' : '—', cls: parseFloat(wr) >= 52.4 ? 'green' : wr !== '—' ? 'red' : '', sub: `${wins}W–${losses}L–${pushes}P` },
     { label: 'Avg CLV', value: clv !== '—' ? fmtSigned(clv, '%') : '—', cls: colorNum(clv), sub: 'closing line value' },
     { label: 'Streak', value: streak.text, cls: streak.cls, sub: 'recent results' },
+    { label: 'Last 10', value: l10val, cls: l10cls, sub: `of ${s.length} settled` },
     { label: 'Open Picks', value: open, cls: 'blue', sub: `${picks.length} total` },
     { label: 'Avg Score', value: avgScore, cls: '', sub: 'confidence rating' },
-    { label: 'Bankroll Mood', value: mood.icon, cls: '', sub: mood.label, big: true },
   ];
 
   document.getElementById('kpi-strip').innerHTML = kpis.map(k =>
@@ -562,17 +562,33 @@ function renderBetTypeBar() {
       </div>`).join('') || '<div style="color:var(--muted);font-size:13px">No data</div>';
 }
 
-// ── Score Distribution ───────────────────────────────────────────
-function renderScoreChart() {
-  const bins = {};
-  picks.filter(p => p.score).forEach(p => { const b = Math.floor(p.score); bins[b] = (bins[b] || 0) + 1; });
-  const labels = Object.keys(bins).sort();
+// ── CLV Over Time ────────────────────────────────────────────────
+function renderCLVChart() {
+  const withClv = [...settled()]
+    .filter(p => p.clv !== null && p.clv !== undefined)
+    .sort((a, b) => a.date > b.date ? 1 : -1);
 
-  if (scoreChart) scoreChart.destroy();
-  scoreChart = new Chart(document.getElementById('scoreChart'), {
+  const labels = withClv.map(p => p.date.slice(5));
+  const clvPoints = withClv.map(p => +p.clv.toFixed(2));
+  const cumAvg = [];
+  let sum = 0;
+  withClv.forEach((p, i) => { sum += p.clv; cumAvg.push(+(sum / (i + 1)).toFixed(2)); });
+
+  if (clvChart) clvChart.destroy();
+  clvChart = new Chart(document.getElementById('clvChart'), {
     type: 'bar',
-    data: { labels: labels.map(l => l + '.0–' + (+l + 1) + '.0'), datasets: [{ data: labels.map(l => bins[l]), backgroundColor: 'rgba(88,166,255,.6)', borderRadius: 4 }] },
-    options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#8b949e', font: { size: 10 } } }, y: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' } } }, responsive: true, maintainAspectRatio: true }
+    data: { labels, datasets: [
+      { type: 'bar', label: 'CLV per pick', data: clvPoints, backgroundColor: clvPoints.map(v => v >= 0 ? 'rgba(63,185,80,.5)' : 'rgba(248,81,73,.5)'), borderRadius: 3 },
+      { type: 'line', label: 'Running avg', data: cumAvg, borderColor: '#58a6ff', backgroundColor: 'transparent', tension: .3, pointRadius: 2, borderWidth: 2 },
+    ]},
+    options: {
+      plugins: { legend: { labels: { color: '#8b949e', font: { size: 11 } } } },
+      scales: {
+        x: { display: false },
+        y: { ticks: { color: '#8b949e', callback: v => (v >= 0 ? '+' : '') + v + '%' }, grid: { color: '#30363d' } }
+      },
+      responsive: true, maintainAspectRatio: true
+    }
   });
 }
 
@@ -907,7 +923,7 @@ function render() {
   renderPLChart();
   renderSportChart();
   renderBetTypeBar();
-  renderScoreChart();
+  renderCLVChart();
   renderModels();
   renderEdges();
   populateFilters();
