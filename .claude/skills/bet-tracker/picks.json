@@ -115,10 +115,13 @@
     "score": 6.8,
     "primary_edge": "Matchup edge vs LHP (.327 BA / .905 OPS / 159 wRC+ vs lefties) + plus-money entry",
     "notes": "Single-book verified \u2014 line shopping incomplete",
-    "result": null,
-    "units_won_lost": null,
+    "result": "loss",
+    "units_won_lost": -1.0,
     "closing_line": null,
-    "clv": null
+    "clv": null,
+    "final_score": "CHC 2, ATL 0",
+    "prop_result": "1-for-4, 1 TB (single)",
+    "prop_margin": -1
   },
   {
     "id": "20260515-mlb-colora-ml",
@@ -131,12 +134,12 @@
     "score": 5.5,
     "primary_edge": "ERA-mismatch: Kelly 9.92 xERA at Coors vs Freeland 5.18 xERA; plus-money on better xERA pitcher at home",
     "game_time": null,
-    "result": null,
-    "units_won_lost": null,
+    "result": "loss",
+    "units_won_lost": -1.0,
     "closing_line": null,
     "clv": null,
-    "final_score": null,
-    "game_margin": null,
+    "final_score": "ARI 9, COL 1",
+    "game_margin": -8,
     "line_num": 0.0,
     "prop_result": null,
     "prop_margin": null
