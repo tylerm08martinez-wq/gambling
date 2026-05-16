@@ -129,6 +129,16 @@
   .confetti-piece { position: fixed; width: 6px; height: 10px; top: -10px; pointer-events: none; z-index: 9999; animation: confetti-fall 2.5s ease-in forwards; }
   @keyframes confetti-fall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
 
+  /* Expandable pick row */
+  .pick-row { cursor: pointer; }
+  .pick-row:hover td { background: rgba(255,255,255,.05) !important; }
+  .pick-detail-row td { padding: 0; border-bottom: 1px solid var(--border); }
+  .pick-detail-panel { display: none; background: #0d1117; padding: 14px 16px; }
+  .pick-detail-panel.open { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .pick-detail-section h4 { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+  .pick-detail-section p { font-size: 12px; line-height: 1.5; color: var(--text); }
+  .pick-detail-section .dim { color: var(--muted); }
+
   /* Sharp Score */
   .sharp-bar-track { background: var(--border); border-radius: 4px; height: 12px; overflow: hidden; margin-top: 14px; }
   .sharp-bar-fill { height: 100%; border-radius: 4px; transition: width 0.7s ease; }
@@ -290,7 +300,12 @@ let picks = [];
 let plChart = null, sportChart = null, scoreChart = null, modelChart = null;
 
 // ── Helpers ──────────────────────────────────────────────────────
-function inferBetType(bet) {
+function inferBetType(pick) {
+  if (pick && pick.bet_type) {
+    const map = { prop: 'Prop', spread: 'Spread', moneyline: 'Moneyline', total: 'Total', 'run line': 'Run Line', 'puck line': 'Puck Line', parlay: 'Parlay' };
+    return map[pick.bet_type.toLowerCase()] || pick.bet_type;
+  }
+  const bet = pick && pick.bet ? pick.bet : (typeof pick === 'string' ? pick : '');
   if (!bet) return 'Unknown';
   const b = bet.toLowerCase();
   if (b.includes(' rl ') || b.includes('run line') || b.includes('-1.5') || b.includes('+1.5')) return 'Run Line';
@@ -535,7 +550,7 @@ function renderSportChart() {
 // ── Bet Type Bar ─────────────────────────────────────────────────
 function renderBetTypeBar() {
   const counts = {};
-  picks.forEach(p => { const t = inferBetType(p.bet); counts[t] = (counts[t] || 0) + 1; });
+  picks.forEach(p => { const t = inferBetType(p); counts[t] = (counts[t] || 0) + 1; });
   const max = Math.max(...Object.values(counts), 1);
   document.getElementById('betTypeBar').innerHTML = Object.entries(counts)
     .sort((a, b) => b[1] - a[1])
@@ -703,7 +718,7 @@ function renderLog() {
   if (sf) rows = rows.filter(p => p.sport === sf);
   if (ef) rows = rows.filter(p => edgeType(p.primary_edge) === ef);
 
-  document.getElementById('log-body').innerHTML = rows.map(p => {
+  document.getElementById('log-body').innerHTML = rows.map((p, i) => {
     const rClass = p.result === 'win' ? 'result-w' : p.result === 'loss' ? 'result-l' : p.result === 'push' ? 'result-p' : 'result-o';
     const rText = p.result ? p.result.toUpperCase() : '⏳';
     const pl = p.units_won_lost !== null
@@ -722,13 +737,25 @@ function renderLog() {
     const gameTime = p.game_time
       ? `<span style="white-space:nowrap">${p.game_time}</span>`
       : '<span style="color:var(--muted)">—</span>';
-    return `<tr>
+    const detailId = `detail-${p.id || i}`;
+
+    // Detail panel content
+    const gameResult = p.final_score || '<span class="dim">No final score</span>';
+    const propLine = p.prop_result
+      ? `${p.prop_result}${p.line_num ? ` (needed ${p.line_num}, margin: ${p.prop_margin >= 0 ? '+' : ''}${p.prop_margin})` : ''}`
+      : '<span class="dim">—</span>';
+    const notesText = p.notes || '<span class="dim">No notes</span>';
+    const closingLine = p.closing_line != null
+      ? `${p.closing_line} → CLV: ${p.clv != null ? fmtSigned(p.clv.toFixed(2), '%') : '—'}`
+      : '<span class="dim">No closing line</span>';
+
+    return `<tr class="pick-row" onclick="toggleDetail('${detailId}', this)">
       <td>${p.date || '—'}</td>
       <td>${gameTime}</td>
       <td>${modelBadge}</td>
       <td>${p.sport || '—'}</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}</td>
-      <td>${inferBetType(p.bet)}</td>
+      <td>${inferBetType(p)}</td>
       <td>${p.line || '—'}</td>
       <td>${p.units || '—'}u</td>
       <td>${scorePill}</td>
@@ -736,6 +763,25 @@ function renderLog() {
       <td class="${rClass}">${rText}</td>
       <td>${clvCell}</td>
       <td>${pl}</td>
+    </tr>
+    <tr class="pick-detail-row">
+      <td colspan="13">
+        <div class="pick-detail-panel" id="${detailId}">
+          <div class="pick-detail-section">
+            <h4>Game Result</h4>
+            <p>${gameResult}</p>
+            ${p.prop_result ? `<p style="margin-top:6px;color:var(--muted);font-size:11px">${propLine}</p>` : ''}
+          </div>
+          <div class="pick-detail-section">
+            <h4>Notes</h4>
+            <p>${notesText}</p>
+          </div>
+          <div class="pick-detail-section">
+            <h4>Closing Line</h4>
+            <p>${closingLine}</p>
+          </div>
+        </div>
+      </td>
     </tr>`;
   }).join('') || '<tr><td colspan="13" style="color:var(--muted);text-align:center;padding:20px">No picks match filters</td></tr>';
 }
@@ -818,6 +864,20 @@ function renderSharpScore() {
   const bar = document.getElementById('sharpScoreBar');
   bar.className = 'sharp-bar-fill ' + tier.cls;
   setTimeout(() => bar.style.width = score + '%', 50);
+}
+
+// ── Pick row expand/collapse ──────────────────────────────────────
+function toggleDetail(id, row) {
+  const panel = document.getElementById(id);
+  if (!panel) return;
+  const isOpen = panel.classList.contains('open');
+  // Close all others first
+  document.querySelectorAll('.pick-detail-panel.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.pick-row.expanded').forEach(r => r.classList.remove('expanded'));
+  if (!isOpen) {
+    panel.classList.add('open');
+    row.classList.add('expanded');
+  }
 }
 
 // ── Tabs ─────────────────────────────────────────────────────────
