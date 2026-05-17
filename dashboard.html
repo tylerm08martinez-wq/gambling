@@ -368,9 +368,23 @@ let plChart = null, sportChart = null, clvChart = null, modelChart = null;
 // ── Helpers ──────────────────────────────────────────────────────
 function gameSearchUrl(pick) {
   const bet = pick.bet || '';
-  const match = bet.match(/\(([^)]+)\)/);
-  const game = match ? match[1] : bet.slice(0, 40);
-  const q = encodeURIComponent(`${pick.sport || ''} ${game} score ${pick.date || ''}`);
+  const isProp = inferBetType(pick) === 'Prop';
+  const gameMatch = bet.match(/\(([^)]+)\)/);
+
+  if (isProp) {
+    // "Stephon Castle Over 5.5 Rebounds (Timberwolves vs Spurs)"
+    // → "Stephon Castle rebounds stats Timberwolves vs Spurs"
+    const propMatch = bet.match(/^(.+?)\s+(?:over|under)\s+[\d.]+\s+(.+?)(?:\s*\(|$)/i);
+    const player = propMatch ? propMatch[1].trim() : '';
+    const stat = propMatch ? propMatch[2].trim() : '';
+    const opponent = gameMatch ? gameMatch[1] : '';
+    const q = encodeURIComponent(`${player} ${stat} stats ${opponent}`);
+    return `https://www.google.com/search?q=${q}`;
+  }
+
+  // Game bet — teams from parentheses, no date so Google shows score widget
+  const game = gameMatch ? gameMatch[1] : bet.replace(/\b(ml|rl|moneyline)\b/gi, '').trim().slice(0, 50);
+  const q = encodeURIComponent(`${pick.sport || ''} ${game} score`);
   return `https://www.google.com/search?q=${q}`;
 }
 
