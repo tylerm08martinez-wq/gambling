@@ -32,8 +32,8 @@
   .page { display: none; padding: 24px 28px; }
   .page.active { display: block; }
 
-  /* KPI Strip */
-  .kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  /* KPI Strip — fixed 4-col so it's always a clean 2×4 */
+  .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
   .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
   .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
   .kpi-value { font-size: 26px; font-weight: 700; line-height: 1; }
@@ -83,6 +83,9 @@
   /* Picks table */
   .picks-table { overflow-x: auto; }
   .picks-table table { min-width: 800px; }
+  /* Row striping */
+  #log-body tr.pick-row:nth-child(4n+1) td, #log-body tr.pick-row:nth-child(4n+3) td { background: rgba(255,255,255,.02); }
+  #log-body tr.pick-row:hover td { background: rgba(255,255,255,.05) !important; }
   .result-w { color: var(--green); font-weight: 600; }
   .result-l { color: var(--red); font-weight: 600; }
   .result-p { color: var(--yellow); font-weight: 600; }
@@ -168,7 +171,7 @@
     .page { padding: 16px; }
 
     /* KPI — 2 columns on phone */
-    .kpi-strip { grid-template-columns: 1fr 1fr; }
+    .kpi-strip { grid-template-columns: 1fr 1fr !important; }
     .kpi { padding: 12px; }
     .kpi-value { font-size: 20px; }
 
@@ -180,15 +183,14 @@
 
     /* Pick Log table — hide secondary columns, remove forced min-width */
     .picks-table table { min-width: unset; }
-    /* Hide: Game Time(2), Sport(4), Type(6), Line(7), Units(8), Score(9), Edge(10), CLV(12) */
-    .picks-table th:nth-child(2), .picks-table td:nth-child(2),
-    .picks-table th:nth-child(4), .picks-table td:nth-child(4),
+    /* Hide: Sport(3), Type(5), Line(6), Units(7), Score(8), Edge(9), CLV(11) */
+    .picks-table th:nth-child(3), .picks-table td:nth-child(3),
+    .picks-table th:nth-child(5), .picks-table td:nth-child(5),
     .picks-table th:nth-child(6), .picks-table td:nth-child(6),
     .picks-table th:nth-child(7), .picks-table td:nth-child(7),
     .picks-table th:nth-child(8), .picks-table td:nth-child(8),
     .picks-table th:nth-child(9), .picks-table td:nth-child(9),
-    .picks-table th:nth-child(10), .picks-table td:nth-child(10),
-    .picks-table th:nth-child(12), .picks-table td:nth-child(12) { display: none; }
+    .picks-table th:nth-child(11), .picks-table td:nth-child(11) { display: none; }
 
     /* Filter bar — stack to 2 per row */
     .filter-bar { gap: 8px; }
@@ -288,7 +290,7 @@
   </div>
   <div class="card" style="margin-top:16px">
     <h2>Units P&L by Sport × Model</h2>
-    <canvas id="modelChart"></canvas>
+    <canvas id="modelChart" style="max-height:300px"></canvas>
   </div>
 </div>
 
@@ -340,7 +342,6 @@
       <thead>
         <tr>
           <th>Date</th>
-          <th>Game Time</th>
           <th>Model</th>
           <th>Sport</th>
           <th>Bet</th>
@@ -614,8 +615,8 @@ function renderPLChart() {
     type: 'line',
     data: { labels, datasets: [
       { label: 'Combined', data: allData, borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,.1)', tension: .3, pointRadius: 2, fill: true },
-      { label: 'V1-Trends', data: v1Data, borderColor: '#3fb950', backgroundColor: 'transparent', tension: .3, pointRadius: 2, borderDash: [4,2] },
-      { label: 'V2-Sharp',  data: v2Data, borderColor: '#bc8cff', backgroundColor: 'transparent', tension: .3, pointRadius: 2, borderDash: [4,2] },
+      { label: 'V1-Trends', data: v1Data, borderColor: '#3fb950', backgroundColor: 'transparent', tension: .3, pointRadius: 2, borderWidth: 2, borderDash: [5,3] },
+      { label: 'V2-Sharp',  data: v2Data, borderColor: '#bc8cff', backgroundColor: 'transparent', tension: .3, pointRadius: 2, borderWidth: 2, borderDash: [5,3] },
     ]},
     options: { plugins: { legend: { labels: { color: '#8b949e', font: { size: 11 } } } }, scales: { x: { display: false }, y: { ticks: { color: '#8b949e', callback: v => (v >= 0 ? '+' : '') + v + 'u' }, grid: { color: '#30363d' } } }, responsive: true, maintainAspectRatio: true }
   });
@@ -862,9 +863,7 @@ function renderLog() {
     const scorePill = p.score
       ? `<span class="pill ${scoreVal >= 8 ? 'pill-green' : 'pill-yellow'}">${p.score}</span>`
       : '—';
-    const gameTime = p.game_time
-      ? `<span style="white-space:nowrap">${p.game_time}</span>`
-      : '<span style="color:var(--muted)">—</span>';
+    const gameTime = p.game_time ? `<div style="font-size:10px;color:var(--muted);margin-top:2px">${p.game_time}</div>` : '';
     const detailId = `detail-${p.id || i}`;
 
     // Detail panel content
@@ -878,11 +877,10 @@ function renderLog() {
       : '<span class="dim">No closing line</span>';
 
     return `<tr class="pick-row" onclick="toggleDetail('${detailId}', this)">
-      <td>${p.date || '—'}</td>
-      <td>${gameTime}</td>
+      <td>${p.date || '—'}${gameTime}</td>
       <td>${modelBadge}</td>
       <td>${p.sport || '—'}</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}"><a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none;border-bottom:1px dashed var(--border)">${p.bet || '—'}</a></td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}"><a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none;border-bottom:1px dashed var(--border)">${p.bet || '—'}</a></td>
       <td>${inferBetType(p)}</td>
       <td>${p.line || '—'}</td>
       <td>${p.units || '—'}u</td>
@@ -893,7 +891,7 @@ function renderLog() {
       <td>${pl}</td>
     </tr>
     <tr class="pick-detail-row">
-      <td colspan="13">
+      <td colspan="12">
         <div class="pick-detail-panel" id="${detailId}">
           <div class="pick-detail-section">
             <h4>Game Result</h4>
@@ -911,7 +909,7 @@ function renderLog() {
         </div>
       </td>
     </tr>`;
-  }).join('') || '<tr><td colspan="13" style="color:var(--muted);text-align:center;padding:20px">No picks match filters</td></tr>';
+  }).join('') || '<tr><td colspan="12" style="color:var(--muted);text-align:center;padding:20px">No picks match filters</td></tr>';
 }
 
 function populateFilters() {
