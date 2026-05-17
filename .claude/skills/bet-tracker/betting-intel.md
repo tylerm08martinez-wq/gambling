@@ -498,3 +498,48 @@ None yet — will populate as data accumulates.
 - Reinforced: line movement WITH 70%+ public = market correction or public/sharp consensus, NOT RLM. All four investigated signals today confirmed this.
 - Note for self-healing: NAT/BAL totals angle is worth watching. If totals-RLM (public 90%+ on Over, total actually drops) becomes a recurring pattern, it could open a new V2 signal type — but requires confirmed movement data, not just the public split.
 
+---
+
+### 2026-05-17 — V1-Trends Session
+
+**Games researched**: ~14 across MLB (13), NBA playoffs (1 G7), NHL playoffs (0) · **Picks**: 2 (both MLB, avg Score 5.9)
+
+**Signal observations**:
+- NYM ML (-116): Peralta (3.10 ERA, 50 K in 49.1 IP) vs Rodriguez (5.19 ERA, 2.08 WHIP, 5 K in 8.2 IP). Rodriguez's WHIP is the extreme signal — 2+ baserunners per inning, essentially a replacement-level arm forced into a rotation spot. NYM near-pickem as home team. Expert consensus multi-source picking NYM. Third game of NYY/NYM series; NYM won yesterday. Score 6.0.
+- Cardinals ML (+102): Pallante (4.46 ERA) vs Kolek (6.75 ERA, 1-0 KC) at Busch Stadium. Home underdog plus-money with the better pitcher — exact template from May 6 Cardinals ML +103 pick (Pallante 3.73 vs Sproat 6.75, scored 7.0 in intel log). Pallante's ERA is higher today (4.46 vs 3.73) and KC lineup is strong enough to command road-favorite status, reducing edge. Sized to 1u lean. Score 5.8.
+- PHI/PIT (Wheeler 2.55 vs Skenes 2.16): Symmetric elite pitching, total already compressed to 7. Under at -105 is tempting on paper but without confirmed sharp signal or ATS trend data, no V1 edge. Skipped.
+- ARI @ COL (Soroka 3.53 vs Lorenzen 6.55): 3.02-run ERA gap, but ARI -149 to -156 at Coors = chalk-trap territory. Same Coors play that lost (COL ML +106 on May 15). Skipped.
+- TOR @ DET (Gausman 4.03 vs Flaherty 5.73, 0-4): 1.7-run gap + broken pitcher angle, but TOR at -130 approaching chalk-trap boundary. ERA gap smaller than usual threshold. Skipped.
+- HOU vs TEX (Lambert 2.76 vs Eovaldi 4.15): 1.39-run gap — too small to overcome home-chalk juice (HOU likely -130+). Skipped.
+- CWS vs CHC (Fedde 3.77 vs Rea 4.68): Small 0.91-run gap. Not actionable. Skipped.
+- NBA G7 DET/CLE (Pistons -4.5): DET 5-2 home this postseason, CLE down 3-5. Model favors DET (74% simulations). No confirmed sharp signal; standing intel log caution on playoff NBA. Skipped.
+- NHL: G6 BUF/MTL was the May 17 game (Sabres won 8-3 to force G7 on May 18). AVS/VGK G1 starts May 20. No NHL games available to bet on May 17.
+
+**Calibration notes**:
+- NYM at Score 6.0 — weaker than yesterday's NYM +110 (score 5.8) on a per-unit basis because today's ERA gap is smaller (2.09 vs 4.09 runs) and NYM is now the slight favorite instead of an underdog. Rodriguez's 2.08 WHIP is the key signal; if he survives 5+ innings, the score was inflated.
+- Cardinals at Score 5.8 — KC lineup is good enough to be road favorite despite having the worse pitcher. If Kolek outpitches his ERA and KC wins, document that "road favorite with worse pitcher" requires a larger ERA gap to overcome lineup advantage.
+
+**Patterns reinforced or challenged**:
+- ERA-mismatch pattern continues. NYM is a clean broken-pitcher test (Rodriguez's 2.08 WHIP). Cardinals is a home-underdog-better-pitcher test (same as May 6 template).
+- Chalk-trap discipline held: ARI -149/-156 and TOR -130 both skipped despite real ERA edges.
+- Third consecutive day picking a NYM or NYC-derby game (NYM +110 May 15, NYM +110 May 16, NYM -116 May 17). Watch for fatigue/series-end behavioral factors in the result.
+
+---
+
+### 2026-05-17 — V2-Sharp Session
+
+**Games scanned**: ~13 MLB · 1 NBA G7 · 0 NHL · **Sharp signals found**: 0 confirmed · **Picks**: 0
+
+**Signal observations**:
+- PHI/PIT: Article sources suggested sharps like Skenes at a "discounted number" (PIT ML implied ~-138 to -140). But source was tonyspicks.com (not a primary sharp-tracking source); page returned 403. No confirmed RLM at multiple books. Discard.
+- NYM/NYY Under: One source noted "sharp action appears to favor lower scoring" for this game. Total at 8.0-8.5. But no confirmed line movement data or public splits accessible to verify RLM direction. Discard without confirmation.
+- DET/CLE G7: No confirmed public/money split data. Standing intel log caution on playoff NBA games applies. Discard.
+- All primary sources (Action Network, VSIN, BetQL, SportsBettingDime, Covers, tonyspicks.com) returned 403 — tenth+ consecutive session.
+
+**Calibration notes**:
+- PIT buy-low angle (after consecutive losses, Skenes at home vs PHI +118) would have been worth investigating if splits were available. The setup fits the "sharps on a fading public favorite" profile. Flagged for future tracking.
+
+**Patterns reinforced or challenged**:
+- Tenth+ consecutive V2 no-pick day driven by data-access failures. Model working as designed.
+- New note: the PHI/PIT Under (Wheeler + Skenes, total 7.0) is worth monitoring. If both pitchers dominate and the game goes Under, it validates that compressed totals on dual-elite-SP matchups are systematically undervalued. Needs confirmed sharp backing before logging.
+
