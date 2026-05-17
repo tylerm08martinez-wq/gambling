@@ -149,6 +149,64 @@
   .sharp-casual  { background: var(--yellow); }
   .sharp-sharp   { background: var(--blue); }
   .sharp-certified { background: var(--green); }
+
+  /* ── Mobile ──────────────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    /* Header */
+    header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+    #quote { display: none; }
+    .header-right { gap: 8px; }
+    .header-right span { font-size: 11px; }
+    .refresh-btn { padding: 5px 10px; font-size: 12px; }
+
+    /* Tabs — scroll horizontally, don't wrap */
+    .tabs { padding: 8px 16px 0; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { white-space: nowrap; padding: 8px 14px; font-size: 12px; }
+
+    /* Pages */
+    .page { padding: 16px; }
+
+    /* KPI — 2 columns on phone */
+    .kpi-strip { grid-template-columns: 1fr 1fr; }
+    .kpi { padding: 12px; }
+    .kpi-value { font-size: 20px; }
+
+    /* Cards */
+    .card { padding: 14px; }
+
+    /* Detail panel — stack to 1 column */
+    .pick-detail-panel.open { grid-template-columns: 1fr; }
+
+    /* Pick Log table — hide secondary columns, remove forced min-width */
+    .picks-table table { min-width: unset; }
+    /* Hide: Game Time(2), Sport(4), Type(6), Line(7), Units(8), Score(9), Edge(10), CLV(12) */
+    .picks-table th:nth-child(2), .picks-table td:nth-child(2),
+    .picks-table th:nth-child(4), .picks-table td:nth-child(4),
+    .picks-table th:nth-child(6), .picks-table td:nth-child(6),
+    .picks-table th:nth-child(7), .picks-table td:nth-child(7),
+    .picks-table th:nth-child(8), .picks-table td:nth-child(8),
+    .picks-table th:nth-child(9), .picks-table td:nth-child(9),
+    .picks-table th:nth-child(10), .picks-table td:nth-child(10),
+    .picks-table th:nth-child(12), .picks-table td:nth-child(12) { display: none; }
+
+    /* Filter bar — stack to 2 per row */
+    .filter-bar { gap: 8px; }
+    .filter-bar select { flex: 1 1 calc(50% - 4px); font-size: 12px; }
+    .date-toggle { flex: 0 0 auto; }
+
+    /* Today chips — allow wrap */
+    .today-bet-chip { font-size: 11px; }
+
+    /* Notice banner */
+    .notice { font-size: 12px; padding: 10px 14px; }
+
+    /* Breakeven line — wrap gracefully */
+    .breakeven { line-height: 1.6; }
+
+    /* Sharp Score */
+    #sharpScoreValue { font-size: 38px !important; }
+  }
 </style>
 </head>
 <body>
