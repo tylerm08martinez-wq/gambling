@@ -191,6 +191,9 @@
     .picks-table th:nth-child(8), .picks-table td:nth-child(8),
     .picks-table th:nth-child(9), .picks-table td:nth-child(9),
     .picks-table th:nth-child(11), .picks-table td:nth-child(11) { display: none; }
+    /* Keep date on one line, cap bet column so Result+P&L stay visible */
+    .picks-table td:nth-child(1) { white-space: nowrap; font-size: 11px; }
+    .picks-table td:nth-child(4) { max-width: 140px; }
 
     /* Filter bar — stack to 2 per row */
     .filter-bar { gap: 8px; }
