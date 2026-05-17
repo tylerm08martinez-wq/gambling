@@ -369,21 +369,26 @@ let plChart = null, sportChart = null, clvChart = null, modelChart = null;
 function gameSearchUrl(pick) {
   const bet = pick.bet || '';
   const isProp = inferBetType(pick) === 'Prop';
-  const gameMatch = bet.match(/\(([^)]+)\)/);
+  // Only treat parenthetical as teams if it contains "vs" or "@"
+  const teamMatch = bet.match(/\(([^)]*(?:\bvs\b|@)[^)]*)\)/i);
 
   if (isProp) {
-    // "Stephon Castle Over 5.5 Rebounds (Timberwolves vs Spurs)"
-    // → "Stephon Castle rebounds stats Timberwolves vs Spurs"
-    const propMatch = bet.match(/^(.+?)\s+(?:over|under)\s+[\d.]+\s+(.+?)(?:\s*\(|$)/i);
+    // "Stephon Castle Over 5.5 Rebounds" or "Nico Hoerner 2+ Total Bases"
+    const propMatch = bet.match(/^(.+?)\s+(?:over|under)\s+[\d.]+\s+(.+?)(?:\s*\(|$)/i)
+                  || bet.match(/^(.+?)\s+\d+\+\s+(.+?)(?:\s*\(|$)/i);
     const player = propMatch ? propMatch[1].trim() : '';
-    const stat = propMatch ? propMatch[2].trim() : '';
-    const opponent = gameMatch ? gameMatch[1] : '';
-    const q = encodeURIComponent(`${player} ${stat} stats ${opponent}`);
+    const stat   = propMatch ? propMatch[2].trim() : '';
+    const opponent = teamMatch ? teamMatch[1] : '';
+    const q = player
+      ? encodeURIComponent(`${player} ${stat} stats ${opponent}`)
+      : encodeURIComponent(`${pick.sport || ''} ${opponent || bet.slice(0, 40)} stats`);
     return `https://www.google.com/search?q=${q}`;
   }
 
-  // Game bet — teams from parentheses, no date so Google shows score widget
-  const game = gameMatch ? gameMatch[1] : bet.replace(/\b(ml|rl|moneyline)\b/gi, '').trim().slice(0, 50);
+  // Game bet — use team parenthetical if present, else strip ML/RL from full text
+  const game = teamMatch
+    ? teamMatch[1]
+    : bet.replace(/\b(ml|rl|moneyline)\b/gi, '').replace(/\s+/g, ' ').trim().slice(0, 50);
   const q = encodeURIComponent(`${pick.sport || ''} ${game} score`);
   return `https://www.google.com/search?q=${q}`;
 }
