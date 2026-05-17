@@ -385,10 +385,10 @@ function gameSearchUrl(pick) {
     return `https://www.google.com/search?q=${q}`;
   }
 
-  // Game bet — use team parenthetical if present, else strip ML/RL from full text
+  // Game bet — use team parenthetical if present, else strip ML/RL + all parens from full text
   const game = teamMatch
     ? teamMatch[1]
-    : bet.replace(/\b(ml|rl|moneyline)\b/gi, '').replace(/\s+/g, ' ').trim().slice(0, 50);
+    : bet.replace(/\([^)]*\)/g, '').replace(/\b(ml|rl|moneyline)\b/gi, '').replace(/\s+/g, ' ').trim().slice(0, 50);
   const q = encodeURIComponent(`${pick.sport || ''} ${game} score`);
   return `https://www.google.com/search?q=${q}`;
 }
