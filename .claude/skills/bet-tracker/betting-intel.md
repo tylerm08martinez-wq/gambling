@@ -543,3 +543,42 @@ None yet — will populate as data accumulates.
 - Tenth+ consecutive V2 no-pick day driven by data-access failures. Model working as designed.
 - New note: the PHI/PIT Under (Wheeler + Skenes, total 7.0) is worth monitoring. If both pitchers dominate and the game goes Under, it validates that compressed totals on dual-elite-SP matchups are systematically undervalued. Needs confirmed sharp backing before logging.
 
+---
+
+### 2026-05-18 — V1-Trends Session
+
+**Games researched**: ~15 across MLB (13), NBA playoffs (1 WCF G1), NHL playoffs (1 G7) · **Picks**: 2 (1 MLB, 1 NBA; avg Score 5.65)
+
+**Signal observations**:
+- PHI ML -126 vs CIN: Lodolo (8.68 ERA, 0-1) is one of the most extreme broken-pitcher spots on the current slate — even though Painter (6.21 ERA) is also bad, the 2.47-run gap at home (-126, non-chalk) clears the ERA-mismatch threshold. PHI on a 4-game win streak vs CIN dropping 2 straight.
+- SA Spurs +6.5 vs OKC (WCF G1): Breaking a 10-session NBA playoff no-pick streak. The money/ticket divergence (80% public bets on OKC, 70% of handle on SA) is the largest seen in this log for any sport — beats the Apr 18 White Sox signal (67%/65%). Line held firm at -6.5 since open despite overwhelming public on OKC (functionally RLM even if line didn't move toward SA). Spurs 4-1 vs OKC regular season. Best playoff defensive rating (102.2). Jalen Williams returning for OKC is a counterfactor — market has chosen -6.5 even with JW back, which is 2+ points lower than OKC's spread in prior series. Fox questionable (ankle) but likely plays.
+- CHC ML (Imanaga 2.32 vs Sproat 5.75): 3.43 ERA gap but CHC at -162 = chalk-trap discipline holds. Skipped.
+- TAM ML (McClanahan 2.27 vs Rogers 5.77): Huge gap but 94-96% public on TAM and line moved toward TAM — public chalk, not value. Skipped.
+- HOU ML at +102 vs MIN (Imai 9.24 vs Rojas 2.45): Both pitchers have 7-13 IP samples — too small to trust the extreme ERA gap. Skipped.
+- MTL +104 (Canadiens G7 vs BUF): Montreal 18-0 puck line as road dog off a loss is an extreme trend. Scored below threshold (~4.5) due to BUF's dominant G6 blowout (8-3) undercutting the momentum angle. Skipped.
+- CAN/BUF Over 5.5 +100: Series avg 6.8 goals vs 5.5 line, even money. Scored 5.7 but skipped — standing NHL playoff no-pick discipline; G7 often becomes defensive grind; no confirmed sharp backing.
+
+**Calibration notes**:
+- PHI ML at 5.6: Both starters are bad (Painter 6.21 ERA too), so this is less clean than the archetypal "elite vs broken" ERA-mismatch. If Lodolo implodes in 2 innings and PHI wins via bullpen, it's a lucky result, not model validation. If Lodolo gives 5 innings of mediocre (4 ER) and PHI still loses, the 2.47-run gap was insufficient given both staff's volatility.
+- Spurs at 5.7: The money/ticket divergence is the single strongest data point ever logged in this intel log. If SA covers, it validates NBA money-ticket signals even without strict RLM line movement. If SA loses by 7+, revisit whether "line held flat" is equivalent to "line moved against public" — they may not be.
+
+**Patterns reinforced or challenged**:
+- First NBA playoff pick since Apr 24's Blazers (injury-based). This one is money/signal-based — different rationale. Key test of whether the RLM-proxy (line stability against heavy public) is equivalent to confirmed RLM for V1 purposes.
+- Chalk-trap discipline held for CHC -162, TAM -142. ERA-mismatch value requires price discipline, not just gap size.
+- NHL caution continues: MTL +104 trend was strong (18-0 puck line) but confidence too low to override the intel log NHL skip streak.
+
+---
+
+### 2026-05-18 — V2-Sharp Session
+
+**Games scanned**: ~15 MLB · 1 NBA WCF G1 · 1 NHL G7 · **Sharp signals found**: 1 investigated · **Picks**: 0
+
+**Signal observations**:
+- Spurs vs Thunder (NBA WCF G1): 80% public bets on OKC, 70% of money handle on SA. Line held at OKC -6.5 since open. This is the strongest money/ticket divergence in this log's history. Investigated for V2 — ultimately passed because V2 strict criteria require the line to have MOVED toward SA (not just stayed flat). Standing intel log note (Apr 27) says "require RLM confirmation (line moving against public) for NBA money-split signals." Line stability ≠ confirmed RLM under V2. Discarded for V2; logged in V1 as a RLM-proxy lean.
+- All MLB sharp-tracking sources (Action Network, VSIN, BetQL, SportsBettingDime, Covers) returned 403 — eleventh+ consecutive session. No RLM or steam data accessible for any MLB game.
+- MTL/BUF G7: Over 5.5 at +100 with series avg 6.8 is interesting but no confirmed sharp backing. Public money flowed on the Over (juice moved from +108 to +100, total stuck at 5.5). Could be sharp Under money holding the line — but no split data to confirm direction. Pass without confirmation.
+
+**Patterns reinforced or challenged**:
+- Eleventh+ consecutive V2 no-pick day driven by data-access failures. Model working as designed.
+- Confirmed: "line held flat" does NOT qualify as RLM under V2 strict criteria, even when the money divergence is 80/70. Documenting for calibration — if the Spurs cover, revisit whether V2 should add a "line stability against 80%+ public" as an additional qualified signal type.
+
