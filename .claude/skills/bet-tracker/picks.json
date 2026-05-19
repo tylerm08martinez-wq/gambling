@@ -269,5 +269,26 @@
     "line_num": 6.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260519-mlb-cincin-ml",
+    "date": "2026-05-19",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Cincinnati Reds ML vs Philadelphia Phillies",
+    "line": "+120 @ FanDuel",
+    "units": 1,
+    "score": 6.3,
+    "primary_edge": "Plus-money elite starter vs broken home arm: Burns 1.87 ERA vs Luzardo 8.31 home ERA; Schwarber (20 HR, PHI's best bat) scratched",
+    "game_time": "3:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]

@@ -582,3 +582,45 @@ None yet — will populate as data accumulates.
 - Eleventh+ consecutive V2 no-pick day driven by data-access failures. Model working as designed.
 - Confirmed: "line held flat" does NOT qualify as RLM under V2 strict criteria, even when the money divergence is 80/70. Documenting for calibration — if the Spurs cover, revisit whether V2 should add a "line stability against 80%+ public" as an additional qualified signal type.
 
+---
+
+### 2026-05-19 — V1-Trends Session
+
+**Games researched**: ~14 across MLB (12), NBA playoffs (ECF G1), NHL playoffs (0 — no games today)
+**Picks**: 1 (MLB, Score 6.3)
+
+**Signal observations**:
+- CIN Reds ML +120 (Burns 1.87 ERA / 1.00 WHIP vs Luzardo 8.31 home ERA at Citizens Bank Park): Classic plus-money road dog with dominant arm template. Schwarber scratched (illness) removes PHI's best power bat (MLB-leading 20 HR). CIN +120 = 45.5% implied probability; real edge should be 48–50% given 3.2-run ERA gap on the mound. Score 6.3.
+- BOS -132 @ KC investigated: Suarez (2.44 ERA) vs Falter (10.13 ERA, 5.1 IP sample) — massive ERA gap but line moved from -115 to -132 WITH the public (chalk momentum, not value). One-whale "100% of dollars / 50-50 tickets" pattern noted. Skipped per chalk-trap discipline and public-side alignment.
+- ATL @ MIA: Pérez (2.25 ERA) vs Garrett (33.75 ERA in 1.1 IP) — chalk-trap skip at -155. Sample too small on Garrett to trust headline ERA.
+- TOR +114 @ NYY (Cease 2.41 vs Warren 3.42): ERA gap only ~1 run; Warren solid (2 ER or fewer in 8/9 starts). Not a broken pitcher — too close to call. Skipped.
+- NHL: No games today — MTL/BUF Game 7 was played May 18 (MTL won in OT). Colorado/Vegas G1 starts May 20.
+- ECF G1: NYK -7.5 with 70.4% public on NYK; FD moved 1 point to -6.5 but DK held at -7.5. Partial RLM signal at one book only — insufficient for V1 under standing playoff-NBA caution. Skipped.
+
+**Calibration notes**:
+- CIN ML at Score 6.3 — CIN is 4-13 recent form, which is the main risk. Burns is elite (1 ER in last 3 starts) so the team's offensive struggles don't affect the pitching edge. If Burns gives 5+ quality innings and CIN loses via bullpen/offense, it's a losing bet but the process was correct. If PHI's lineup punishes Burns despite Schwarber out, revisit whether one hot arm can overcome a team in a 4-13 slump.
+
+**Patterns reinforced or challenged**:
+- "Plus-money road dog with dominant arm" template getting tested again (identical template: CIN +120 mirrors Royals ML +102 Apr 29, Cardinals +102 May 6, etc.).
+- Chalk-trap discipline held: ATL -155, skipped BOS -132 (line already moved public side). BOS/KC would have been a pick if KC were the home dog with the better pitcher — but the pitching alignment was reversed.
+- CIN's awful recent record (4-13) is the main counter-argument. If this loses, document whether team-form context should override pitcher-edge for road underdog picks.
+
+---
+
+### 2026-05-19 — V2-Sharp Session
+
+**Games scanned**: ~12 MLB · 1 NBA ECF G1 · 0 NHL · **Sharp signals found**: 0 confirmed · **Picks**: 0
+
+**Signal observations**:
+- CLE +7.5 @ NYK (ECF G1): 70.4% public on NYK (ESPN Analytics confirmed). FanDuel moved 1 point toward CLE (-7.5 open → -6.5); DraftKings held at -7.5. Partial RLM at FD only — does not meet 3-book steam threshold. One book moving while another holds is noise, not a steam signal. Discarded.
+- Schwarber scratch (PHI) for CIN/PHI: Illness scratch is a same-day move; books typically price in same-game scratches quickly. No pre-scratch line baseline accessible to confirm "unpriced." Cannot confirm Signal C (unpriced injury). Discarded.
+- MLB full slate: Action Network, VSIN, BetQL, SportsBettingDime, Covers all returned 403 — twelfth+ consecutive session. No public/money split data accessible for any MLB game.
+- BOS/KC "100% dollars / 50-50 tickets" anomaly: One-whale pattern, not a syndicate steam move. Single-actor signal is explicitly excluded by V2 criteria. Discarded.
+
+**Calibration notes**:
+- NYK/CLE partial signal: FD's 1-point move against 70% public would qualify as RLM at that book in isolation. But V2 requires 3+ books. Documenting the exact threshold: "1 book moved, 1 held = insufficient." If DK also moves to -6.5 before tipoff, that's worth watching.
+
+**Patterns reinforced or challenged**:
+- Twelfth+ consecutive V2 no-pick day driven by data-access failures. Model working as designed.
+- Partial-RLM-at-one-book pattern is recurring (Apr 25 Senators, May 30 Nuggets/Wolves). Adding this to institutional memory: single-book RLM is always discarded; it must hit 3+ to qualify.
+
