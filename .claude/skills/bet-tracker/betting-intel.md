@@ -624,3 +624,44 @@ None yet — will populate as data accumulates.
 - Twelfth+ consecutive V2 no-pick day driven by data-access failures. Model working as designed.
 - Partial-RLM-at-one-book pattern is recurring (Apr 25 Senators, May 30 Nuggets/Wolves). Adding this to institutional memory: single-book RLM is always discarded; it must hit 3+ to qualify.
 
+---
+
+### 2026-05-20 — V1-Trends Session
+
+**Games researched**: ~10 across MLB (8), NBA playoffs (WCF G2), NHL playoffs (WCF G1) · **Picks**: 2 (both MLB, avg Score 6.55)
+
+**Signal observations**:
+- Mets ML -126 (Thornton MLB debut vs Littell 6.10 ERA / 14 HRs): Clearest broken-pitcher spot on the slate. Littell's home-run rate (14 in 41.1 IP = ~3.1/9 IP) is extreme. Thornton gets a pass on the debut because the edge is Littell's consistent breakdown, not Thornton's ceiling. Expert consensus ("Bet on Soto against this starter") confirms. Sized 1u given debut variance risk.
+- Giants/Diamondbacks Over 8.5 -115: Dual-bad-starter matchup (Mahle 5.59 ERA in 19.1 away IP, Kelly 5.91 ERA in 11 home IP). Computer model projects 9.9 combined runs, 60.4% Over hit rate, 6.9% edge. Best scoring setup on the slate; ARI 5-1 vs SF in recent meetings. Sized 2u for strongest pick of the day.
+- Orioles/Rays (Baz 5.26 vs Scholtens 3.06) — skipped because 1:10 PM ET = 10:10 AM AZ is too close to session start; game potentially in progress or near-opening by logging time.
+- Yankees/Blue Jays (Schlittler 1.35 vs Yesavage 1.40 ERA) — symmetric elite pitchers; no ERA mismatch. Skip.
+- Dodgers at Padres (Ohtani 0.97 ERA) — Dodgers heavy chalk, chalk-trap skip.
+- NBA WCF G2 (Thunder -6.5 vs Spurs): 83% public bets on SA +6.5, line held at -6.5. Handle/money split unavailable — cannot confirm whether OKC dollars are driving the hold. Standing playoff NBA spread caution applied. Skip.
+- NBA Under 216.5 (98% public AND money on Under, line dropped from 218.5 to 216.5): both public and sharp appear aligned on Under (same side). No RLM. Skip.
+- NHL WCF G1 (COL -192 vs VGK): Heavy chalk; standing NHL playoff caution. Skip.
+
+**Calibration notes**:
+- Mets ML at Score 5.7 — the key risk is Thornton making his MLB debut. If he gets shelled early and NYM trails, the edge evaporates quickly. Littell's ERA is the real signal here, not Thornton's floor. If NYM wins via offense despite an average Thornton outing, the process is validated.
+- Over 8.5 at Score 7.4 — first totals pick using dual-bad-starter template (both pitchers above 5.5 ERA). Previous totals picks were game-specific (Phillies/Braves Under Apr 26 was V2-Sharp). Watching whether this template produces consistent results vs the ML-mismatch template.
+
+**Patterns reinforced or challenged**:
+- Dual-bad-starter Over template is new — first V1 pick targeting a high total because BOTH starters are bad rather than one side having a broken pitcher. If it hits, worth tracking as a distinct sub-pattern.
+- Chalk-trap discipline held: Dodgers (Ohtani), Braves (Sale), Yankees (Schlittler) all skipped when the good pitcher was already priced heavy.
+- Skipping a game for "too close to start time" is a new operational rule applied today. Will monitor whether the Rays/Orioles Over 8.5 would have hit (TB Rays had gone Over in 8 straight games, Baz 5.26 ERA).
+
+---
+
+### 2026-05-20 — V2-Sharp Session
+
+**Games scanned**: ~8 MLB · 1 NBA WCF G2 · 1 NHL WCF G1 · **Sharp signals found**: 0 confirmed · **Picks**: 0
+
+**Signal observations**:
+- NBA Under 216.5 (Spurs vs Thunder G2): 98% of bets AND money on Under, total dropped from 218.5 → 216.5. This is sharp + public aligned on the same side (total moved WITH the sharp pressure, not against public). Explicitly not RLM. Discard.
+- NBA WCF G2 spread: 83% public tickets on SA +6.5, line held at -6.5. No handle % data to confirm OKC money is driving the hold. Cannot confirm RLM without money split. Discard.
+- NHL WCF G1: COL -192 with 68% public backing. No confirmed RLM or steam data. Discard.
+- All MLB primary sharp-tracking sources (Action Network, VSIN, BetQL, SportsBettingDime, Covers) returned 403 — thirteenth+ consecutive session.
+
+**Patterns reinforced or challenged**:
+- Thirteenth+ consecutive V2 no-pick day driven by data-access failures. Model working as designed.
+- Reinforced: line dropping WITH 98% public Under is NOT RLM — it's sharp confirmation on the same side as public. Same pattern documented for Brewers ML (May 16) and Rays ML (May 16).
+
