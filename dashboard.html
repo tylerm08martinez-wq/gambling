@@ -139,8 +139,6 @@
   .bet-now-btn { display: inline-block; padding: 3px 9px; border-radius: 5px; background: #1a3d2b; color: var(--green); font-size: 11px; font-weight: 600; text-decoration: none; white-space: nowrap; border: 1px solid #2a5c3f; transition: background .15s; }
   .bet-now-btn:hover { background: #234f38; }
   .col-betlink { width: 60px; }
-  /* Bet link inside Result cell — mobile only */
-  .mobile-bet-link { display: none; }
 
   /* Date display — full vs short */
   .date-short { display: none; }
@@ -266,8 +264,6 @@
     /* Sharp Score */
     #sharpScoreValue { font-size: 38px !important; }
 
-    /* Show Bet link inline in Result cell on mobile */
-    .mobile-bet-link { display: inline-block; margin-top: 4px; font-size: 10px; padding: 2px 7px; }
   }
 </style>
 </head>
@@ -964,7 +960,7 @@ function renderLog() {
       <td>${p.units || '—'}u</td>
       <td>${scorePill}</td>
       <td style="font-size:11px;color:var(--muted)">${edgeType(p.primary_edge)}</td>
-      <td class="${rClass}" style="line-height:1.2">${rText}${(() => { const u = bookBetUrl(p); return u ? `<br><a href="${u}" target="_blank" rel="noopener" class="mobile-bet-link bet-now-btn" onclick="event.stopPropagation()">Bet →</a>` : ''; })()}</td>
+      <td class="${rClass}">${rText}</td>
       <td>${clvCell}</td>
       <td>${pl}</td>
       <td class="col-betlink" onclick="event.stopPropagation()">${(() => { const u = bookBetUrl(p); return u ? `<a href="${u}" target="_blank" rel="noopener" class="bet-now-btn">Bet →</a>` : ''; })()}</td>
@@ -976,7 +972,19 @@ function renderLog() {
             <h4>Game Result</h4>
             <p>${gameResult}</p>
             ${p.prop_result ? `<p style="margin-top:6px;color:var(--muted);font-size:11px">${propLine}</p>` : ''}
-            ${(() => { const u = bookBetUrl(p); return u ? `<a href="${u}" target="_blank" rel="noopener" class="bet-now-btn detail-bet-btn" onclick="event.stopPropagation()" style="margin-top:10px;display:inline-block">Bet → ${(p.line||'').match(/@\s*(.+)$/i)?.[1]||''}</a>` : ''; })()}
+            ${(() => {
+              const primaryUrl = bookBetUrl(p);
+              const primaryName = (p.line||'').match(/@\s*(.+)$/i)?.[1] || '';
+              const isFD = primaryUrl?.includes('fanduel');
+              const isDK = primaryUrl?.includes('draftkings');
+              const altUrl  = isFD ? 'https://sportsbook.draftkings.com/' : 'https://sportsbook.fanduel.com/';
+              const altName = isFD ? 'DraftKings' : 'FanDuel';
+              if (!primaryUrl) return '';
+              return `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                <a href="${primaryUrl}" target="_blank" rel="noopener" class="bet-now-btn" onclick="event.stopPropagation()" style="font-size:12px;padding:5px 12px">Bet → ${primaryName}</a>
+                <a href="${altUrl}" target="_blank" rel="noopener" class="bet-now-btn" onclick="event.stopPropagation()" style="opacity:0.5;font-size:10px;padding:3px 8px">${altName} →</a>
+              </div>`;
+            })()}
           </div>
           <div class="pick-detail-section">
             <h4>Notes</h4>
