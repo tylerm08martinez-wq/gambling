@@ -266,6 +266,23 @@
     #sharpScoreValue { font-size: 38px !important; }
 
   }
+
+  /* ── My Bet UI ───────────────────────────────────────────────── */
+  .my-bet-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .my-bet-section h4 { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 8px; }
+  .my-bet-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .verify-btn { padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .verify-btn.verified { background: #1a3d2b; color: var(--green); border-color: #2a5c3f; }
+  .stake-input { background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-size: 12px; padding: 5px 8px; width: 90px; }
+  .stake-input:focus { outline: none; border-color: var(--blue); }
+  .actual-pl { font-size: 12px; font-weight: 600; margin-top: 6px; }
+  .verified-badge { font-size: 10px; background: #1a3d2b; color: var(--green); border: 1px solid #2a5c3f; border-radius: 4px; padding: 1px 5px; margin-left: 4px; vertical-align: middle; }
+  .bankroll-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .bankroll-row label { font-size: 12px; color: var(--muted); }
+  .bankroll-input { background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-size: 13px; padding: 5px 10px; width: 120px; }
+  .bankroll-input:focus { outline: none; border-color: var(--blue); }
+  .my-bets-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
+  @media (max-width: 600px) { .my-bets-kpis { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
@@ -311,6 +328,16 @@
         <h2>CLV Over Time</h2>
         <canvas id="clvChart"></canvas>
       </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>💰 My Actual Bets</h2>
+      <div class="bankroll-row">
+        <label>Bankroll:</label>
+        <input type="number" class="bankroll-input" id="bankrollInput" placeholder="$1000" min="1"
+               onchange="setBankroll(this.value); renderMyBets()">
+        <span style="font-size:11px;color:var(--muted)">used to show units alongside dollars</span>
+      </div>
+      <div id="my-bets-content"><span style="color:var(--muted);font-size:13px">Open any pick in the Pick Log and tap "✓ I bet this" to track your actual bets.</span></div>
     </div>
     <div class="card" style="margin-top:16px">
       <h2>🔪 Sharp Score</h2>
@@ -529,6 +556,114 @@ function fmtSigned(v, suffix = '') {
   const n = parseFloat(v);
   if (isNaN(n) || v === '—') return '—';
   return (n >= 0 ? '+' : '') + v + suffix;
+}
+
+// ── My Bets — localStorage ────────────────────────────────────────
+function getActualBets() {
+  try { return JSON.parse(localStorage.getItem('actualBets') || '{}'); } catch { return {}; }
+}
+function getActualBet(id) { return getActualBets()[id] || {}; }
+function saveActualBet(id, data) {
+  const all = getActualBets();
+  all[id] = { ...all[id], ...data };
+  localStorage.setItem('actualBets', JSON.stringify(all));
+}
+function getBankroll() { return parseFloat(localStorage.getItem('bankroll') || '0'); }
+function setBankroll(v) { localStorage.setItem('bankroll', parseFloat(v) || 0); }
+
+function calcActualPL(pick, stake) {
+  if (!pick.result || pick.result === null || stake == null) return null;
+  const oddsMatch = (pick.line || '').match(/([+-]?\d{2,4})/);
+  const odds = oddsMatch ? parseInt(oddsMatch[1]) : -110;
+  if (pick.result === 'win') return odds > 0 ? stake * (odds / 100) : stake * (100 / Math.abs(odds));
+  if (pick.result === 'loss') return -stake;
+  if (pick.result === 'push') return 0;
+  return null;
+}
+
+function toggleVerified(pickId, btn) {
+  const current = getActualBet(pickId);
+  const newVal = !current.verified;
+  saveActualBet(pickId, { verified: newVal });
+  btn.textContent = newVal ? '✓ Bet it' : '✓ Bet it';
+  btn.classList.toggle('verified', newVal);
+  renderMyBets();
+  // Refresh the ✓ badge on the row
+  const badge = document.getElementById('vbadge-' + pickId);
+  if (badge) badge.style.display = newVal ? '' : 'none';
+}
+
+function saveActualStake(pickId, val) {
+  const stake = parseFloat(val) || null;
+  saveActualBet(pickId, { stake });
+  renderMyBets();
+  // Refresh actual P&L display inside the panel
+  const pick = picks.find(p => (p.id || picks.indexOf(p)) == pickId) ||
+               picks.find((p, i) => String(p.id || i) === String(pickId));
+  const plEl = document.getElementById('actual-pl-' + pickId);
+  if (plEl && pick) {
+    const pl = calcActualPL(pick, stake);
+    if (pl !== null) {
+      plEl.textContent = (pl >= 0 ? '+' : '') + '$' + Math.abs(pl).toFixed(2) + ' actual';
+      plEl.className = 'actual-pl ' + (pl > 0 ? 'green' : pl < 0 ? 'red' : 'yellow');
+    } else {
+      plEl.textContent = stake ? '$' + stake.toFixed(2) + ' at risk' : '';
+      plEl.className = 'actual-pl';
+    }
+  }
+}
+
+function renderMyBets() {
+  const el = document.getElementById('my-bets-content');
+  if (!el) return;
+  const bankrollInput = document.getElementById('bankrollInput');
+  if (bankrollInput && !bankrollInput.value) bankrollInput.value = getBankroll() || '';
+
+  const bets = getActualBets();
+  const bankroll = getBankroll();
+  const verifiedIds = Object.keys(bets).filter(id => bets[id].verified);
+  if (!verifiedIds.length) {
+    el.innerHTML = '<span style="color:var(--muted);font-size:13px">Open any pick in the Pick Log and tap "✓ I bet this" to track your actual bets.</span>';
+    return;
+  }
+
+  let wagered = 0, pl = 0, wins = 0, losses = 0, pushes = 0, open = 0;
+  verifiedIds.forEach(id => {
+    const bet = bets[id];
+    const pick = picks.find(p => String(p.id) === String(id)) ||
+                 picks.find((p, i) => String(i) === String(id));
+    if (!pick) return;
+    const stake = bet.stake || 0;
+    wagered += stake;
+    const actualPL = calcActualPL(pick, stake);
+    if (actualPL !== null) {
+      pl += actualPL;
+      if (actualPL > 0) wins++;
+      else if (actualPL < 0) losses++;
+      else pushes++;
+    } else {
+      open++;
+    }
+  });
+
+  const settled = wins + losses + pushes;
+  const wr = settled ? ((wins / settled) * 100).toFixed(1) : '—';
+  const roi = wagered ? ((pl / wagered) * 100).toFixed(1) : '—';
+  const bankrollUnits = bankroll > 0 ? (wagered / bankroll).toFixed(2) : null;
+
+  const kpis = [
+    { label: 'Actual P&L', value: pl !== 0 || settled ? (pl >= 0 ? '+' : '') + '$' + Math.abs(pl).toFixed(2) : '—', cls: pl > 0 ? 'green' : pl < 0 ? 'red' : '' },
+    { label: 'Actual ROI', value: roi !== '—' ? (parseFloat(roi) >= 0 ? '+' : '') + roi + '%' : '—', cls: parseFloat(roi) > 0 ? 'green' : roi !== '—' ? 'red' : '' },
+    { label: 'Win Rate', value: wr !== '—' ? wr + '%' : '—', cls: parseFloat(wr) >= 52.4 ? 'green' : wr !== '—' ? 'red' : '' },
+    { label: 'Verified', value: verifiedIds.length + '', cls: 'blue', sub: `${wins}W–${losses}L${open ? '–' + open + ' open' : ''}` },
+  ];
+
+  el.innerHTML = `
+    <div class="my-bets-kpis">
+      ${kpis.map(k => `<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value ${k.cls || ''}" style="font-size:20px">${k.value}</div>${k.sub ? `<div class="kpi-sub">${k.sub}</div>` : ''}</div>`).join('')}
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:10px">$${wagered.toFixed(2)} wagered across ${verifiedIds.length} picks${bankrollUnits ? ' · ' + bankrollUnits + 'u vs bankroll' : ''}</p>
+  `;
 }
 
 // ── GitHub fetch ─────────────────────────────────────────────────
@@ -951,9 +1086,17 @@ function renderLog() {
       : '<span class="dim">No closing line</span>';
 
     const shortDate = p.date ? p.date.slice(5) : '—'; // MM-DD
+    const pickId = p.id || i;
+    const myBet = getActualBet(pickId);
+    const vBadge = myBet.verified ? `<span class="verified-badge" id="vbadge-${pickId}">✓</span>` : `<span class="verified-badge" id="vbadge-${pickId}" style="display:none">✓</span>`;
+    const actualPLVal = myBet.verified && myBet.stake ? calcActualPL(p, myBet.stake) : null;
+    const actualPLHtml = actualPLVal !== null
+      ? `<div class="actual-pl ${actualPLVal >= 0 ? 'green' : 'red'}" id="actual-pl-${pickId}">${actualPLVal >= 0 ? '+' : ''}$${Math.abs(actualPLVal).toFixed(2)} actual</div>`
+      : myBet.stake ? `<div class="actual-pl" id="actual-pl-${pickId}" style="color:var(--muted)">$${myBet.stake.toFixed(2)} at risk</div>`
+      : `<div class="actual-pl" id="actual-pl-${pickId}"></div>`;
     return `<tr class="pick-row" onclick="toggleDetail('${detailId}', this)">
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span>${gameTime}</td>
-      <td>${modelBadge}</td>
+      <td>${modelBadge}${vBadge}</td>
       <td>${p.sport || '—'}</td>
       <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}</td>
       <td>${inferBetType(p)}</td>
@@ -995,6 +1138,19 @@ function renderLog() {
           <div class="pick-detail-section">
             <h4>Closing Line</h4>
             <p>${closingLine}</p>
+          </div>
+          <div class="pick-detail-section" onclick="event.stopPropagation()" style="grid-column:1/-1">
+            <div class="my-bet-section">
+              <h4>My Bet</h4>
+              <div class="my-bet-controls">
+                <button class="verify-btn ${myBet.verified ? 'verified' : ''}" onclick="toggleVerified('${pickId}', this)">✓ Bet it</button>
+                <input type="number" class="stake-input" placeholder="$ amount" min="0" step="1"
+                       value="${myBet.stake || ''}"
+                       onchange="saveActualStake('${pickId}', this.value)"
+                       oninput="saveActualStake('${pickId}', this.value)">
+              </div>
+              ${actualPLHtml}
+            </div>
           </div>
         </div>
       </td>
@@ -1135,6 +1291,7 @@ function render() {
 
   renderTodayCallout();
   renderKPIs();
+  renderMyBets();
   renderSharpScore();
   renderPLChart();
   renderSportChart();
