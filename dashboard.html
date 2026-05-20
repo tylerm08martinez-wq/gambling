@@ -427,19 +427,11 @@ function bookBetUrl(pick) {
   const line = pick.line || '';
   const bookMatch = line.match(/@\s*(.+)$/i);
   const book = bookMatch ? bookMatch[1].trim().toLowerCase() : '';
-  const sport = (pick.sport || '').toUpperCase();
-
-  const fd = { MLB: 'baseball/mlb', NBA: 'basketball/nba', NFL: 'american-football/nfl', NHL: 'ice-hockey/nhl', NCAAF: 'american-football/college-football', NCAAB: 'basketball/college-basketball' };
-  const dk = { MLB: 'baseball/mlb', NBA: 'basketball/nba', NFL: 'football/nfl', NHL: 'hockey/nhl', NCAAF: 'football/college-football', NCAAB: 'basketball/college-basketball' };
-  const mgm = { MLB: 'baseball-23', NBA: 'basketball-7', NFL: 'football-11', NHL: 'ice-hockey-41' };
-  const czr = { MLB: 'baseball/mlb', NBA: 'basketball/nba', NFL: 'football/nfl', NHL: 'hockey/nhl' };
-  const espn = { MLB: 'mlb', NBA: 'nba', NFL: 'nfl', NHL: 'nhl' };
-
-  if (book.includes('fanduel'))    return `https://sportsbook.fanduel.com/sports/${fd[sport] || 'sports'}`;
-  if (book.includes('draftkings')) return `https://sportsbook.draftkings.com/leagues/${dk[sport] || ''}`;
-  if (book.includes('betmgm'))     return mgm[sport] ? `https://sports.betmgm.com/en/sports/${mgm[sport]}/betting` : 'https://sports.betmgm.com/';
-  if (book.includes('caesars'))    return czr[sport] ? `https://www.caesars.com/sportsbook-and-casino/sports/${czr[sport]}` : 'https://www.caesars.com/sportsbook-and-casino';
-  if (book.includes('espnbet') || book.includes('espn bet')) return espn[sport] ? `https://espnbet.com/sport/${espn[sport].toLowerCase()}` : 'https://espnbet.com/';
+  if (book.includes('fanduel'))    return 'https://sportsbook.fanduel.com/';
+  if (book.includes('draftkings')) return 'https://sportsbook.draftkings.com/';
+  if (book.includes('betmgm'))     return 'https://sports.betmgm.com/';
+  if (book.includes('caesars'))    return 'https://www.caesars.com/sportsbook-and-casino';
+  if (book.includes('espnbet') || book.includes('espn bet')) return 'https://espnbet.com/';
   if (book.includes('pointsbet')) return 'https://pointsbet.com/';
   if (book.includes('betrivers'))  return 'https://www.betrivers.com/';
   if (book.includes('bet365'))     return 'https://www.bet365.com/';
