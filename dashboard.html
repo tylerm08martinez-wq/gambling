@@ -335,7 +335,16 @@
         <label>Bankroll:</label>
         <input type="number" class="bankroll-input" id="bankrollInput" placeholder="$1000" min="1"
                onchange="setBankroll(this.value); renderMyBets()">
-        <span style="font-size:11px;color:var(--muted)">used to show units alongside dollars</span>
+        <span id="sync-status" style="font-size:11px;margin-left:8px">📱 local only</span>
+      </div>
+      <div id="token-setup" style="margin-bottom:12px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="password" id="gh-token-input" class="bankroll-input" style="width:200px;font-size:12px"
+                 placeholder="GitHub token (ghp_…)"
+                 onchange="setGHToken(this.value); loadActualBetsFromGH(); updateTokenUI()">
+          <span style="font-size:11px;color:var(--muted)">for cross-device sync</span>
+        </div>
+        <div id="token-hint" style="font-size:10px;color:var(--muted);margin-top:4px"></div>
       </div>
       <div id="my-bets-content"><span style="color:var(--muted);font-size:13px">Open any pick in the Pick Log and tap "✓ I bet this" to track your actual bets.</span></div>
     </div>
@@ -558,7 +567,14 @@ function fmtSigned(v, suffix = '') {
   return (n >= 0 ? '+' : '') + v + suffix;
 }
 
-// ── My Bets — localStorage ────────────────────────────────────────
+// ── My Bets — GitHub-backed, localStorage fallback ───────────────
+const BETS_FILE_PATH = '.claude/skills/bet-tracker/actual_bets.json';
+const BETS_API = `https://api.github.com/repos/tylerm08martinez-wq/gambling/contents/${BETS_FILE_PATH}`;
+let _betsSHA = null;
+let _syncDebounce = null;
+
+function getGHToken() { return localStorage.getItem('gh_pat') || ''; }
+function setGHToken(t) { localStorage.setItem('gh_pat', t.trim()); }
 function getActualBets() {
   try { return JSON.parse(localStorage.getItem('actualBets') || '{}'); } catch { return {}; }
 }
@@ -567,9 +583,80 @@ function saveActualBet(id, data) {
   const all = getActualBets();
   all[id] = { ...all[id], ...data };
   localStorage.setItem('actualBets', JSON.stringify(all));
+  debouncedSync();
 }
 function getBankroll() { return parseFloat(localStorage.getItem('bankroll') || '0'); }
 function setBankroll(v) { localStorage.setItem('bankroll', parseFloat(v) || 0); }
+
+function setSyncStatus(state) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  const map = {
+    local:   { text: '📱 local only', cls: 'yellow' },
+    syncing: { text: '⟳ syncing…',   cls: '' },
+    synced:  { text: '✓ synced',      cls: 'green' },
+    error:   { text: '✗ sync error',  cls: 'red' },
+  };
+  const s = map[state] || map.local;
+  el.textContent = s.text;
+  el.className = s.cls;
+}
+
+async function loadActualBetsFromGH() {
+  const token = getGHToken();
+  if (!token) { setSyncStatus('local'); return; }
+  setSyncStatus('syncing');
+  try {
+    const res = await fetch(BETS_API, { headers: { Authorization: `token ${token}` } });
+    if (res.status === 404) { setSyncStatus('synced'); return; }
+    if (!res.ok) { setSyncStatus('error'); return; }
+    const data = await res.json();
+    _betsSHA = data.sha;
+    const bets = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
+    localStorage.setItem('actualBets', JSON.stringify(bets));
+    setSyncStatus('synced');
+    renderMyBets();
+    renderLog();
+  } catch { setSyncStatus('error'); }
+}
+
+async function pushToGH() {
+  const token = getGHToken();
+  if (!token) return;
+  setSyncStatus('syncing');
+  try {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(getActualBets(), null, 2))));
+    const body = { message: 'chore: update actual bets', content };
+    if (_betsSHA) body.sha = _betsSHA;
+    const res = await fetch(BETS_API, {
+      method: 'PUT',
+      headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      const d = await res.json();
+      _betsSHA = d.content.sha;
+      setSyncStatus('synced');
+    } else { setSyncStatus('error'); }
+  } catch { setSyncStatus('error'); }
+}
+
+function debouncedSync() {
+  clearTimeout(_syncDebounce);
+  _syncDebounce = setTimeout(pushToGH, 1000);
+}
+
+function updateTokenUI() {
+  const token = getGHToken();
+  const input = document.getElementById('gh-token-input');
+  const hint  = document.getElementById('token-hint');
+  const setup = document.getElementById('token-setup');
+  if (input && !input.value && token) input.value = '••••••••••••••••';
+  if (hint) hint.textContent = token
+    ? '✓ token saved — clears if you delete it'
+    : 'Create a token at github.com → Settings → Developer settings → Personal access tokens → Fine-grained · needs Contents: Read & Write on this repo';
+  if (setup) setup.style.display = token ? 'none' : '';
+}
 
 function calcActualPL(pick, stake) {
   if (!pick.result || pick.result === null || stake == null) return null;
@@ -683,7 +770,9 @@ async function loadPicks() {
     document.getElementById('last-updated').textContent = `Fetch failed: ${e.message}`;
     picks = [];
   }
+  await loadActualBetsFromGH();
   render();
+  updateTokenUI();
 }
 
 async function manualRefresh() {
