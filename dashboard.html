@@ -954,7 +954,7 @@ function renderLog() {
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span>${gameTime}</td>
       <td>${modelBadge}</td>
       <td>${p.sport || '—'}</td>
-      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}"><a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none;border-bottom:1px dashed var(--border)">${p.bet || '—'}</a></td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}</td>
       <td>${inferBetType(p)}</td>
       <td>${p.line || '—'}</td>
       <td>${p.units || '—'}u</td>
@@ -972,6 +972,7 @@ function renderLog() {
             <h4>Game Result</h4>
             <p>${gameResult}</p>
             ${p.prop_result ? `<p style="margin-top:6px;color:var(--muted);font-size:11px">${propLine}</p>` : ''}
+            <a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-block;margin-top:6px;font-size:10px;color:var(--muted);text-decoration:none;border-bottom:1px dashed var(--border)">Search scores →</a>
             ${(() => {
               const primaryUrl = bookBetUrl(p);
               const primaryName = (p.line||'').match(/@\s*(.+)$/i)?.[1] || '';
