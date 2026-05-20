@@ -2,7 +2,7 @@
 name: sports-betting-sharp
 description: "V2-SHARP: Find today's best sports bets using sharp money, steam moves, and reverse line movement only — no ATS trends or expert consensus. High-selectivity model. Compare performance against sports-betting (v1-trends)."
 argument-hint: [sport or "all"]
-allowed-tools: WebSearch, WebFetch
+allowed-tools: WebSearch, WebFetch, Read, Edit, Bash
 ---
 
 # Sports Betting Research — Today's Best Bets (V2: Sharp Money Model)
@@ -45,10 +45,14 @@ WebSearch: "line movement sharp action [date] NBA/MLB/NHL"
 WebSearch: "consensus vs line movement sports [date]"
 ```
 
-Also fetch these specific sources known for tracking sharp action:
-- `https://www.actionnetwork.com/game-picks` (look for "Sharp" or "Steam" badges)
-- `https://www.sportsbettingdime.com/sharp-money-report/`
-- `https://www.docsports.com/free-sports-picks/steam-plays.html`
+**Line movement fetch (confirmed working as of 2026-05-20):**
+- `https://www.vegasinsider.com/mlb/odds/las-vegas/` (swap sport as needed: /nba/ /nfl/)
+- Shows opening vs. current lines across 8+ books — compare to detect movement against the public side
+
+**Split data — WebSearch only (direct-fetch sites are all 403-blocked):**
+- Do NOT fetch actionnetwork.com, sportsbettingdime.com, docsports.com, covers.com, vsin.com, betql.com, dknetwork.draftkings.com, sportsbookreview.com, oddsshark.com — all return 403/404
+- Instead: WebSearch results from sports media, Reddit r/sportsbook, and sharp cappers on X regularly quote split %s in plain text ("73% of bets on...")
+- If no split % found, infer from line movement: heavy public favorite + line moved against them = credible RLM proxy
 
 ### 2. Identify Valid Sharp Signals
 
@@ -251,5 +255,13 @@ If no picks found:
 No sharp signals confirmed today. Sitting out is the play.
 [1-2 fun sentences about patience being profitable, or roasting the public.]
 
-## Self-Healing
-If sharp-tracking sources change URLs or go behind paywalls, update this SKILL.md with working alternatives. Key sites to keep current: ActionNetwork, SportsBettingDime, DocSports steam reports.
+## Self-Healing (mandatory — run every session)
+
+When any data source fails (403, 404, timeout, redirect loop):
+
+1. **Immediately** add it to the blocked list in Step 1 of this SKILL.md — before continuing research
+2. **Find a replacement** — run `WebSearch: "MLB betting splits public money percentage today"`, identify a live site publishing split data, fetch it to confirm it loads
+3. **Add the working replacement** to the Step 1 fetch list with today's date noted
+4. **Continue research** with remaining working sources — never sit out solely because one source failed
+
+**Pick quality is non-negotiable.** Self-healing applies only to data sources. Signal thresholds, scoring, and the no-fabrication rule are unchanged. If all sources genuinely fail and no signal can be confirmed, sitting out is still correct — but that should be rare after patching.
