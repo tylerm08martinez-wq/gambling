@@ -282,6 +282,28 @@
   .bankroll-input:focus { outline: none; border-color: var(--blue); }
   .my-bets-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
   @media (max-width: 600px) { .my-bets-kpis { grid-template-columns: 1fr 1fr; } }
+
+  /* My Bets Tab */
+  .mb-kpi-strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px; }
+  @media (max-width: 900px) { .mb-kpi-strip { grid-template-columns: repeat(3, 1fr) !important; } }
+  @media (max-width: 600px) { .mb-kpi-strip { grid-template-columns: repeat(2, 1fr) !important; } }
+  .mb-picks-table { overflow-x: auto; }
+  .mb-picks-table table { min-width: 580px; }
+  .mb-highlight-strip { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .mb-highlight-card { flex: 1; min-width: 180px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+  .mb-highlight-label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .mb-highlight-val { font-size: 22px; font-weight: 700; line-height: 1; }
+  .mb-highlight-sub { font-size: 11px; color: var(--muted); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: 820px) {
+    .mb-picks-table th:nth-child(2), .mb-picks-table td:nth-child(2),
+    .mb-picks-table th:nth-child(5), .mb-picks-table td:nth-child(5) { display: none; }
+  }
+  @media (max-width: 600px) {
+    .mb-picks-table table { min-width: unset; }
+    .mb-picks-table th:nth-child(2), .mb-picks-table td:nth-child(2),
+    .mb-picks-table th:nth-child(3), .mb-picks-table td:nth-child(3),
+    .mb-picks-table th:nth-child(5), .mb-picks-table td:nth-child(5) { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -302,6 +324,7 @@
   <div class="tab" onclick="showTab('models', this)">V1 vs V2</div>
   <div class="tab" onclick="showTab('edges', this)">Edge Breakdown</div>
   <div class="tab" onclick="showTab('log', this)">Pick Log</div>
+  <div class="tab" id="tab-btn-mybets" onclick="showTab('mybets', this)">My Bets</div>
 </div>
 
 <div id="tab-overview" class="page active">
@@ -330,22 +353,8 @@
     </div>
     <div class="card" style="margin-top:16px">
       <h2>💰 My Actual Bets</h2>
-      <div class="bankroll-row">
-        <label>Bankroll:</label>
-        <input type="number" class="bankroll-input" id="bankrollInput" placeholder="$1000" min="1"
-               onchange="setBankroll(this.value); renderMyBets()">
-        <span id="sync-status" style="font-size:11px;margin-left:8px">📱 local only</span>
-      </div>
-      <div id="token-setup" style="margin-bottom:12px">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input type="password" id="gh-token-input" class="bankroll-input" style="width:200px;font-size:12px"
-                 placeholder="GitHub token (ghp_…)"
-                 onchange="setGHToken(this.value); loadActualBetsFromGH(); updateTokenUI()">
-          <span style="font-size:11px;color:var(--muted)">for cross-device sync</span>
-        </div>
-        <div id="token-hint" style="font-size:10px;color:var(--muted);margin-top:4px"></div>
-      </div>
-      <div id="my-bets-content"><span style="color:var(--muted);font-size:13px">Open any pick in the Pick Log and tap "✓ I bet this" to track your actual bets.</span></div>
+      <div id="my-bets-content"><span style="color:var(--muted);font-size:13px">Open any pick in the Pick Log and tap "✓ Bet it" to track your actual bets.</span></div>
+      <div style="margin-top:12px;text-align:right"><button onclick="switchToMyBets()" style="background:transparent;border:none;color:var(--blue);font-size:12px;cursor:pointer;padding:0">View My Bets tab →</button></div>
     </div>
     <div class="card" style="margin-top:16px">
       <h2>🔪 Sharp Score</h2>
@@ -453,11 +462,84 @@
   </div>
 </div>
 
+<div id="tab-mybets" class="page">
+  <div class="mb-kpi-strip" id="mb-kpi-strip"></div>
+  <div id="mb-highlights" class="mb-highlight-strip"></div>
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <h2>Cumulative P&L ($)</h2>
+      <canvas id="mbPlChart"></canvas>
+      <div id="mbPlEmpty" style="display:none;color:var(--muted);font-size:13px;text-align:center;padding:40px 0">No settled bets with stakes yet.</div>
+    </div>
+    <div class="card">
+      <h2>P&L by Sport ($)</h2>
+      <canvas id="mbSportChart"></canvas>
+      <div id="mbSportEmpty" style="display:none;color:var(--muted);font-size:13px;text-align:center;padding:40px 0">No settled bets yet.</div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <h2>My Bets Log</h2>
+    <div class="filter-bar" style="margin-bottom:14px">
+      <div id="mb-date-toggle" class="date-toggle">
+        <button onclick="setMBDateRange('all',this)" class="active">All</button>
+        <button onclick="setMBDateRange('month',this)">Month</button>
+        <button onclick="setMBDateRange('week',this)">Week</button>
+      </div>
+      <select id="mb-filter-result" onchange="renderMBLog()">
+        <option value="">All Results</option>
+        <option value="win">Wins</option>
+        <option value="loss">Losses</option>
+        <option value="push">Pushes</option>
+        <option value="open">Open</option>
+      </select>
+      <select id="mb-filter-sport" onchange="renderMBLog()">
+        <option value="">All Sports</option>
+      </select>
+    </div>
+    <div class="mb-picks-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Model</th>
+            <th>Sport</th>
+            <th>Bet</th>
+            <th>Line</th>
+            <th>Stake</th>
+            <th>Result</th>
+            <th>P&L</th>
+          </tr>
+        </thead>
+        <tbody id="mb-log-body"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>⚙️ Settings</h2>
+    <div class="bankroll-row">
+      <label>Bankroll:</label>
+      <input type="number" class="bankroll-input" id="bankrollInput" placeholder="$1000" min="1"
+             onchange="setBankroll(this.value); renderMyBetsTab(); renderMyBets()">
+      <span id="sync-status" style="font-size:11px;margin-left:8px">📱 local only</span>
+    </div>
+    <div id="token-setup" style="margin-top:12px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="password" id="gh-token-input" class="bankroll-input" style="width:220px;font-size:12px"
+               placeholder="GitHub token (ghp_…)"
+               onchange="setGHToken(this.value); loadActualBetsFromGH(); updateTokenUI()">
+        <span style="font-size:11px;color:var(--muted)">for cross-device sync</span>
+      </div>
+      <div id="token-hint" style="font-size:10px;color:var(--muted);margin-top:4px"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 let picks = [];
 
 // Chart instances — destroy before recreating to prevent re-render bug
 let plChart = null, sportChart = null, clvChart = null, modelChart = null;
+let mbPlChart = null, mbSportChart = null;
 
 // ── Helpers ──────────────────────────────────────────────────────
 function bookBetUrl(pick) {
@@ -616,6 +698,7 @@ async function loadActualBetsFromGH() {
     setSyncStatus('synced');
     renderMyBets();
     renderLog();
+    renderMyBetsTab();
   } catch { setSyncStatus('error'); }
 }
 
@@ -1356,12 +1439,219 @@ function toggleDetail(id, row) {
   }
 }
 
+// ── My Bets Tab ──────────────────────────────────────────────────
+let mbActiveDateRange = 'all';
+
+function setMBDateRange(range, btn) {
+  mbActiveDateRange = range;
+  document.querySelectorAll('#mb-date-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMBLog();
+}
+function mbDateRangeCutoff() {
+  if (mbActiveDateRange === 'all') return null;
+  const d = new Date();
+  if (mbActiveDateRange === 'week')  d.setDate(d.getDate() - 7);
+  if (mbActiveDateRange === 'month') d.setDate(d.getDate() - 30);
+  return d.toISOString().slice(0, 10);
+}
+
+function switchToMyBets() {
+  const btn = document.getElementById('tab-btn-mybets');
+  if (btn) showTab('mybets', btn);
+}
+
+function renderMBKPIs() {
+  const bets = getActualBets();
+  const verifiedIds = Object.keys(bets).filter(id => bets[id].verified);
+  let wagered = 0, pl = 0, wins = 0, losses = 0, pushes = 0, openCount = 0, openAtRisk = 0, stakeCount = 0;
+  verifiedIds.forEach(id => {
+    const bet = bets[id];
+    const pick = picks.find(p => String(p.id) === id) || picks.find((p, i) => String(i) === id);
+    if (!pick) return;
+    const stake = bet.stake || 0;
+    if (stake > 0) stakeCount++;
+    wagered += stake;
+    const actualPL = calcActualPL(pick, stake);
+    if (actualPL !== null) {
+      pl += actualPL;
+      if (actualPL > 0) wins++;
+      else if (actualPL < 0) losses++;
+      else pushes++;
+    } else { openCount++; openAtRisk += stake; }
+  });
+  const settledCount = wins + losses + pushes;
+  const wr = settledCount ? (wins / settledCount * 100).toFixed(1) : null;
+  const roiVal = wagered ? (pl / wagered * 100).toFixed(1) : null;
+  const avgStake = stakeCount ? (wagered / stakeCount) : null;
+  const kpis = [
+    { label: 'Total Wagered',  value: wagered ? '$' + wagered.toFixed(2) : '—',    cls: '',                                          sub: verifiedIds.length + ' verified bets' },
+    { label: 'Net P&L',        value: settledCount ? (pl >= 0 ? '+' : '') + '$' + Math.abs(pl).toFixed(2) : '—', cls: pl > 0 ? 'green' : pl < 0 ? 'red' : '', sub: settledCount + ' settled' },
+    { label: 'ROI',            value: roiVal !== null ? (parseFloat(roiVal) >= 0 ? '+' : '') + roiVal + '%' : '—', cls: roiVal !== null ? (parseFloat(roiVal) >= 0 ? 'green' : 'red') : '', sub: 'on wagered amount' },
+    { label: 'Win Rate',       value: wr !== null ? wr + '%' : '—',                cls: wr !== null ? (parseFloat(wr) >= 52.4 ? 'green' : 'red') : '', sub: wins + 'W–' + losses + 'L–' + pushes + 'P' },
+    { label: 'Open',           value: openCount || '—',                            cls: openCount ? 'blue' : '',                     sub: openAtRisk ? '$' + openAtRisk.toFixed(2) + ' at risk' : 'pending' },
+    { label: 'Avg Stake',      value: avgStake ? '$' + avgStake.toFixed(2) : '—', cls: '',                                          sub: 'per bet' },
+  ];
+  const el = document.getElementById('mb-kpi-strip');
+  if (el) el.innerHTML = kpis.map(k =>
+    `<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value ${k.cls || ''}" style="font-size:20px">${k.value}</div><div class="kpi-sub">${k.sub}</div></div>`
+  ).join('');
+}
+
+function renderMBHighlights() {
+  const bets = getActualBets();
+  let bigWin = null, bigWinPL = 0, worstLoss = null, worstLossPL = 0;
+  let streak = 0, streakType = null;
+  const sorted = [...picks].sort((a, b) => a.date > b.date ? -1 : 1);
+  sorted.forEach(p => {
+    const id = String(p.id || picks.indexOf(p));
+    const bet = bets[id];
+    if (!bet?.verified || p.result === null) return;
+    const pl = calcActualPL(p, bet.stake || 0);
+    if (pl === null) return;
+    if (pl > bigWinPL) { bigWinPL = pl; bigWin = p; }
+    if (pl < worstLossPL) { worstLossPL = pl; worstLoss = p; }
+  });
+  // streak from most recent
+  for (const p of sorted) {
+    const id = String(p.id || picks.indexOf(p));
+    const bet = bets[id];
+    if (!bet?.verified || p.result === null) continue;
+    const pl = calcActualPL(p, bet.stake || 0);
+    if (pl === null) continue;
+    const res = pl > 0 ? 'win' : pl < 0 ? 'loss' : 'push';
+    if (streakType === null) streakType = res;
+    if (res === streakType) streak++;
+    else break;
+  }
+  const el = document.getElementById('mb-highlights');
+  if (!el) return;
+  let html = '';
+  if (bigWin) {
+    const truncBet = (bigWin.bet || '').length > 38 ? bigWin.bet.slice(0, 38) + '…' : (bigWin.bet || '—');
+    html += `<div class="mb-highlight-card" style="border-color:#2a5c3f"><div class="mb-highlight-label" style="color:var(--green)">🏆 Biggest Win</div><div class="mb-highlight-val green">+$${bigWinPL.toFixed(2)}</div><div class="mb-highlight-sub">${truncBet}</div></div>`;
+  }
+  if (worstLoss) {
+    const truncBet = (worstLoss.bet || '').length > 38 ? worstLoss.bet.slice(0, 38) + '…' : (worstLoss.bet || '—');
+    html += `<div class="mb-highlight-card" style="border-color:#5c2a2a"><div class="mb-highlight-label" style="color:var(--red)">💸 Worst Loss</div><div class="mb-highlight-val red">-$${Math.abs(worstLossPL).toFixed(2)}</div><div class="mb-highlight-sub">${truncBet}</div></div>`;
+  }
+  if (streak > 0 && streakType) {
+    const icon = streakType === 'win' ? '🔥' : streakType === 'loss' ? '❄️' : '↔️';
+    const cls  = streakType === 'win' ? 'green' : streakType === 'loss' ? 'red' : 'yellow';
+    html += `<div class="mb-highlight-card"><div class="mb-highlight-label" style="color:var(--${cls === 'yellow' ? 'yellow' : cls})">Current Streak</div><div class="mb-highlight-val ${cls}">${icon} ${streakType.toUpperCase()[0]}${streak}</div><div class="mb-highlight-sub">actual bets</div></div>`;
+  }
+  el.innerHTML = html;
+}
+
+function renderMBPlChart() {
+  const bets = getActualBets();
+  const points = picks
+    .map((p, i) => { const id = String(p.id || i); const bet = bets[id]; if (!bet?.verified || !bet.stake || p.result === null) return null; const pl = calcActualPL(p, bet.stake); return pl !== null ? { date: p.date, pl } : null; })
+    .filter(Boolean)
+    .sort((a, b) => a.date > b.date ? 1 : -1);
+  const canvas = document.getElementById('mbPlChart');
+  const emptyEl = document.getElementById('mbPlEmpty');
+  if (!points.length) { if (canvas) canvas.style.display = 'none'; if (emptyEl) emptyEl.style.display = ''; if (mbPlChart) { mbPlChart.destroy(); mbPlChart = null; } return; }
+  if (canvas) canvas.style.display = ''; if (emptyEl) emptyEl.style.display = 'none';
+  let cum = 0;
+  const labels = [], data = [];
+  points.forEach(v => { cum += v.pl; labels.push(v.date.slice(5)); data.push(+cum.toFixed(2)); });
+  const finalVal = data[data.length - 1];
+  if (mbPlChart) mbPlChart.destroy();
+  mbPlChart = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'P&L ($)', data, borderColor: finalVal >= 0 ? '#3fb950' : '#f85149', backgroundColor: finalVal >= 0 ? 'rgba(63,185,80,.1)' : 'rgba(248,81,73,.1)', tension: .3, pointRadius: 3, fill: true }] },
+    options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { ticks: { color: '#8b949e', callback: v => (v >= 0 ? '+' : '') + '$' + Math.abs(v).toFixed(0) }, grid: { color: '#30363d' } } }, responsive: true, maintainAspectRatio: true }
+  });
+}
+
+function renderMBSportChart() {
+  const bets = getActualBets();
+  const sportPL = {};
+  picks.forEach((p, i) => {
+    const id = String(p.id || i); const bet = bets[id];
+    if (!bet?.verified || !bet.stake || p.result === null || !p.sport) return;
+    const pl = calcActualPL(p, bet.stake); if (pl === null) return;
+    sportPL[p.sport] = (sportPL[p.sport] || 0) + pl;
+  });
+  const canvas = document.getElementById('mbSportChart');
+  const emptyEl = document.getElementById('mbSportEmpty');
+  const sports = Object.keys(sportPL);
+  if (!sports.length) { if (canvas) canvas.style.display = 'none'; if (emptyEl) emptyEl.style.display = ''; if (mbSportChart) { mbSportChart.destroy(); mbSportChart = null; } return; }
+  if (canvas) canvas.style.display = ''; if (emptyEl) emptyEl.style.display = 'none';
+  const vals = sports.map(s => +sportPL[s].toFixed(2));
+  if (mbSportChart) mbSportChart.destroy();
+  mbSportChart = new Chart(canvas, {
+    type: 'bar',
+    data: { labels: sports, datasets: [{ data: vals, backgroundColor: vals.map(v => v >= 0 ? 'rgba(63,185,80,.7)' : 'rgba(248,81,73,.7)'), borderRadius: 4 }] },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#8b949e', callback: v => (v >= 0 ? '+' : '') + '$' + Math.abs(v).toFixed(0) }, grid: { color: '#30363d' } }, y: { ticks: { color: '#8b949e' } } }, responsive: true, maintainAspectRatio: true }
+  });
+}
+
+function populateMBFilters() {
+  const bets = getActualBets();
+  const sports = [...new Set(picks.filter((p, i) => bets[String(p.id || i)]?.verified).map(p => p.sport).filter(Boolean))];
+  const el = document.getElementById('mb-filter-sport');
+  if (el) el.innerHTML = '<option value="">All Sports</option>' + sports.map(s => `<option>${s}</option>`).join('');
+}
+
+function renderMBLog() {
+  const bets = getActualBets();
+  const rf = document.getElementById('mb-filter-result')?.value || '';
+  const sf = document.getElementById('mb-filter-sport')?.value || '';
+  const cutoff = mbDateRangeCutoff();
+  let rows = picks
+    .map((p, i) => { const id = String(p.id || i); const bet = bets[id]; if (!bet?.verified) return null; return { p, id, bet }; })
+    .filter(Boolean)
+    .sort((a, b) => a.p.date < b.p.date ? 1 : -1);
+  if (cutoff) rows = rows.filter(r => r.p.date >= cutoff);
+  if (rf === 'open') rows = rows.filter(r => r.p.result === null);
+  else if (rf) rows = rows.filter(r => r.p.result === rf);
+  if (sf) rows = rows.filter(r => r.p.sport === sf);
+  const tbody = document.getElementById('mb-log-body');
+  if (!tbody) return;
+  tbody.innerHTML = rows.map(({ p, bet }) => {
+    const stake = bet.stake || 0;
+    const pl = calcActualPL(p, stake);
+    const rClass = p.result === 'win' ? 'result-w' : p.result === 'loss' ? 'result-l' : p.result === 'push' ? 'result-p' : 'result-o';
+    const rText  = p.result ? p.result.toUpperCase() : '⏳';
+    const plHtml = pl !== null
+      ? `<span class="${pl >= 0 ? 'green' : 'red'}">${pl >= 0 ? '+' : ''}$${Math.abs(pl).toFixed(2)}</span>`
+      : stake ? `<span style="color:var(--muted)">$${stake.toFixed(2)} at risk</span>` : '—';
+    const badge = p.model === 'v1-trends' ? '<span class="badge badge-v1">V1</span>' : '<span class="badge badge-v2">V2</span>';
+    const shortDate = p.date ? p.date.slice(5) : '—';
+    return `<tr>
+      <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span></td>
+      <td>${badge}</td>
+      <td>${p.sport || '—'}</td>
+      <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${p.line || '—'}</td>
+      <td>$${stake ? stake.toFixed(2) : '—'}</td>
+      <td class="${rClass}">${rText}</td>
+      <td>${plHtml}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:24px">No verified bets match filters. Open a pick in Pick Log and tap "✓ Bet it".</td></tr>';
+}
+
+function renderMyBetsTab() {
+  renderMBKPIs();
+  renderMBHighlights();
+  renderMBPlChart();
+  renderMBSportChart();
+  populateMBFilters();
+  renderMBLog();
+  const bankrollInput = document.getElementById('bankrollInput');
+  if (bankrollInput && !bankrollInput.value) bankrollInput.value = getBankroll() || '';
+  updateTokenUI();
+}
+
 // ── Tabs ─────────────────────────────────────────────────────────
 function showTab(name, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'mybets') renderMyBetsTab();
 }
 
 // ── Init ─────────────────────────────────────────────────────────
@@ -1389,6 +1679,7 @@ function render() {
   renderEdges();
   populateFilters();
   renderLog();
+  renderMyBetsTab();
 }
 
 loadPicks();
