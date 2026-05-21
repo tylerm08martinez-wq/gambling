@@ -1878,6 +1878,28 @@ function render() {
 loadPicks();
 setInterval(loadPicks, 5 * 60 * 1000);
 
+// ── Auto-update: reload when a new version of dashboard.html is deployed ──
+(async function checkDashboardVersion() {
+  try {
+    const res = await fetch(
+      'https://api.github.com/repos/tylerm08martinez-wq/gambling/commits?path=dashboard.html&per_page=1',
+      { cache: 'no-store' }
+    );
+    if (!res.ok) return;
+    const data = await res.json();
+    const latest = data[0]?.sha;
+    if (!latest) return;
+    const stored = localStorage.getItem('dashboardSHA');
+    if (stored && stored !== latest) {
+      // New version deployed — hard reload bypassing cache
+      localStorage.setItem('dashboardSHA', latest);
+      window.location.replace(window.location.href.split('?')[0] + '?v=' + Date.now());
+    } else {
+      localStorage.setItem('dashboardSHA', latest);
+    }
+  } catch(e) {}
+})();
+
 // ── Rotating quotes ───────────────────────────────────────────────
 const QUOTES = [
   'The line is the truth. Beat it or go home.',
