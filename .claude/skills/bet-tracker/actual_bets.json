@@ -1,4 +1,7 @@
 {
+  "_settings": {
+    "bankroll": 300
+  },
   "20260520-mlb-over-total": {
     "verified": true,
     "stake": 10
