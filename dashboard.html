@@ -549,6 +549,7 @@
       <label>Bankroll:</label>
       <input type="number" class="bankroll-input" id="bankrollInput" placeholder="$1000" min="1"
              onchange="setBankroll(this.value); renderMyBetsTab(); renderMyBets()">
+      <span id="currentBankrollDisplay" style="font-size:12px;color:var(--accent);margin-left:4px"></span>
       <span id="sync-status" style="font-size:11px;margin-left:8px">📱 local only</span>
     </div>
     <div id="token-setup" style="margin-top:12px">
@@ -717,6 +718,19 @@ function saveActualBet(id, data) {
 }
 function getBankroll() { return parseFloat(localStorage.getItem('bankroll') || '0'); }
 function setBankroll(v) { localStorage.setItem('bankroll', parseFloat(v) || 0); }
+function getCurrentBankroll() {
+  const starting = getBankroll();
+  if (!starting) return 0;
+  const bets = getActualBets();
+  const totalPL = picks.reduce((sum, p, i) => {
+    const id = String(p.id || i);
+    const bet = bets[id];
+    if (!bet?.verified || !bet.stake || !p.result) return sum;
+    const pl = calcActualPL(p, bet.stake);
+    return pl !== null ? sum + pl : sum;
+  }, 0);
+  return Math.round((starting + totalPL) * 100) / 100;
+}
 
 function setSyncStatus(state) {
   const el = document.getElementById('sync-status');
@@ -1348,7 +1362,7 @@ function renderLog() {
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span>${gameTime}</td>
       <td>${modelBadge}${vBadge}</td>
       <td>${p.sport || '—'}</td>
-      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}</td>
+      ${(() => { const k = kellyStake(p, getCurrentBankroll()); const kHtml = k != null && k > 0 ? `<div style="font-size:10px;color:var(--blue);margin-top:1px;white-space:nowrap">Kelly: $${k}</div>` : ''; return `<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}${kHtml}</td>`; })()}
       <td>${inferBetType(p)}</td>
       <td>${p.line || '—'}</td>
       <td>${p.units || '—'}u</td>
@@ -1826,7 +1840,7 @@ function renderMBLog() {
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span>${gameTime}</td>
       <td>${badge}</td>
       <td>${p.sport || '—'}</td>
-      <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}</td>
+      ${(() => { const k = kellyStake(p, getCurrentBankroll()); const kHtml = k != null && k > 0 ? `<div style="font-size:10px;color:var(--blue);margin-top:1px;white-space:nowrap">Kelly: $${k}</div>` : ''; return `<td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}${kHtml}</td>`; })()}
       <td style="font-size:12px;color:var(--muted)">${p.line || '—'}</td>
       <td>$${stake ? stake.toFixed(2) : '—'}</td>
       <td class="${rClass}">${rText}</td>
@@ -1846,6 +1860,18 @@ function renderMyBetsTab() {
   renderMBLog();
   const bankrollInput = document.getElementById('bankrollInput');
   if (bankrollInput && !bankrollInput.value) bankrollInput.value = getBankroll() || '';
+  const cur = getCurrentBankroll();
+  const starting = getBankroll();
+  const curEl = document.getElementById('currentBankrollDisplay');
+  if (curEl) {
+    if (cur && cur !== starting) {
+      const diff = cur - starting;
+      curEl.textContent = `→ $${cur.toFixed(2)} (${diff >= 0 ? '+' : ''}$${diff.toFixed(2)})`;
+      curEl.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+    } else if (cur) {
+      curEl.textContent = '';
+    }
+  }
   updateTokenUI();
 }
 
