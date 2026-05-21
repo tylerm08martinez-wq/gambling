@@ -368,6 +368,7 @@
       <div class="card">
         <h2>CLV Over Time</h2>
         <canvas id="clvChart"></canvas>
+        <div id="clvEmpty" style="display:none;color:var(--muted);font-size:13px;text-align:center;padding:40px 0">CLV data pending — nightly resolver fills this once closing lines are available.</div>
       </div>
     </div>
     <div class="card" style="margin-top:16px">
@@ -827,10 +828,29 @@ function updateTokenUI() {
   if (setup) setup.style.display = token ? 'none' : '';
 }
 
+function parseOddsToAmerican(lineStr) {
+  const str = (lineStr || '').trim();
+  // Decimal odds like "1.95" or "2.50"
+  const dec = str.match(/(?<![+\-\/\d])(\d+\.\d+)(?![\d\/])/);
+  if (dec) {
+    const d = parseFloat(dec[1]);
+    if (d > 1) return d >= 2 ? Math.round((d - 1) * 100) : Math.round(-100 / (d - 1));
+  }
+  // Fractional like "3/1" or "5/2"
+  const frac = str.match(/(\d+)\/(\d+)/);
+  if (frac) {
+    const n = parseInt(frac[1]), d = parseInt(frac[2]);
+    if (d > 0) return n >= d ? Math.round((n / d) * 100) : Math.round(-100 * d / n);
+  }
+  // American odds like "+150" or "-110"
+  const am = str.match(/([+-]\d{2,4})/);
+  if (am) return parseInt(am[1]);
+  return -110;
+}
+
 function calcActualPL(pick, stake) {
   if (!pick.result || pick.result === null || stake == null) return null;
-  const oddsMatch = (pick.line || '').match(/([+-]?\d{2,4})/);
-  const odds = oddsMatch ? parseInt(oddsMatch[1]) : -110;
+  const odds = parseOddsToAmerican(pick.line);
   if (pick.result === 'win') return odds > 0 ? stake * (odds / 100) : stake * (100 / Math.abs(odds));
   if (pick.result === 'loss') return -stake;
   if (pick.result === 'push') return 0;
@@ -1157,22 +1177,16 @@ function renderCLVChart() {
   let sum = 0;
   withClv.forEach((p, i) => { sum += p.clv; cumAvg.push(+(sum / (i + 1)).toFixed(2)); });
 
+  const canvas = document.getElementById('clvChart');
+  const empty = document.getElementById('clvEmpty');
   if (!withClv.length) {
     if (clvChart) { clvChart.destroy(); clvChart = null; }
-    document.getElementById('clvChart').style.display = 'none';
-    const el = document.getElementById('clvChart');
-    if (!el.nextElementSibling || !el.nextElementSibling.classList.contains('clv-empty')) {
-      const msg = document.createElement('div');
-      msg.className = 'clv-empty';
-      msg.style.cssText = 'color:var(--muted);font-size:13px;text-align:center;padding:40px 0';
-      msg.textContent = 'CLV data pending — nightly resolver fills this once closing lines are available.';
-      el.parentNode.insertBefore(msg, el.nextSibling);
-    }
+    canvas.style.display = 'none';
+    if (empty) empty.style.display = '';
     return;
   }
-  document.getElementById('clvChart').style.display = '';
-  const prev = document.querySelector('.clv-empty');
-  if (prev) prev.remove();
+  canvas.style.display = '';
+  if (empty) empty.style.display = 'none';
 
   if (clvChart) clvChart.destroy();
   clvChart = new Chart(document.getElementById('clvChart'), {
