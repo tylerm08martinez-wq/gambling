@@ -1788,7 +1788,8 @@ function renderMBLog() {
       : stake ? `<span style="color:var(--muted)">$${stake.toFixed(2)} at risk</span>` : '—';
     const badge = p.model === 'v1-trends' ? '<span class="badge badge-v1">V1</span>' : '<span class="badge badge-v2">V2</span>';
     const shortDate = p.date ? p.date.slice(5) : '—';
-    const searchQ = encodeURIComponent(`${p.bet || ''} ${p.sport || ''} ${p.date || ''}`);
+    const cleanBet = (p.bet || '').replace(/\s*\([^)]*\)/g, '').trim();
+    const searchQ = encodeURIComponent(`${cleanBet} ${p.sport || ''} score ${p.date || ''}`);
     const checkLink = `<a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="color:var(--accent);font-size:15px;text-decoration:none" title="Check score / result">🔍</a>`;
     return `<tr>
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span></td>
