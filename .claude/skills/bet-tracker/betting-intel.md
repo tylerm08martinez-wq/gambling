@@ -665,3 +665,48 @@ None yet — will populate as data accumulates.
 - Thirteenth+ consecutive V2 no-pick day driven by data-access failures. Model working as designed.
 - Reinforced: line dropping WITH 98% public Under is NOT RLM — it's sharp confirmation on the same side as public. Same pattern documented for Brewers ML (May 16) and Rays ML (May 16).
 
+---
+
+### 2026-05-21 — V1-Trends Session
+
+**Games researched**: ~12 across MLB (10), NBA playoffs (ECF G2), NHL playoffs (0 — G2 is May 22)
+**Picks**: 1 (MLB, Score 5.6)
+
+**Signal observations**:
+- Two early-game MLB matchups (PIT/STL 10:15 AZ, CLE/DET 10:10 AZ) skipped per "too close to start" operational rule — both within 15 minutes of session start.
+- COL at ARI is the clearest pick on the slate: E-Rod 3-0 with 1.65 ERA / 0.95 WHIP at Chase Field, COL using Agnos (first-ever MLB start) as opener/bulk, COL 3-8 in last 11 games. ARI -150 is borderline chalk but the opener situation differentiates it from past ARI chalk avoidance — COL has no legitimate SP today, making this structurally different.
+- TOR/NYY (Fisher 3.08 vs Rodon 5.63): Line moved WITH 89–100% public on NYY (-156 → -173 open to current). Not RLM; not a V1 pick despite ERA gap. Rodon FIP 3.98 further reduces the true gap.
+- ATL/MIA (Strider 2.45 vs Alcantara 3.53): Only 1.08-run ERA gap, ATL -136 approaching chalk territory, Alcantara not broken. Scored ~4.2 — below threshold.
+- OAK/LAA (Soriano 2.41 vs Severino 4.45): 2.04-run gap with near-pickem odds, but tonyspicks and expert consensus on OAK (LAA bullpen unreliable, OAK offense stronger). Conflicting signals → skip.
+- NYM/WSH: Peterson 5.40 vs Cavalli 4.05 — 1.35-run gap at near-pickem. WSH model 53.2% confidence. Scored 4.7 — just below threshold. Over 8.5 is interesting (dual high-WHIP pitchers) but no computer model percentage to confirm.
+- NBA ECF G2 (NYK -6.5 vs CLE): NYK -225 ML, standing playoff NBA caution applied. Skip.
+- NHL: No game today (VGK/COL G2 is May 22).
+
+**Calibration notes**:
+- ARI ML at Score 5.6 — E-Rod's home numbers are elite but the opener strategy for COL adds variance (multiple arms, earlier bullpen usage). If ARI wins comfortably, opener-bulk disadvantage is validated. If COL's bullpen chain stifles ARI offense, revisit whether opener day negates the "broken starter" template since it's intentional, not a breakdown.
+- OAK/LAA was skipped despite a 2.04-run ERA gap because expert consensus pointed opposite. First time skipping a near-pickem ERA-mismatch due to conflicting expert signal. If LAA wins, document whether the expert consensus should have been overridden by the SP edge.
+
+**Patterns reinforced or challenged**:
+- "Too close to start" rule applied for second consecutive session — PIT/STL and CLE/DET both within 15 minutes of 10 AM AZ session start. Both would have been interesting picks (Ashcraft 3.09 vs May 4.81, Mize 2.43 vs Cantillo 3.40). Operational discipline holds.
+- First explicit test of "COL opener/bulk day as broken-starter equivalent." Past picks targeted bad ERA traditional starters; today COL isn't using a starter at all. Watching whether the template transfers.
+- Chalk-trap discipline refined: -150 cleared because the COL SP situation is materially different (not a real starter). Prior -149/-156 avoidances had real starters on the mound. This is a new sub-rule: opener/bulk day removes the chalk-trap concern since the pitching disadvantage is structural, not just statistical.
+
+---
+
+### 2026-05-21 — V2-Sharp Session
+
+**Games scanned**: ~10 MLB · 1 NBA ECF G2 · 0 NHL · **Sharp signals found**: 0 confirmed · **Picks**: 0
+
+**Signal observations**:
+- TOR/NYY: 89–100% public on NYY, line moved -156 → -173 WITH the public. NOT RLM. Public steam.
+- ATL/MIA: Line tightened from -142 to -136 — a 6-cent ML move. Below the 15-cent steam threshold; both sides getting action per description. Not confirmed RLM.
+- COL/ARI: Opener/bulk situation is publicly known (Agnos first MLB start widely reported). Not an unpriced injury window.
+- All primary sharp-tracking sources (Action Network, VSIN, BetQL, SportsBettingDime, Covers) returned 403 — fourteenth+ consecutive session.
+
+**Calibration notes**:
+- ATL/MIA 6-cent move toward MIA is the closest thing to an RLM signal today. Would need 15-cent minimum and confirmed public split (65%+ on ATL) to qualify. Neither confirmed. Documented for pattern tracking: if this game goes to MIA, check whether the sub-15-cent move was predictive.
+
+**Patterns reinforced or challenged**:
+- Fourteenth+ consecutive V2 no-pick day driven by data-access failures. Model working as designed.
+- TOR/NYY reinforces: public steam (line moving with heavy public) is the dominant pattern in this data environment where splits can't be confirmed independently.
+
