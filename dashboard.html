@@ -1675,7 +1675,7 @@ function renderMBKPIs() {
   const avgStake = stakeCount ? (wagered / stakeCount) : null;
   const kpis = [
     { label: 'Total Wagered',  value: wagered ? '$' + wagered.toFixed(2) : '—',    cls: '',                                          sub: verifiedIds.length + ' verified bets' },
-    { label: 'Net P&L',        value: settledCount ? (pl >= 0 ? '+' : '') + '$' + Math.abs(pl).toFixed(2) : '—', cls: pl > 0 ? 'green' : pl < 0 ? 'red' : '', sub: settledCount + ' settled' },
+    { label: 'Net P&L',        value: settledCount ? (pl >= 0 ? '+' : '-') + '$' + Math.abs(pl).toFixed(2) : '—', cls: pl > 0 ? 'green' : pl < 0 ? 'red' : '', sub: settledCount + ' settled' },
     { label: 'ROI',            value: roiVal !== null ? (parseFloat(roiVal) >= 0 ? '+' : '') + roiVal + '%' : '—', cls: roiVal !== null ? (parseFloat(roiVal) >= 0 ? 'green' : 'red') : '', sub: 'on wagered amount' },
     { label: 'Win Rate',       value: wr !== null ? wr + '%' : '—',                cls: wr !== null ? (parseFloat(wr) >= 52.4 ? 'green' : 'red') : '', sub: wins + 'W–' + losses + 'L–' + pushes + 'P' },
     { label: 'Open',           value: openCount || '—',                            cls: openCount ? 'blue' : '',                     sub: openAtRisk ? '$' + openAtRisk.toFixed(2) + ' at risk' : 'pending' },
@@ -1773,7 +1773,7 @@ function renderMBSportChart() {
   mbSportChart = new Chart(canvas, {
     type: 'bar',
     data: { labels: sports, datasets: [{ data: vals, backgroundColor: vals.map(v => v >= 0 ? 'rgba(63,185,80,.7)' : 'rgba(248,81,73,.7)'), borderRadius: 4 }] },
-    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#8b949e', callback: v => (v >= 0 ? '+' : '') + '$' + Math.abs(v).toFixed(0) }, grid: { color: '#30363d' } }, y: { ticks: { color: '#8b949e' } } }, responsive: true, maintainAspectRatio: true }
+    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#8b949e', callback: v => (v >= 0 ? '+' : '-') + '$' + Math.abs(v).toFixed(2) }, grid: { color: '#30363d' } }, y: { ticks: { color: '#8b949e' } } }, responsive: true, maintainAspectRatio: true }
   });
 }
 
@@ -1805,7 +1805,7 @@ function renderMBLog() {
     const rClass = p.result === 'win' ? 'result-w' : p.result === 'loss' ? 'result-l' : p.result === 'push' ? 'result-p' : 'result-o';
     const rText  = p.result ? p.result.toUpperCase() : '⏳';
     const plHtml = pl !== null
-      ? `<span class="${pl >= 0 ? 'green' : 'red'}">${pl >= 0 ? '+' : ''}$${Math.abs(pl).toFixed(2)}</span>`
+      ? `<span class="${pl >= 0 ? 'green' : 'red'}">${pl >= 0 ? '+' : '-'}$${Math.abs(pl).toFixed(2)}</span>`
       : stake ? `<span style="color:var(--muted)">$${stake.toFixed(2)} at risk</span>` : '—';
     const badge = p.model === 'v1-trends' ? '<span class="badge badge-v1">V1</span>' : '<span class="badge badge-v2">V2</span>';
     const shortDate = p.date ? p.date.slice(5) : '—';
