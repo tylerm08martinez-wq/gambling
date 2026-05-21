@@ -217,6 +217,8 @@
     .header-right { gap: 8px; }
     .header-right span { font-size: 11px; }
     .refresh-btn { padding: 5px 10px; font-size: 12px; }
+    /* Mobile touch targets — WCAG 44px minimum */
+    .bet-now-btn, .verify-btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 
     /* Tabs — scroll horizontally, don't wrap */
     .tabs { padding: 8px 16px 0; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
@@ -917,6 +919,7 @@ async function loadPicks() {
     const res = await fetch(`${PICKS_URL}?t=${Date.now()}`);
     if (!res.ok) throw new Error(`GitHub ${res.status}`);
     picks = await res.json();
+    picks.forEach(p => { p._edge = edgeType(p.primary_edge); });
     const now = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     document.getElementById('last-updated').textContent = `${picks.length} picks · synced ${now}`;
   } catch (e) {
@@ -1025,8 +1028,9 @@ function renderKPIs() {
     `<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value ${k.cls}" style="${k.big ? 'font-size:32px' : ''}">${k.value}</div><div class="kpi-sub">${k.sub}</div></div>`
   ).join('');
 
-  // Confetti if profitable
-  if (net > 0) triggerConfetti();
+  // Confetti only on transition into profit (not every refresh)
+  if (window._lastNetPL != null && window._lastNetPL <= 0 && net > 0) triggerConfetti();
+  window._lastNetPL = net;
 
   // Animate numeric KPI values
   document.querySelectorAll('#kpi-strip .kpi-value').forEach(el => {
@@ -1369,7 +1373,7 @@ function renderLog() {
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span>${gameTime}</td>
       <td>${modelBadge}${vBadge}</td>
       <td>${p.sport || '—'}</td>
-      ${(() => { const k = kellyStake(p, getCurrentBankroll()); const kHtml = k != null ? `<div style="font-size:10px;color:${k > 0 ? 'var(--blue)' : 'var(--muted)'};margin-top:1px;white-space:nowrap">Kelly: ${k > 0 ? '$'+k : 'skip'}</div>` : ''; return `<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}${kHtml}</td>`; })()}
+      ${(() => { const k = kellyStake(p, getCurrentBankroll()); const kHtml = k != null ? `<div style="font-size:10px;color:${k > 0 ? 'var(--blue)' : 'var(--muted)'};margin-top:1px;white-space:nowrap">Kelly: ${k > 0 ? '$'+k : 'skip (neg edge)'}</div>` : ''; return `<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}${kHtml}</td>`; })()}
       <td>${inferBetType(p)}</td>
       <td>${p.line || '—'}</td>
       <td>${p.units || '—'}u</td>
@@ -1557,6 +1561,7 @@ function kellyStake(pick, bankroll) {
   const oddsMatch = (pick.line || '').match(/([+-]\d{2,4})/);
   const odds = oddsMatch ? parseInt(oddsMatch[1]) : -110;
   const b = odds > 0 ? odds / 100 : 100 / Math.abs(odds);
+  if (!b) return null;
   const kelly = (p * b - (1 - p)) / b;
   if (kelly <= 0) return 0;
   return Math.round(bankroll * kelly * 0.5); // half-Kelly
@@ -1847,7 +1852,7 @@ function renderMBLog() {
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span>${gameTime}</td>
       <td>${badge}</td>
       <td>${p.sport || '—'}</td>
-      ${(() => { const k = kellyStake(p, getCurrentBankroll()); const kHtml = k != null ? `<div style="font-size:10px;color:${k > 0 ? 'var(--blue)' : 'var(--muted)'};margin-top:1px;white-space:nowrap">Kelly: ${k > 0 ? '$'+k : 'skip'}</div>` : ''; return `<td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}${kHtml}</td>`; })()}
+      ${(() => { const k = kellyStake(p, getCurrentBankroll()); const kHtml = k != null ? `<div style="font-size:10px;color:${k > 0 ? 'var(--blue)' : 'var(--muted)'};margin-top:1px;white-space:nowrap">Kelly: ${k > 0 ? '$'+k : 'skip (neg edge)'}</div>` : ''; return `<td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}${kHtml}</td>`; })()}
       <td style="font-size:12px;color:var(--muted)">${p.line || '—'}</td>
       <td>$${stake ? stake.toFixed(2) : '—'}</td>
       <td class="${rClass}">${rText}</td>
@@ -1884,6 +1889,7 @@ function renderMyBetsTab() {
 
 // ── Tabs ─────────────────────────────────────────────────────────
 function showTab(name, el) {
+  document.querySelectorAll('.pick-detail-panel.open').forEach(p => p.classList.remove('open'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
