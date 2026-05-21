@@ -307,9 +307,13 @@
     .mb-picks-table th:nth-child(3), .mb-picks-table td:nth-child(3),
     .mb-picks-table th:nth-child(5), .mb-picks-table td:nth-child(5),
     .mb-picks-table th:nth-child(6), .mb-picks-table td:nth-child(6) { display: none; }
-    /* Cap bet column so remaining columns fit (override inline style) */
-    .mb-picks-table td:nth-child(4) { max-width: 140px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .mb-picks-table td:nth-child(9) { padding: 5px 4px; text-align: center; }
+    /* Fixed widths for small cols so Bet column gets remaining space */
+    .mb-picks-table th:nth-child(1), .mb-picks-table td:nth-child(1) { width: 46px; white-space: nowrap; font-size: 11px; }
+    .mb-picks-table th:nth-child(7), .mb-picks-table td:nth-child(7) { width: 48px; }
+    .mb-picks-table th:nth-child(8), .mb-picks-table td:nth-child(8) { width: 68px; }
+    .mb-picks-table th:nth-child(9), .mb-picks-table td:nth-child(9) { width: 28px; padding: 5px 2px; text-align: center; }
+    /* Bet column fills remaining ~138px with ellipsis */
+    .mb-picks-table td:nth-child(4) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   }
 </style>
 </head>
