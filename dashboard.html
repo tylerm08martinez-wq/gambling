@@ -393,6 +393,11 @@
     <h2>Units P&L by Sport × Model</h2>
     <canvas id="modelChart" style="max-height:300px"></canvas>
   </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Score Calibration — Does Your Score Predict Results?</h2>
+    <canvas id="calibChart" style="max-height:200px"></canvas>
+    <p class="breakeven" style="margin-top:10px">Each bar = win rate for picks in that score tier. Green = beating 52.4% breakeven. Need 5+ picks per tier for significance — count shown above each bar.</p>
+  </div>
 </div>
 
 <div id="tab-edges" class="page">
@@ -437,6 +442,7 @@
     <select id="filter-edge" onchange="renderLog()">
       <option value="">All Edges</option>
     </select>
+    <input type="text" id="filter-search" class="bankroll-input" style="flex:1;min-width:140px;font-size:12px" placeholder="🔍 Search bets…" oninput="renderLog()">
   </div>
   <div class="picks-table card">
     <table>
@@ -465,6 +471,11 @@
 <div id="tab-mybets" class="page">
   <div class="mb-kpi-strip" id="mb-kpi-strip"></div>
   <div id="mb-highlights" class="mb-highlight-strip"></div>
+  <div class="card" id="mb-bankroll-card" style="margin-bottom:16px">
+    <h2>Bankroll Over Time</h2>
+    <canvas id="mbBankrollChart"></canvas>
+    <div id="mbBankrollEmpty" style="display:none;color:var(--muted);font-size:13px;text-align:center;padding:30px 0">Enter your starting bankroll in Settings below to see this chart.</div>
+  </div>
   <div class="grid-2" style="margin-bottom:16px">
     <div class="card">
       <h2>Cumulative P&L ($)</h2>
@@ -539,7 +550,7 @@ let picks = [];
 
 // Chart instances — destroy before recreating to prevent re-render bug
 let plChart = null, sportChart = null, clvChart = null, modelChart = null;
-let mbPlChart = null, mbSportChart = null;
+let mbPlChart = null, mbSportChart = null, calibChart = null, mbBankrollChart = null;
 
 // ── Helpers ──────────────────────────────────────────────────────
 function bookBetUrl(pick) {
@@ -1009,6 +1020,17 @@ function renderPLChart() {
   });
   if (!labels.length) { labels.push('—'); v1Data.push(0); v2Data.push(0); allData.push(0); }
 
+  // Linear regression trend line on combined P&L
+  let trendData = [];
+  if (allData.length >= 3) {
+    const n = allData.length, xs = allData.map((_, i) => i);
+    const sumX = xs.reduce((a, b) => a + b, 0), sumY = allData.reduce((a, b) => a + b, 0);
+    const sumXY = xs.reduce((a, x, i) => a + x * allData[i], 0), sumX2 = xs.reduce((a, x) => a + x * x, 0);
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+    trendData = xs.map(x => +(intercept + slope * x).toFixed(3));
+  }
+
   if (plChart) plChart.destroy();
   plChart = new Chart(document.getElementById('plChart'), {
     type: 'line',
@@ -1016,6 +1038,7 @@ function renderPLChart() {
       { label: 'Combined', data: allData, borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,.1)', tension: .3, pointRadius: 2, fill: true },
       { label: 'V1-Trends', data: v1Data, borderColor: '#3fb950', backgroundColor: 'transparent', tension: .3, pointRadius: 2, borderWidth: 2, borderDash: [5,3] },
       { label: 'V2-Sharp',  data: v2Data, borderColor: '#bc8cff', backgroundColor: 'transparent', tension: .3, pointRadius: 2, borderWidth: 2, borderDash: [5,3] },
+      ...(trendData.length ? [{ label: 'Trend', data: trendData, borderColor: 'rgba(255,166,87,.5)', backgroundColor: 'transparent', tension: 0, pointRadius: 0, borderWidth: 1.5, borderDash: [2,4] }] : []),
     ]},
     options: { plugins: { legend: { labels: { color: '#8b949e', font: { size: 11 } } } }, scales: { x: { display: false }, y: { ticks: { color: '#8b949e', callback: v => (v >= 0 ? '+' : '') + v + 'u' }, grid: { color: '#30363d' } } }, responsive: true, maintainAspectRatio: true }
   });
@@ -1158,6 +1181,8 @@ function renderModels() {
         </div>
       </div>`).join('');
 
+  renderScoreCalibration();
+
   const sports = [...new Set(picks.map(p => p.sport))].filter(Boolean);
   if (modelChart) modelChart.destroy();
   modelChart = new Chart(document.getElementById('modelChart'), {
@@ -1238,6 +1263,7 @@ function renderLog() {
   const rf = document.getElementById('filter-result').value;
   const sf = document.getElementById('filter-sport').value;
   const ef = document.getElementById('filter-edge').value;
+  const search = (document.getElementById('filter-search')?.value || '').toLowerCase().trim();
   const cutoff = dateRangeCutoff();
 
   let rows = [...picks].sort((a, b) => {
@@ -1250,6 +1276,7 @@ function renderLog() {
   else if (rf) rows = rows.filter(p => p.result === rf);
   if (sf) rows = rows.filter(p => p.sport === sf);
   if (ef) rows = rows.filter(p => edgeType(p.primary_edge) === ef);
+  if (search) rows = rows.filter(p => (p.bet || '').toLowerCase().includes(search) || (p.primary_edge || '').toLowerCase().includes(search));
 
   document.getElementById('log-body').innerHTML = rows.map((p, i) => {
     const rClass = p.result === 'win' ? 'result-w' : p.result === 'loss' ? 'result-l' : p.result === 'push' ? 'result-p' : 'result-o';
@@ -1337,6 +1364,7 @@ function renderLog() {
           <div class="pick-detail-section" onclick="event.stopPropagation()" style="grid-column:1/-1">
             <div class="my-bet-section">
               <h4>My Bet</h4>
+              ${(() => { const k = kellyStake(p, getBankroll()); return k != null && k > 0 ? `<div style="font-size:10px;color:var(--muted);margin-bottom:5px">Kelly suggest: <span style="color:var(--blue);font-weight:600">$${k}</span> <span style="opacity:.6">(half-Kelly · ${getBankroll() ? '$'+getBankroll()+' bankroll' : 'set bankroll in My Bets'})</span></div>` : ''; })()}
               <div class="my-bet-controls">
                 <button class="verify-btn ${myBet.verified ? 'verified' : ''}" onclick="toggleVerified('${pickId}', this)">✓ Bet it</button>
                 <input type="number" class="stake-input" placeholder="$ amount" min="0" step="1"
@@ -1461,6 +1489,121 @@ function toggleDetail(id, row) {
     panel.classList.add('open');
     row.classList.add('expanded');
   }
+}
+
+// ── Kelly Criterion ───────────────────────────────────────────────
+function kellyStake(pick, bankroll) {
+  if (!bankroll || !pick.score) return null;
+  const score = pick.score;
+  // Use historical win rate for this tier if 5+ samples, else interpolate
+  const tierPicks = settled().filter(p => p.score && Math.abs(p.score - score) <= 0.5);
+  const tw = tierPicks.filter(p => p.result === 'win').length;
+  const tl = tierPicks.filter(p => p.result === 'loss').length;
+  const p = tw + tl >= 5 ? tw / (tw + tl) : Math.min(0.70, 0.52 + (score - 6) * 0.04);
+  const oddsMatch = (pick.line || '').match(/([+-]\d{2,4})/);
+  const odds = oddsMatch ? parseInt(oddsMatch[1]) : -110;
+  const b = odds > 0 ? odds / 100 : 100 / Math.abs(odds);
+  const kelly = (p * b - (1 - p)) / b;
+  if (kelly <= 0) return 0;
+  return Math.round(bankroll * kelly * 0.5); // half-Kelly
+}
+
+// ── Score Calibration Chart ───────────────────────────────────────
+function renderScoreCalibration() {
+  const tiers = [
+    { label: '< 6', min: 0,  max: 6  },
+    { label: '6–6.9', min: 6,  max: 7  },
+    { label: '7–7.9', min: 7,  max: 8  },
+    { label: '8–8.9', min: 8,  max: 9  },
+    { label: '9–10',  min: 9,  max: 11 },
+  ];
+  const s = settled();
+  const data = tiers.map(t => {
+    const ps = s.filter(p => p.score != null && p.score >= t.min && p.score < t.max);
+    const w = ps.filter(p => p.result === 'win').length;
+    const l = ps.filter(p => p.result === 'loss').length;
+    return { count: ps.length, wr: w + l > 0 ? +(w / (w + l) * 100).toFixed(1) : null };
+  });
+  const canvas = document.getElementById('calibChart');
+  if (!canvas) return;
+  if (calibChart) calibChart.destroy();
+  calibChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: tiers.map((t, i) => `${t.label}`),
+      datasets: [
+        { label: 'Win Rate', data: data.map(d => d.wr), backgroundColor: data.map(d => d.wr === null ? '#30363d' : d.wr >= 52.4 ? 'rgba(63,185,80,.75)' : 'rgba(248,81,73,.75)'), borderRadius: 4 },
+        { type: 'line', label: 'Breakeven (52.4%)', data: new Array(tiers.length).fill(52.4), borderColor: '#d29922', borderWidth: 1.5, borderDash: [4,3], pointRadius: 0, fill: false },
+      ]
+    },
+    options: {
+      plugins: {
+        legend: { labels: { color: '#8b949e', font: { size: 11 } } },
+        tooltip: { callbacks: { afterLabel: (ctx) => `${data[ctx.dataIndex].count} picks` } }
+      },
+      scales: {
+        x: { ticks: { color: '#8b949e' } },
+        y: { min: 0, max: 100, ticks: { color: '#8b949e', callback: v => v + '%' }, grid: { color: '#30363d' } }
+      },
+      responsive: true, maintainAspectRatio: true
+    },
+    plugins: [{
+      id: 'countLabels',
+      afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        chart.getDatasetMeta(0).data.forEach((bar, i) => {
+          const count = data[i].count;
+          if (!count) return;
+          ctx.save();
+          ctx.fillStyle = count >= 5 ? '#8b949e' : '#d29922';
+          ctx.font = '10px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`n=${count}`, bar.x, bar.y - 4);
+          ctx.restore();
+        });
+      }
+    }]
+  });
+}
+
+// ── Bankroll Curve ────────────────────────────────────────────────
+function renderMBBankrollChart() {
+  const bankroll = getBankroll();
+  const canvas = document.getElementById('mbBankrollChart');
+  const emptyEl = document.getElementById('mbBankrollEmpty');
+  if (!bankroll) {
+    if (canvas) canvas.style.display = 'none';
+    if (emptyEl) emptyEl.style.display = '';
+    if (mbBankrollChart) { mbBankrollChart.destroy(); mbBankrollChart = null; }
+    return;
+  }
+  const bets = getActualBets();
+  const points = picks
+    .map((p, i) => { const id = String(p.id || i); const bet = bets[id]; if (!bet?.verified || !bet.stake || p.result === null) return null; const pl = calcActualPL(p, bet.stake); return pl !== null ? { date: p.date, pl } : null; })
+    .filter(Boolean)
+    .sort((a, b) => a.date > b.date ? 1 : -1);
+  if (!points.length) {
+    if (canvas) canvas.style.display = 'none';
+    if (emptyEl) { emptyEl.style.display = ''; emptyEl.textContent = 'No settled bets yet — bankroll chart will appear after your first result.'; }
+    if (mbBankrollChart) { mbBankrollChart.destroy(); mbBankrollChart = null; }
+    return;
+  }
+  if (canvas) canvas.style.display = '';
+  if (emptyEl) emptyEl.style.display = 'none';
+  let cur = bankroll;
+  const labels = ['Start'], data = [bankroll];
+  points.forEach(v => { cur += v.pl; labels.push(v.date.slice(5)); data.push(+cur.toFixed(2)); });
+  const color = cur >= bankroll ? '#3fb950' : '#f85149';
+  if (mbBankrollChart) mbBankrollChart.destroy();
+  mbBankrollChart = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Bankroll ($)', data, borderColor: color, backgroundColor: cur >= bankroll ? 'rgba(63,185,80,.08)' : 'rgba(248,81,73,.08)', tension: .3, pointRadius: 3, fill: true }] },
+    options: {
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) } } },
+      scales: { x: { display: false }, y: { ticks: { color: '#8b949e', callback: v => '$' + v.toFixed(0) }, grid: { color: '#30363d' } } },
+      responsive: true, maintainAspectRatio: true
+    }
+  });
 }
 
 // ── My Bets Tab ──────────────────────────────────────────────────
@@ -1660,6 +1803,7 @@ function renderMBLog() {
 function renderMyBetsTab() {
   renderMBKPIs();
   renderMBHighlights();
+  renderMBBankrollChart();
   renderMBPlChart();
   renderMBSportChart();
   populateMBFilters();
