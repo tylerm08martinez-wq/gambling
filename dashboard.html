@@ -1435,6 +1435,7 @@ function renderLog() {
             <h4>Bet</h4>
             <p style="font-size:13px;font-weight:600;color:var(--text);white-space:normal">${p.bet || '—'}</p>
             <p style="font-size:10px;color:var(--muted);margin-top:3px">${[p.sport, edgeType(p.primary_edge), p.date].filter(Boolean).join(' · ')}</p>
+            ${p.line ? `<p style="font-size:12px;font-weight:600;color:var(--blue);margin-top:5px">${p.line}</p>` : ''}
           </div>
           <div class="pick-detail-section">
             <h4>Game Result</h4>
