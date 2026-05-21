@@ -717,7 +717,7 @@ function saveActualBet(id, data) {
   debouncedSync();
 }
 function getBankroll() { return parseFloat(localStorage.getItem('bankroll') || '0'); }
-function setBankroll(v) { localStorage.setItem('bankroll', parseFloat(v) || 0); }
+function setBankroll(v) { localStorage.setItem('bankroll', parseFloat(v) || 0); debouncedSync(); }
 function getCurrentBankroll() {
   const starting = getBankroll();
   if (!starting) return 0;
@@ -757,7 +757,13 @@ async function loadActualBetsFromGH() {
     if (!res.ok) { setSyncStatus('error'); return; }
     const data = await res.json();
     _betsSHA = data.sha;
-    const bets = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
+    const raw = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
+    const { _settings, ...bets } = raw;
+    if (_settings?.bankroll) {
+      localStorage.setItem('bankroll', _settings.bankroll);
+      const bi = document.getElementById('bankrollInput');
+      if (bi) bi.value = _settings.bankroll;
+    }
     localStorage.setItem('actualBets', JSON.stringify(bets));
     setSyncStatus(token ? 'synced' : 'readonly');
     renderMyBets();
@@ -771,7 +777,8 @@ async function pushToGH() {
   if (!token) return;
   setSyncStatus('syncing');
   try {
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(getActualBets(), null, 2))));
+    const payload = { _settings: { bankroll: getBankroll() }, ...getActualBets() };
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
     const body = { message: 'chore: update actual bets', content };
     if (_betsSHA) body.sha = _betsSHA;
     const res = await fetch(BETS_API, {
@@ -1866,7 +1873,7 @@ function renderMyBetsTab() {
   if (curEl) {
     if (cur && cur !== starting) {
       const diff = cur - starting;
-      curEl.textContent = `→ $${cur.toFixed(2)} (${diff >= 0 ? '+' : ''}$${diff.toFixed(2)})`;
+      curEl.textContent = `→ $${cur.toFixed(2)} (${diff >= 0 ? '+$' : '-$'}${Math.abs(diff).toFixed(2)})`;
       curEl.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
     } else if (cur) {
       curEl.textContent = '';
