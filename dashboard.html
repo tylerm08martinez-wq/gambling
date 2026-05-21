@@ -576,16 +576,17 @@ function gameSearchUrl(pick) {
   // Only treat parenthetical as teams if it contains "vs" or "@"
   const teamMatch = bet.match(/\(([^)]*(?:\bvs\b|@)[^)]*)\)/i);
 
+  const date = pick.date || '';
+
   if (isProp) {
-    // "Stephon Castle Over 5.5 Rebounds" or "Nico Hoerner 2+ Total Bases"
     const propMatch = bet.match(/^(.+?)\s+(?:over|under)\s+[\d.]+\s+(.+?)(?:\s*\(|$)/i)
                   || bet.match(/^(.+?)\s+\d+\+\s+(.+?)(?:\s*\(|$)/i);
     const player = propMatch ? propMatch[1].trim() : '';
     const stat   = propMatch ? propMatch[2].trim() : '';
     const opponent = teamMatch ? teamMatch[1] : '';
     const q = player
-      ? encodeURIComponent(`${player} ${stat} stats ${opponent}`)
-      : encodeURIComponent(`${pick.sport || ''} ${opponent || bet.slice(0, 40)} stats`);
+      ? encodeURIComponent(`${player} ${stat} stats ${date}`)
+      : encodeURIComponent(`${pick.sport || ''} ${opponent || bet.slice(0, 40)} stats ${date}`);
     return `https://www.google.com/search?q=${q}`;
   }
 
@@ -593,7 +594,7 @@ function gameSearchUrl(pick) {
   const game = teamMatch
     ? teamMatch[1]
     : bet.replace(/\([^)]*\)/g, '').replace(/\b(ml|rl|moneyline)\b/gi, '').replace(/\s+/g, ' ').trim().slice(0, 50);
-  const q = encodeURIComponent(`${pick.sport || ''} ${game} score`);
+  const q = encodeURIComponent(`${pick.sport || ''} ${game} score ${date}`);
   return `https://www.google.com/search?q=${q}`;
 }
 
@@ -1788,9 +1789,7 @@ function renderMBLog() {
       : stake ? `<span style="color:var(--muted)">$${stake.toFixed(2)} at risk</span>` : '—';
     const badge = p.model === 'v1-trends' ? '<span class="badge badge-v1">V1</span>' : '<span class="badge badge-v2">V2</span>';
     const shortDate = p.date ? p.date.slice(5) : '—';
-    const cleanBet = (p.bet || '').replace(/\s*\([^)]*\)/g, '').trim();
-    const searchQ = encodeURIComponent(`${cleanBet} ${p.sport || ''} score ${p.date || ''}`);
-    const checkLink = `<a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="color:var(--accent);font-size:15px;text-decoration:none" title="Check score / result">🔍</a>`;
+    const checkLink = `<a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" style="color:var(--accent);font-size:15px;text-decoration:none" title="Check score / result">🔍</a>`;
     return `<tr>
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span></td>
       <td>${badge}</td>
