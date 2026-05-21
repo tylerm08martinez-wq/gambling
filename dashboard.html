@@ -488,6 +488,20 @@
 </div>
 
 <div id="tab-mybets" class="page">
+  <div id="bankroll-banner" class="card" style="margin-bottom:16px;padding:18px 20px;background:linear-gradient(135deg,#161b22,#1f2937);border:1px solid var(--border)">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Live Bankroll</div>
+        <div id="bankroll-banner-value" style="font-size:30px;font-weight:700;color:var(--text)">—</div>
+        <div id="bankroll-banner-meta" style="font-size:12px;color:var(--muted);margin-top:3px"></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Total Change</div>
+        <div id="bankroll-banner-change" style="font-size:22px;font-weight:600">—</div>
+        <div id="bankroll-banner-pct" style="font-size:12px;margin-top:3px"></div>
+      </div>
+    </div>
+  </div>
   <div class="mb-kpi-strip" id="mb-kpi-strip"></div>
   <div id="mb-highlights" class="mb-highlight-strip"></div>
   <div class="card" id="mb-bankroll-card" style="margin-bottom:16px">
@@ -1862,7 +1876,36 @@ function renderMBLog() {
   }).join('') || '<tr><td colspan="9" style="color:var(--muted);text-align:center;padding:24px">No verified bets match filters. Open a pick in Pick Log and tap "✓ Bet it".</td></tr>';
 }
 
+function renderBankrollBanner() {
+  const starting = getBankroll();
+  const current = getCurrentBankroll();
+  const valEl = document.getElementById('bankroll-banner-value');
+  const metaEl = document.getElementById('bankroll-banner-meta');
+  const chgEl = document.getElementById('bankroll-banner-change');
+  const pctEl = document.getElementById('bankroll-banner-pct');
+  if (!valEl) return;
+  if (!starting) {
+    valEl.textContent = '—';
+    metaEl.textContent = 'Set starting bankroll in Settings below';
+    chgEl.textContent = '—';
+    chgEl.style.color = 'var(--muted)';
+    pctEl.textContent = '';
+    return;
+  }
+  const diff = current - starting;
+  const pct = (diff / starting) * 100;
+  valEl.textContent = '$' + current.toFixed(2);
+  metaEl.textContent = 'Started at $' + starting.toFixed(2);
+  const sign = diff >= 0 ? '+' : '-';
+  const color = diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--muted)';
+  chgEl.textContent = sign + '$' + Math.abs(diff).toFixed(2);
+  chgEl.style.color = color;
+  pctEl.textContent = sign + Math.abs(pct).toFixed(1) + '%';
+  pctEl.style.color = color;
+}
+
 function renderMyBetsTab() {
+  renderBankrollBanner();
   renderMBKPIs();
   renderMBHighlights();
   renderMBBankrollChart();
