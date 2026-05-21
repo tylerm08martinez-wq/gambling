@@ -1809,9 +1809,10 @@ function renderMBLog() {
       : stake ? `<span style="color:var(--muted)">$${stake.toFixed(2)} at risk</span>` : '—';
     const badge = p.model === 'v1-trends' ? '<span class="badge badge-v1">V1</span>' : '<span class="badge badge-v2">V2</span>';
     const shortDate = p.date ? p.date.slice(5) : '—';
+    const gameTime = p.game_time ? `<div class="game-time" style="font-size:10px;color:var(--muted);margin-top:2px">${p.game_time}</div>` : '';
     const checkLink = `<a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" style="color:var(--accent);font-size:15px;text-decoration:none" title="Check score / result">🔍</a>`;
     return `<tr>
-      <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span></td>
+      <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span>${gameTime}</td>
       <td>${badge}</td>
       <td>${p.sport || '—'}</td>
       <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}</td>
