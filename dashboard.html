@@ -519,6 +519,7 @@
             <th>Stake</th>
             <th>Result</th>
             <th>P&L</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="mb-log-body"></tbody>
@@ -1787,6 +1788,8 @@ function renderMBLog() {
       : stake ? `<span style="color:var(--muted)">$${stake.toFixed(2)} at risk</span>` : '—';
     const badge = p.model === 'v1-trends' ? '<span class="badge badge-v1">V1</span>' : '<span class="badge badge-v2">V2</span>';
     const shortDate = p.date ? p.date.slice(5) : '—';
+    const searchQ = encodeURIComponent(`${p.bet || ''} ${p.sport || ''} ${p.date || ''}`);
+    const checkLink = `<a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="color:var(--accent);font-size:15px;text-decoration:none" title="Check score / result">🔍</a>`;
     return `<tr>
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span></td>
       <td>${badge}</td>
@@ -1796,8 +1799,9 @@ function renderMBLog() {
       <td>$${stake ? stake.toFixed(2) : '—'}</td>
       <td class="${rClass}">${rText}</td>
       <td>${plHtml}</td>
+      <td style="text-align:center">${checkLink}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:24px">No verified bets match filters. Open a pick in Pick Log and tap "✓ Bet it".</td></tr>';
+  }).join('') || '<tr><td colspan="9" style="color:var(--muted);text-align:center;padding:24px">No verified bets match filters. Open a pick in Pick Log and tap "✓ Bet it".</td></tr>';
 }
 
 function renderMyBetsTab() {
