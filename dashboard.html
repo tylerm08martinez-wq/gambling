@@ -144,6 +144,12 @@
   /* Bet Now link */
   .bet-now-btn { display: inline-block; padding: 3px 9px; border-radius: 5px; background: #1a3d2b; color: var(--green); font-size: 11px; font-weight: 600; text-decoration: none; white-space: nowrap; border: 1px solid #2a5c3f; transition: background .15s; }
   .bet-now-btn:hover { background: #234f38; }
+  .book-links { display: flex; gap: 4px; margin-top: 4px; }
+  .book-btn { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-decoration: none; white-space: nowrap; letter-spacing: .03em; }
+  .book-btn-primary { background: #1a3d2b; color: var(--green); border: 1px solid #2a5c3f; }
+  .book-btn-primary:hover { background: #234f38; }
+  .book-btn-alt { background: transparent; color: var(--muted); border: 1px solid var(--border); opacity: 0.75; }
+  .book-btn-alt:hover { opacity: 1; color: var(--text); }
   .col-betlink { width: 60px; }
 
   /* Date display — full vs short */
@@ -603,6 +609,16 @@ function bookBetUrl(pick) {
   if (book.includes('bet365'))     return 'https://www.bet365.com/';
   if (book.includes('pinnacle'))   return 'https://www.pinnacle.com/';
   return null;
+}
+
+function renderBookLinks(pick) {
+  const line = (pick.line || '').toLowerCase();
+  const isFD = line.includes('fanduel');
+  const isDK = line.includes('draftkings');
+  // If neither FD nor DK is explicitly recommended, show both as equal alts
+  const fdClass = isFD ? 'book-btn-primary' : 'book-btn-alt';
+  const dkClass = isDK ? 'book-btn-primary' : 'book-btn-alt';
+  return `<div class="book-links" onclick="event.stopPropagation()"><a href="https://sportsbook.fanduel.com/" target="_blank" rel="noopener" class="book-btn ${fdClass}" title="Bet on FanDuel${isFD ? ' (recommended)' : ''}">FD${isFD ? ' ★' : ''}</a><a href="https://sportsbook.draftkings.com/" target="_blank" rel="noopener" class="book-btn ${dkClass}" title="Bet on DraftKings${isDK ? ' (recommended)' : ''}">DK${isDK ? ' ★' : ''}</a></div>`;
 }
 
 function gameSearchUrl(pick) {
@@ -1401,7 +1417,7 @@ function renderLog() {
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span>${gameTime}</td>
       <td>${modelBadge}${vBadge}</td>
       <td>${p.sport || '—'}</td>
-      ${(() => { const k = kellyStake(p, getCurrentBankroll()); const kHtml = k != null ? `<div style="font-size:10px;color:${k > 0 ? 'var(--blue)' : 'var(--muted)'};margin-top:1px;white-space:nowrap">Kelly: ${k > 0 ? '$'+k : 'skip (neg edge)'}</div>` : ''; return `<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}${kHtml}</td>`; })()}
+      ${(() => { const k = kellyStake(p, getCurrentBankroll()); const kHtml = k != null ? `<div style="font-size:10px;color:${k > 0 ? 'var(--blue)' : 'var(--muted)'};margin-top:1px;white-space:nowrap">Kelly: ${k > 0 ? '$'+k : 'skip (neg edge)'}</div>` : ''; return `<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}${kHtml}${renderBookLinks(p)}</td>`; })()}
       <td>${inferBetType(p)}</td>
       <td>${p.line || '—'}</td>
       <td>${p.units || '—'}u</td>
@@ -1880,7 +1896,7 @@ function renderMBLog() {
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span>${gameTime}</td>
       <td>${badge}</td>
       <td>${p.sport || '—'}</td>
-      ${(() => { const k = kellyStake(p, getCurrentBankroll()); const kHtml = k != null ? `<div style="font-size:10px;color:${k > 0 ? 'var(--blue)' : 'var(--muted)'};margin-top:1px;white-space:nowrap">Kelly: ${k > 0 ? '$'+k : 'skip (neg edge)'}</div>` : ''; return `<td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}${kHtml}</td>`; })()}
+      ${(() => { const k = kellyStake(p, getCurrentBankroll()); const kHtml = k != null ? `<div style="font-size:10px;color:${k > 0 ? 'var(--blue)' : 'var(--muted)'};margin-top:1px;white-space:nowrap">Kelly: ${k > 0 ? '$'+k : 'skip (neg edge)'}</div>` : ''; return `<td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}${p.primary_edge ? `<div style="font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${edgeType(p.primary_edge)}</div>` : ''}${kHtml}${renderBookLinks(p)}</td>`; })()}
       <td style="font-size:12px;color:var(--muted)">${p.line || '—'}</td>
       <td>$${stake ? stake.toFixed(2) : '—'}</td>
       <td class="${rClass}">${rText}</td>
