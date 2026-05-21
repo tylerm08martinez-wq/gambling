@@ -604,16 +604,26 @@ function inferBetType(pick) {
 
 function edgeType(raw) {
   if (!raw) return 'Unknown';
-  const r = raw.trim();
-  if (r.startsWith('RLM')) return 'RLM';
+  // Normalize: strip "(Signal X)" and "(DimersX)" qualifiers so variants group together
+  const r = raw.trim()
+    .replace(/\s*\(Signal [A-Z]\+?\)/gi, '')
+    .replace(/\s*\(Dim[a-z.\s]*\)/gi, '')
+    .trim();
+  if (r.startsWith('RLM') || r.startsWith('Money/ticket') || r.startsWith('Reverse line')) return 'RLM';
   if (r.startsWith('Injury')) return 'Injury';
   if (r.startsWith('Steam')) return 'Steam';
   if (r.startsWith('ATS')) return 'ATS Trend';
+  if (r.startsWith('Prop gap') || r.startsWith('Prop steam')) return 'Prop gap/steam';
   if (r.startsWith('Prop')) return 'Prop';
-  if (r.startsWith('Contrarian') || r.startsWith('Underdog')) return 'Underdog fade';
-  if (r.startsWith('ERA') || r.startsWith('Pitching')) return 'Pitching Edge';
+  if (r.startsWith('Contrarian') || r.startsWith('Underdog') || r.startsWith('Home underdog')) return 'Underdog fade';
+  if (r.startsWith('ERA') || r.startsWith('Pitching') || r.startsWith('Broken pitcher')) return 'Pitching Edge';
+  if (r.startsWith('Season-trend') || r.startsWith('Season trend')) return 'Season trend prop';
+  if (r.startsWith('Quant convergence') || r.startsWith('Model convergence') || r.startsWith('Quant')) return 'Quant convergence';
+  if (r.startsWith('Plus-money') || r.startsWith('Plus money')) return 'Plus-money start';
+  if (r.startsWith('Matchup edge')) return 'Matchup edge';
+  if (r.startsWith('Late move')) return 'Late move';
   const sep = r.indexOf(' — ');
-  return sep > 0 ? r.slice(0, sep) : r.split(',')[0].slice(0, 22);
+  return sep > 0 ? r.slice(0, sep) : r.split(',')[0].slice(0, 24);
 }
 
 const settled = () => picks.filter(p => p.result !== null);
@@ -869,8 +879,13 @@ async function manualRefresh() {
 }
 
 // ── Today's picks callout ────────────────────────────────────────
+function localDateStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 function renderTodayCallout() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const todayPicks = picks.filter(p => p.date === today);
   const el = document.getElementById('todayCallout');
   const capUsed = todayPicks.length;
@@ -878,12 +893,15 @@ function renderTodayCallout() {
   if (todayPicks.length === 0) {
     el.innerHTML = `<div class="today-callout"><div class="today-title">📅 Today — No picks logged yet (0/4 daily cap)</div></div>`;
   } else {
-    const chips = todayPicks.map(p => {
+    const bets = getActualBets();
+    const chips = todayPicks.map((p, i) => {
       const badge = p.model === 'v1-trends'
         ? '<span class="badge badge-v1" style="font-size:10px;margin-right:4px">V1</span>'
         : '<span class="badge badge-v2" style="font-size:10px;margin-right:4px">V2</span>';
       const truncBet = p.bet && p.bet.length > 40 ? p.bet.slice(0, 40) + '…' : (p.bet || '—');
-      return `<span class="today-bet-chip">${badge}${truncBet}</span>`;
+      const isVerified = bets[String(p.id || picks.indexOf(p))]?.verified;
+      const checkmark = isVerified ? ' <span style="color:var(--green);font-size:10px">✓</span>' : '';
+      return `<span class="today-bet-chip">${badge}${truncBet}${checkmark}</span>`;
     }).join('');
     const capColor = capUsed >= 4 ? 'var(--red)' : capUsed >= 3 ? 'var(--yellow)' : 'var(--blue)';
     el.innerHTML = `
@@ -1098,11 +1116,13 @@ function renderModels() {
     const clv = avgClv(sp);
     const id = m === 'v1-trends' ? 'v1' : 'v2';
     const avgSc = (() => { const sc = ps.filter(p => p.score).map(p => p.score); return sc.length ? (sc.reduce((a, b) => a + b, 0) / sc.length).toFixed(1) + '/10' : '—'; })();
+    const smallSample = sp.length < 10;
     document.getElementById(`${id}-stats`).innerHTML = `
+      ${smallSample ? `<div style="font-size:11px;color:var(--yellow);background:#3d2e1a;border:1px solid #6b4e1a;border-radius:5px;padding:6px 10px;margin-bottom:10px">⚠️ Only ${sp.length} settled pick${sp.length !== 1 ? 's' : ''} — too small for significance. Need 20+ to draw conclusions.</div>` : ''}
       <div class="stat-grid">
         <div class="stat-item"><div class="label">Record</div><div class="val">${wins}W–${losses}L–${pushes}P</div></div>
-        <div class="stat-item"><div class="label">Win Rate</div><div class="val ${colorNum(parseFloat(wr)-52.4)}">${wr !== '—' ? wr + '%' : '—'}</div></div>
-        <div class="stat-item"><div class="label">ROI</div><div class="val ${colorNum(r)}">${fmtSigned(r, '%')}</div></div>
+        <div class="stat-item"><div class="label">Win Rate</div><div class="val ${smallSample ? '' : colorNum(parseFloat(wr)-52.4)}">${wr !== '—' ? wr + '%' : '—'}</div></div>
+        <div class="stat-item"><div class="label">ROI</div><div class="val ${smallSample ? '' : colorNum(r)}">${fmtSigned(r, '%')}</div></div>
         <div class="stat-item"><div class="label">Net Units</div><div class="val ${colorNum(net)}">${fmtSigned(net, 'u')}</div></div>
         <div class="stat-item"><div class="label">Avg CLV</div><div class="val ${colorNum(clv)}">${fmtSigned(clv, '%')}</div></div>
         <div class="stat-item"><div class="label">Avg Score</div><div class="val">${avgSc}</div></div>
@@ -1220,7 +1240,10 @@ function renderLog() {
   const ef = document.getElementById('filter-edge').value;
   const cutoff = dateRangeCutoff();
 
-  let rows = [...picks].sort((a, b) => a.date < b.date ? 1 : -1);
+  let rows = [...picks].sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+    return (b.game_time || '') > (a.game_time || '') ? 1 : -1;
+  });
   if (cutoff) rows = rows.filter(p => p.date >= cutoff);
   if (mf) rows = rows.filter(p => p.model === mf);
   if (rf === 'open') rows = rows.filter(p => p.result === null);
@@ -1242,7 +1265,7 @@ function renderLog() {
       : '<span class="badge badge-v2">V2</span>';
     const scoreVal = p.score || 0;
     const scorePill = p.score
-      ? `<span class="pill ${scoreVal >= 8 ? 'pill-green' : 'pill-yellow'}">${p.score}</span>`
+      ? `<span class="pill ${scoreVal >= 8 ? 'pill-green' : scoreVal >= 6 ? 'pill-yellow' : 'pill-red'}">${p.score}</span>`
       : '—';
     const gameTime = p.game_time ? `<div class="game-time" style="font-size:10px;color:var(--muted);margin-top:2px">${p.game_time}</div>` : '';
     const detailId = `detail-${p.id || i}`;
@@ -1423,7 +1446,7 @@ function dateRangeCutoff() {
   const d = new Date();
   if (activeDateRange === 'week')  d.setDate(d.getDate() - 7);
   if (activeDateRange === 'month') d.setDate(d.getDate() - 30);
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 // ── Pick row expand/collapse ──────────────────────────────────────
@@ -1454,7 +1477,7 @@ function mbDateRangeCutoff() {
   const d = new Date();
   if (mbActiveDateRange === 'week')  d.setDate(d.getDate() - 7);
   if (mbActiveDateRange === 'month') d.setDate(d.getDate() - 30);
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 function switchToMyBets() {
