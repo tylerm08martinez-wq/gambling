@@ -1,6 +1,5 @@
-const CACHE = 'bets-v1';
-const PRECACHE = [
-  '/gambling/dashboard.html',
+const CACHE = 'bets-v2';
+const STATIC = [
   '/gambling/manifest.json',
   '/gambling/icon-192.png',
   '/gambling/icon-512.png',
@@ -9,7 +8,7 @@ const PRECACHE = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting())
+    caches.open(CACHE).then(c => c.addAll(STATIC)).then(() => self.skipWaiting())
   );
 });
 
@@ -22,14 +21,23 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // For picks.json (GitHub raw), always try network first so data stays live
-  if (e.request.url.includes('picks.json') || e.request.url.includes('raw.githubusercontent')) {
+  const url = e.request.url;
+
+  // dashboard.html + GitHub data: always network-first, fall back to cache offline
+  if (url.includes('dashboard.html') || url.includes('raw.githubusercontent') || url.includes('picks.json') || url.includes('actual_bets.json')) {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
+      fetch(e.request).then(res => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => caches.match(e.request))
     );
     return;
   }
-  // For everything else: cache-first
+
+  // Static assets (icons, Chart.js): cache-first
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
       if (res.ok) {
