@@ -675,7 +675,7 @@
              onchange="setBankroll(this.value); syncBankrollInputs(); renderMyBetsTab(); renderMyBets()">
       <span id="sync-status" style="font-size:11px;margin-left:8px;font-weight:600">📱 local only</span>
     </div>
-    <div id="token-setup" style="margin-top:12px">
+    <div style="margin-top:12px">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <input type="password" id="gh-token-input" class="bankroll-input" style="width:220px;font-size:12px"
                placeholder="GitHub token (ghp_…)"
@@ -923,7 +923,6 @@ function updateTokenUI() {
   if (hint) hint.textContent = token
     ? '✓ token saved — clears if you delete it'
     : 'Create a token at github.com → Settings → Developer settings → Personal access tokens → Fine-grained · needs Contents: Read & Write on this repo';
-  if (setup) setup.style.display = token ? 'none' : '';
   if (banner) banner.style.display = token ? 'none' : '';
 }
 
