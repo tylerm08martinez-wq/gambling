@@ -537,6 +537,49 @@
       </table>
     </div>
   </div>
+  <div class="card" style="margin-bottom:16px">
+    <h2>Kelly Calculator</h2>
+    <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Win probability %</div>
+        <input type="number" id="kc-winpct" class="bankroll-input" style="width:90px" placeholder="55" min="1" max="99" oninput="calcKelly()">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">American odds</div>
+        <input type="text" id="kc-odds" class="bankroll-input" style="width:90px" placeholder="-110" oninput="calcKelly()">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Edge type</div>
+        <select id="kc-edge-type" class="bankroll-input" style="width:200px" onchange="calcKelly()">
+          <option value="0.5">½ Kelly — Cross-book gap / Steam</option>
+          <option value="0.25" selected>¼ Kelly — RLM / Sharp split</option>
+          <option value="0.125">⅛ Kelly — Trend / Situational</option>
+        </select>
+      </div>
+    </div>
+    <div id="kc-result" style="display:none;padding:14px;background:rgba(255,255,255,.03);border-radius:6px">
+      <div style="display:flex;gap:28px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Full Kelly</div>
+          <div id="kc-full" style="font-size:22px;font-weight:700;color:var(--blue)"></div>
+        </div>
+        <div>
+          <div id="kc-frac-label" style="font-size:11px;color:var(--muted);margin-bottom:4px">¼ Kelly</div>
+          <div id="kc-frac" style="font-size:22px;font-weight:700;color:var(--green)"></div>
+        </div>
+        <div id="kc-dollar-wrap" style="display:none">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Suggested stake</div>
+          <div id="kc-dollar" style="font-size:22px;font-weight:700;color:var(--yellow)"></div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Edge</div>
+          <div id="kc-edge-pct" style="font-size:22px;font-weight:700"></div>
+        </div>
+      </div>
+      <div id="kc-warning" style="font-size:11px;color:var(--orange);margin-top:10px;display:none"></div>
+    </div>
+  </div>
+
   <div class="card">
     <h2>⚙️ Settings</h2>
     <div class="bankroll-row">
@@ -1391,7 +1434,7 @@ function renderLog() {
           <div class="pick-detail-section" onclick="event.stopPropagation()" style="grid-column:1/-1">
             <div class="my-bet-section">
               <h4>My Bet</h4>
-              ${(() => { const k = kellyStake(p, getBankroll()); return k != null && k > 0 ? `<div style="font-size:10px;color:var(--muted);margin-bottom:5px">Kelly suggest: <span style="color:var(--blue);font-weight:600">$${k}</span> <span style="opacity:.6">(half-Kelly · ${getBankroll() ? '$'+getBankroll()+' bankroll' : 'set bankroll in My Bets'})</span></div>` : ''; })()}
+              ${(() => { const k = kellyStake(p, getBankroll()); const { label } = kellyFraction(p); return k != null && k > 0 ? `<div style="font-size:10px;color:var(--muted);margin-bottom:5px">Kelly suggest: <span style="color:var(--blue);font-weight:600">$${k}</span> <span style="opacity:.6">(${label} · ${getBankroll() ? '$'+getBankroll()+' bankroll' : 'set bankroll in My Bets'})</span></div>` : ''; })()}
               <div class="my-bet-controls">
                 <button class="verify-btn ${myBet.verified ? 'verified' : ''}" onclick="toggleVerified('${pickId}', this)">✓ Bet it</button>
                 <input type="number" class="stake-input" placeholder="$ amount" min="0" step="1"
@@ -1519,10 +1562,23 @@ function toggleDetail(id, row) {
 }
 
 // ── Kelly Criterion ───────────────────────────────────────────────
+// Edge type → Kelly fraction mapping (based on signal reliability)
+// Cross-book gaps / confirmed steam → ½ Kelly (highest confidence)
+// RLM confirmed / sharp vs public split → ¼ Kelly (medium confidence)
+// Model/trend/situational → ⅛ Kelly (soft edge, unverified)
+function kellyFraction(pick) {
+  const edge = (pick.primary_edge || '').toLowerCase();
+  if (/cross.?book|multi.?book|book gap|3\+ book|steam|mega.?sharp/.test(edge))
+    return { frac: 0.5, label: '½ Kelly' };
+  if (/rlm|reverse.?line|sharp.?split|sharp vs public|confirmed.?move|80%\+|90%\+/.test(edge))
+    return { frac: 0.25, label: '¼ Kelly' };
+  return { frac: 0.125, label: '⅛ Kelly' };
+}
+
 function kellyStake(pick, bankroll) {
   if (!bankroll || !pick.score) return null;
   const score = pick.score;
-  // Use historical win rate for this tier if 5+ samples, else interpolate
+  // Use historical win rate for this tier if 5+ samples, else interpolate from score
   const tierPicks = settled().filter(p => p.score && Math.abs(p.score - score) <= 0.5);
   const tw = tierPicks.filter(p => p.result === 'win').length;
   const tl = tierPicks.filter(p => p.result === 'loss').length;
@@ -1532,7 +1588,52 @@ function kellyStake(pick, bankroll) {
   const b = odds > 0 ? odds / 100 : 100 / Math.abs(odds);
   const kelly = (p * b - (1 - p)) / b;
   if (kelly <= 0) return 0;
-  return Math.round(bankroll * kelly * 0.5); // half-Kelly
+  const { frac } = kellyFraction(pick);
+  // Cap at 5% of bankroll regardless of Kelly signal — single-bet protection
+  return Math.round(Math.min(bankroll * kelly * frac, bankroll * 0.05));
+}
+
+// ── Kelly Calculator (interactive widget in My Bets tab) ─────────
+function calcKelly() {
+  const winPct = parseFloat(document.getElementById('kc-winpct').value);
+  const oddsStr = (document.getElementById('kc-odds').value || '').trim();
+  const frac = parseFloat(document.getElementById('kc-edge-type').value);
+  const resultEl = document.getElementById('kc-result');
+  if (!winPct || !oddsStr) { resultEl.style.display = 'none'; return; }
+  const p = winPct / 100;
+  const odds = parseInt(oddsStr);
+  if (isNaN(odds) || odds === 0) { resultEl.style.display = 'none'; return; }
+  const b = odds > 0 ? odds / 100 : 100 / Math.abs(odds);
+  const kelly = (p * b - (1 - p)) / b;
+  const fracKelly = kelly * frac;
+  const fracLabelMap = { 0.5: '½ Kelly', 0.25: '¼ Kelly', 0.125: '⅛ Kelly' };
+  const fracLabel = fracLabelMap[frac] || (frac * 100).toFixed(0) + '% Kelly';
+  document.getElementById('kc-full').textContent = kelly > 0 ? (kelly * 100).toFixed(2) + '%' : '—';
+  document.getElementById('kc-full').style.color = kelly > 0 ? 'var(--blue)' : 'var(--muted)';
+  document.getElementById('kc-frac-label').textContent = fracLabel;
+  document.getElementById('kc-frac').textContent = fracKelly > 0 ? (fracKelly * 100).toFixed(2) + '%' : '—';
+  document.getElementById('kc-frac').style.color = fracKelly > 0 ? 'var(--green)' : 'var(--muted)';
+  const edgePct = kelly > 0 ? '+' + (kelly * b * 100).toFixed(1) + '%' : 'No edge';
+  document.getElementById('kc-edge-pct').textContent = edgePct;
+  document.getElementById('kc-edge-pct').style.color = kelly > 0 ? 'var(--green)' : 'var(--red)';
+  const bankroll = getBankroll();
+  const dollarWrap = document.getElementById('kc-dollar-wrap');
+  const warning = document.getElementById('kc-warning');
+  if (bankroll && fracKelly > 0) {
+    const capped = Math.min(fracKelly, 0.05);
+    document.getElementById('kc-dollar').textContent = '$' + Math.round(bankroll * capped);
+    dollarWrap.style.display = '';
+    if (fracKelly > 0.05) {
+      warning.textContent = `Kelly says ${(fracKelly*100).toFixed(1)}% but capped at 5% of bankroll ($${Math.round(bankroll * 0.05)}).`;
+      warning.style.display = '';
+    } else {
+      warning.style.display = 'none';
+    }
+  } else {
+    dollarWrap.style.display = 'none';
+    warning.style.display = 'none';
+  }
+  resultEl.style.display = '';
 }
 
 // ── Score Calibration Chart ───────────────────────────────────────
