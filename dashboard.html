@@ -878,8 +878,15 @@ async function loadActualBetsFromGH() {
     if (!res.ok) { setSyncStatus('error'); return; }
     const data = await res.json();
     _betsSHA = data.sha;
-    const bets = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
-    localStorage.setItem('actualBets', JSON.stringify(bets));
+    const remote = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
+    // Merge: keep all remote keys, but preserve any local-only keys (device made bets before token was set)
+    const local = getActualBets();
+    const localOnlyKeys = Object.keys(local).filter(k => !(k in remote));
+    const merged = { ...remote };
+    localOnlyKeys.forEach(k => { merged[k] = local[k]; });
+    localStorage.setItem('actualBets', JSON.stringify(merged));
+    // If we had local-only keys, push the merged result up immediately
+    if (token && localOnlyKeys.length > 0) pushToGH();
     setSyncStatus(token ? 'synced' : 'readonly');
     renderMyBets();
     renderLog();
