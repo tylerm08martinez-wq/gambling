@@ -552,6 +552,10 @@
 </div>
 
 <div id="tab-mybets" class="page">
+  <div id="mb-sync-banner" style="display:none;margin-bottom:12px;padding:10px 14px;background:#2a1a00;border:1px solid var(--orange);border-radius:8px;font-size:12px;color:var(--orange)">
+    ⚠️ <strong>Bets are local-only on this device.</strong> Add a GitHub token in Settings below to sync across devices.
+    <span style="color:var(--muted)"> Bets made here won't appear on desktop until synced.</span>
+  </div>
   <div id="mb-bankroll-quick" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap">
     <span style="font-size:15px">💰</span>
     <span style="font-size:13px;color:var(--muted)">Bankroll:</span>
@@ -669,7 +673,7 @@
       <label>Bankroll:</label>
       <input type="number" class="bankroll-input" id="bankrollInput" placeholder="$1000" min="1"
              onchange="setBankroll(this.value); syncBankrollInputs(); renderMyBetsTab(); renderMyBets()">
-      <span id="sync-status" style="font-size:11px;margin-left:8px">📱 local only</span>
+      <span id="sync-status" style="font-size:11px;margin-left:8px;font-weight:600">📱 local only</span>
     </div>
     <div id="token-setup" style="margin-top:12px">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -914,11 +918,13 @@ function updateTokenUI() {
   const input = document.getElementById('gh-token-input');
   const hint  = document.getElementById('token-hint');
   const setup = document.getElementById('token-setup');
+  const banner = document.getElementById('mb-sync-banner');
   if (input && !input.value && token) input.value = '••••••••••••••••';
   if (hint) hint.textContent = token
     ? '✓ token saved — clears if you delete it'
     : 'Create a token at github.com → Settings → Developer settings → Personal access tokens → Fine-grained · needs Contents: Read & Write on this repo';
   if (setup) setup.style.display = token ? 'none' : '';
+  if (banner) banner.style.display = token ? 'none' : '';
 }
 
 function calcActualPL(pick, stake) {
@@ -1142,10 +1148,17 @@ function renderKPIs() {
     { label: 'Avg Score', value: avgScore, cls: '', sub: 'confidence rating' },
   ];
 
-  // Append BANKROLL KPI if set — makes it visible without navigating to My Bets
-  const bankrollVal = getBankroll();
-  if (bankrollVal > 0) {
-    kpis.push({ label: 'Bankroll', value: '$' + bankrollVal.toLocaleString(), cls: 'yellow', sub: 'tap My Bets to edit', _noAnimate: true });
+  // Append BANKROLL KPI if set — dynamic balance = starting ± P&L from verified bets
+  const balData = getCurrentBalance();
+  if (balData) {
+    const sign = balData.netPL >= 0 ? '+' : '';
+    const plColor = balData.netPL > 0 ? 'var(--green)' : balData.netPL < 0 ? 'var(--red)' : 'var(--muted)';
+    const plStr = balData.netPL !== 0
+      ? ` <span style="font-size:11px;color:${plColor};font-weight:600">(${sign}$${Math.abs(balData.netPL).toFixed(2)})</span>`
+      : '';
+    kpis.push({ label: 'Balance', value: `$${balData.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}${plStr}`, cls: 'yellow', sub: `from $${balData.starting.toLocaleString()} starting`, _noAnimate: true });
+  } else if (getBankroll() > 0) {
+    kpis.push({ label: 'Bankroll', value: '$' + getBankroll().toLocaleString(), cls: 'yellow', sub: 'tap My Bets to edit', _noAnimate: true });
   }
 
   document.getElementById('kpi-strip').innerHTML = kpis.map(k =>
