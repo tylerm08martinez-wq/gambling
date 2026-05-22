@@ -1399,6 +1399,7 @@ function renderLog() {
     <tr class="pick-detail-row">
       <td colspan="13">
         <div class="pick-detail-panel" id="${detailId}">
+          <div style="grid-column:1/-1;font-size:14px;font-weight:600;color:var(--text);line-height:1.4;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:4px;word-break:break-word;white-space:normal;overflow-wrap:anywhere">${p.bet || ''}</div>
           ${p.score ? `<div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:2px">
             <span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Model Score</span>
             <span class="pill ${p.score >= 8 ? 'pill-green' : p.score >= 6 ? 'pill-yellow' : 'pill-red'}">${p.score}</span>
