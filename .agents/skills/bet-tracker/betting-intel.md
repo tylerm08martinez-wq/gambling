@@ -710,3 +710,15 @@ None yet — will populate as data accumulates.
 - Fourteenth+ consecutive V2 no-pick day driven by data-access failures. Model working as designed.
 - TOR/NYY reinforces: public steam (line moving with heavy public) is the dominant pattern in this data environment where splits can't be confirmed independently.
 
+---
+
+### 2026-05-22 — Bet Tracker Results
+
+**Resolved**: 1 pick (1-0-0)
+
+**Observations**:
+- Arizona Diamondbacks ML vs Colorado Rockies (E-Rod home form + COL opener/bulk disadvantage, V1-Trends) — win, ARI 2-1, margin +1. The read got home, but barely; the opener/bulk fade was valid enough for ML, not strong enough to imply run-line confidence.
+
+**Pattern updates**:
+- COL opener/bulk day as broken-starter equivalent: first test passes, but by one run. Keep it as a low-to-medium confidence sub-rule until it wins with cleaner offensive separation.
+- Chalk-trap refinement held at -150: structural pitching disadvantage can justify moderate chalk, but the one-run finish argues against inflating score or units.

@@ -12,8 +12,10 @@ All data logic (stats, math, formatting) is handled by `tracker.py`. This skill 
 2. Calling `tracker.py` for all data operations
 3. Writing the Daily Recap and intel log (the creative/analytical parts Codex does better)
 
-**Script location:** `.Codex/skills/bet-tracker/tracker.py`
+**Script location:** `.agents/skills/bet-tracker/tracker.py`
 **Data files:** `picks.json`, `betting-intel.md` — both in the same directory.
+
+Use `python3` when running tracker commands on macOS; `python` may not be installed.
 
 ---
 
@@ -31,7 +33,7 @@ Ask the user for:
 
 Then run:
 ```bash
-python ".Codex/skills/bet-tracker/tracker.py" log \
+python3 ".agents/skills/bet-tracker/tracker.py" log \
   --model <model> \
   --sport "<sport>" \
   --bet "<full bet with opponent>" \
@@ -51,7 +53,7 @@ Confirm the logged pick to the user.
 
 Look up the pick by ID, then run:
 ```bash
-python ".Codex/skills/bet-tracker/tracker.py" resolve <id> <outcome> \
+python3 ".agents/skills/bet-tracker/tracker.py" resolve <id> <outcome> \
   --closing-line "<american_odds>" \
   --final-score "<score>" \
   --game-margin <int> \
@@ -82,7 +84,7 @@ For each open pick where `date <= today`, web search for the result in parallel:
 
 Determine win/loss/push from the result. For each resolved pick, ALSO web-search for the closing line of the exact bet (e.g. "MLB closing line Cardinals -1.5 [date]" or "[player] [prop] closing line [date]"). Prefer Pinnacle; fall back to DK/FanDuel consensus. Then run:
 ```bash
-python ".Codex/skills/bet-tracker/tracker.py" resolve <id> <outcome> \
+python3 ".agents/skills/bet-tracker/tracker.py" resolve <id> <outcome> \
   --closing-line "<american_odds>" \
   --final-score "<score>" \
   --game-margin <int> \
@@ -96,7 +98,7 @@ If a result can't be found (game postponed, future game), skip and leave open.
 ### Step 2: Run the dashboard
 
 ```bash
-python ".Codex/skills/bet-tracker/tracker.py" stats
+python3 ".agents/skills/bet-tracker/tracker.py" stats
 ```
 
 Print the full output verbatim.
