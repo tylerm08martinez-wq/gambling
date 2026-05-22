@@ -1066,13 +1066,18 @@ function renderTodayCallout() {
   } else {
     const bets = getActualBets();
     const chips = todayPicks.map((p, i) => {
+      const pickIdx = picks.indexOf(p);
+      const pickId = p.id || pickIdx;
+      const detailId = `detail-${pickId}`;
       const badge = p.model === 'v1-trends'
         ? '<span class="badge badge-v1" style="font-size:10px;margin-right:4px">V1</span>'
         : '<span class="badge badge-v2" style="font-size:10px;margin-right:4px">V2</span>';
-      const truncBet = p.bet && p.bet.length > 40 ? p.bet.slice(0, 40) + '…' : (p.bet || '—');
-      const isVerified = bets[String(p.id || picks.indexOf(p))]?.verified;
+      const truncBet = p.bet && p.bet.length > 36 ? p.bet.slice(0, 36) + '…' : (p.bet || '—');
+      const isVerified = bets[String(pickId)]?.verified;
       const checkmark = isVerified ? ' <span style="color:var(--green);font-size:10px">✓</span>' : '';
-      return `<span class="today-bet-chip">${badge}${truncBet}${checkmark}</span>`;
+      const timeSpan = p.game_time ? `<span class="chip-time">${p.game_time}</span>` : '';
+      const gotoHint = '<span class="chip-goto">→ Log</span>';
+      return `<span class="today-bet-chip" onclick="gotoPickInLog('${detailId}')" title="${(p.bet||'').replace(/"/g,'&quot;')}">${badge}${truncBet}${checkmark}${gotoHint}${timeSpan}</span>`;
     }).join('');
     const capColor = capUsed >= 4 ? 'var(--red)' : capUsed >= 3 ? 'var(--yellow)' : 'var(--blue)';
     el.innerHTML = `
@@ -1680,8 +1685,7 @@ function toggleDetail(id, row) {
 // ── Navigate from Today callout to Pick Log ─────────────────────
 function gotoPickInLog(detailId) {
   // Switch to Pick Log tab
-  const logTab = document.querySelector('.tab[onclick*="showTab('log'"]') ||
-    [...document.querySelectorAll('.tab')].find(t => t.textContent.trim() === 'Pick Log');
+  const logTab = [...document.querySelectorAll('.tab')].find(t => t.textContent.trim() === 'Pick Log');
   if (logTab) {
     showTab('log', logTab);
   }
