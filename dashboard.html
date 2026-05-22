@@ -315,6 +315,21 @@
     /* Bet column fills remaining ~138px with ellipsis */
     .mb-picks-table td:nth-child(4) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   }
+
+  /* ── Tab scroll-fade hint (mobile only) ─────────────────────── */
+  @media (max-width: 600px) {
+    .tabs-wrap { position: relative; }
+    .tabs-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 4px;
+      width: 40px;
+      background: linear-gradient(to right, transparent, var(--bg) 85%);
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .tabs-wrap.scrolled-end::after { opacity: 0; }
+  }
 </style>
 </head>
 <body>
@@ -330,12 +345,14 @@
   </div>
 </header>
 
-<div class="tabs">
+<div class="tabs-wrap">
+<div class="tabs" id="tabs-bar">
   <div class="tab active" onclick="showTab('overview', this)">Overview</div>
   <div class="tab" onclick="showTab('models', this)">V1 vs V2</div>
   <div class="tab" onclick="showTab('edges', this)">Edge Breakdown</div>
   <div class="tab" onclick="showTab('log', this)">Pick Log</div>
   <div class="tab" id="tab-btn-mybets" onclick="showTab('mybets', this)">My Bets</div>
+</div>
 </div>
 
 <div id="tab-overview" class="page active">
@@ -1955,6 +1972,8 @@ function showTab(name, el) {
   el.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'mybets') renderMyBetsTab();
+  // Scroll active tab into view within the tab bar
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 }
 
 // ── Init ─────────────────────────────────────────────────────────
