@@ -2,248 +2,209 @@
 name: sports-betting
 description: "V1-TRENDS: Find today's best sports bets using ATS trends, expert consensus, situational angles, and line movement. Use when looking for today's best bets (trends-based model). Compare performance against sports-betting-sharp."
 argument-hint: [sport or "all"]
-allowed-tools: WebSearch, WebFetch
+allowed-tools: WebSearch, WebFetch, Read, Write
 ---
 
-# Sports Betting Research — Today's Best Bets (V1: Trends Model)
+# V1-Trends — Today's Best Bets
 
 ## Goal
-Research today's games across all major sports, identify value bets where the odds offer positive expected value, and deliver a ranked list of picks with reasoning.
+Identify value bets from props, ATS trends, situational spots, line movement, and expert consensus. **Props and totals are the primary targets** — moneylines only with confirmed sharp signal.
 
-## Inputs
-- **Sport filter**: `$ARGUMENTS` — specific sport (NBA, NFL, MLB, NHL, NCAAB, NCAAF, soccer) or "all" / blank for everything
-- **Today's date**: Always use today's date when searching for games and odds
+**Sport scope: MLB, NBA, NFL only.** Research only active seasons — do not waste tokens on sports not currently in season:
+- **MLB:** April – October
+- **NBA:** October – June (playoffs through June)
+- **NFL:** September – February (preseason Aug, regular season Sep–Jan, playoffs through Feb)
+- If today's date falls outside a sport's season, skip it entirely.
+
+**Daily cap: 4 picks maximum across V1 and V2 combined.** Check Step 0 for today's count before researching. If already at 4, output "Daily cap reached — sitting out."
 
 ## Process
 
-### 0. Read Betting Intelligence Log
+### 0. Performance Context — read before researching
 
-Before researching any games, read `.Codex/skills/bet-tracker/betting-intel.md`.
-
-Extract and apply:
-- **Active Patterns**: Treat these as confirmed priors — if a pattern applies to a game today, adjust that game's confidence score up or down accordingly and note it in the pick breakdown.
-- **Patterns to Avoid**: If today's pick matches a logged failure pattern, flag it explicitly and reduce the score by 1–2 points.
-- **Edge Type Patterns**: If certain signal types have been underperforming, downweight them in scoring.
-- **Sport-Specific Observations**: Apply any relevant sport/league notes to today's candidates.
-- **Score Calibration Notes**: If past scores have been inflated/deflated for certain edge types, recalibrate.
-
-If the log is empty or has no relevant entries, proceed normally.
-
-### 1. Find Today's Games & Odds
-
-Search for today's lines across major sports. Use multiple searches in parallel:
-
-```
-WebSearch: "NBA odds today [date] best bets picks"
-WebSearch: "MLB odds today [date] best bets"
-WebSearch: "NHL odds today [date] picks"
-WebSearch: "NFL odds today [date]" (if applicable)
-WebSearch: "soccer odds today [date] best bets"
+Detect machine, then pull and read picks.json:
+```bash
+# Detect OS
+if [ "$(uname)" = "Darwin" ]; then
+  GAMBLING="/Users/tylermartinez/Projects/gambling"
+else
+  GAMBLING="C:/Users/metro/Claude/gambling"
+fi
+PICKS="$GAMBLING/.agents/skills/bet-tracker/picks.json"
+git -C "$GAMBLING" pull
 ```
 
-Also fetch odds aggregators for raw lines:
-- `https://www.actionnetwork.com/todays-picks`
+From the settled v1-trends picks, compute:
+- **Today's pick count** — count all picks (v1-trends + v2-sharp) with today's date. If ≥ 4, stop: "Daily cap reached."
+- **Win rate by sport** — which sports are hitting vs. losing
+- **Win rate by edge type** — which signal types (ATS trend, RLM, Steam, Injury, Prop gap, Situational) are profitable
+- **Win rate by score tier** — are higher-scored picks actually outperforming lower ones?
+- **Open picks today** — list any picks already logged for today (do not duplicate)
+
+Use this to **calibrate confidence** during scoring:
+- If a sport is below 45% win rate on 5+ settled picks → raise the score threshold to 7.0 for that sport
+- If an edge type is below 40% win rate on 5+ settled picks → reduce its Confidence bonus by 1 point
+- If no settled picks yet → proceed with default thresholds
+
+Print a one-line context summary before researching, e.g.:
+`📊 Context: MLB 5-2 (71%), ATS trend 4-3 (57%), props 3-1 (75%) — no threshold changes | 1 pick logged today`
+
+### 1a. Prop Research — run FIRST (2 WebSearch calls, free)
+
+Issue both searches in one turn:
+```
+WebSearch: "[sport] player prop line gaps DraftKings FanDuel BetMGM [date]"
+WebSearch: "[sport] best player props today sharp value [date]"
+```
+
+**Target prop types by sport:**
+- **MLB:** pitcher strikeouts (K's), batter hits, total bases, first 5 innings total
+- **NBA:** points, assists, rebounds on non-star players (books use simpler models on these)
+- **NFL:** passing yards, rushing yards, receiving yards, receptions
+
+**Flag as a prop candidate if:**
+- Line gap ≥ 0.5 units across DK / FD / BetMGM, OR
+- Prop line moved 0.5+ since open with no news explanation
+
+If 2+ prop candidates found → skip Step 1b game line research entirely (early exit, save tokens).
+
+### 1b. Game Line Research — only if props didn't yield 2+ candidates
+
+Token budget: ≤2 WebFetch calls (props already used 0 fetches).
+
+Issue searches in one turn:
+```
+WebSearch: "[sport] best bets picks today [date]"
+WebSearch: "[sport] odds line movement [date]"
+WebSearch: "[sport] injury report starter out [date]"
+```
+
+**Primary fetch (if needed):**
 - `https://www.covers.com/picks/best-bets-today`
+
+**Conditional fetch (only if primary lacks data):**
 - `https://www.oddsshark.com/picks/best-bets`
 
-For each game found, collect:
-- **Teams / matchup**
-- **Sport and league**
-- **Game time**
-- **Moneyline** (both sides)
-- **Spread** (ATS line + juice)
-- **Over/Under** (total + juice)
-- **Opening line vs current line** (line movement)
-- **Public betting %** (if available)
-- **Sharp/professional money side** (if available)
+Stop fetching once you have 3–5 candidate games with lines + at least one signal each.
 
-### 2. Research Contextual Factors
+**Fetch failure:** Skip failed URLs and use next source. If all fail, output: *"No qualifying picks today — data sources unavailable."* Do not fabricate picks.
 
-For each promising game, search for relevant factors:
+**Stale URLs (do not fetch):**
+- ~~actionnetwork.com/todays-picks~~ — 404
 
-```
-WebSearch: "[Team] injury report today"
-WebSearch: "[Team] recent form last 5 games"
-WebSearch: "[Team] vs [Team] head to head"
-WebSearch: "[matchup] expert picks consensus today"
-```
+For each candidate game collect: matchup, sport, time, ML/spread/total + juice, opening vs current line, public % if available.
 
-Key factors to evaluate:
-- **Injuries**: Missing starters, key players listed as out/doubtful
-- **Rest/fatigue**: Back-to-back games, travel schedule
-- **Recent form**: Last 5–10 games ATS, home vs away splits
-- **Head-to-head**: Historical matchup results and ATS record
-- **Weather**: Outdoor sports — wind speed, rain, temperature
-- **Motivation**: Playoff implications, rivalry games, revenge spots
-- **Line movement**: Which direction the line moved and why (sharp vs public)
+### 2. Line Shopping — best-effort, not a gate
 
-### 3. Identify Value Bets
+Compare lines across DK / FD / BetMGM when the data is reachable:
+> "DK: [line] · FD: [line] · MGM: [line] → Best: [book] at [line]"
 
-A value bet exists when the implied probability from the odds is **lower** than your estimated true probability. Prioritize:
+If only one or two books are surfaced (common — most articles cite a single book), use what you have and **note "single-book verified — line shopping incomplete" as a risk on the pick.** Do NOT sit out solely because cross-book verification failed. A 0.5-point difference is a ~5% edge boost when reachable; missing it is a known cost, not a disqualifier.
 
-#### 🎯 Strong Value Indicators
-- **Reverse line movement**: Public money is on Team A but line moves toward Team B (sharps on B)
-- **Steam moves**: Line moves significantly at multiple books simultaneously (sharp syndicate action)
-- **Line move against public**: 60%+ public bets on one side, but line moves the other way
-- **Key number crosses**: Line moves through 3, 7, 10 in football — critical hook numbers
-- **Injury impact not yet priced in**: Major injury reported but line hasn't adjusted
+Always recommend the best line you actually saw, with the book name. If lines are identical across all three, note it.
 
-#### ⚠️ Avoid
-- Chasing public consensus without line value
-- Betting heavily juiced lines (−130 or worse) without strong conviction
-- Same-game parlays (high vig, correlated legs)
-- Betting > 3 units on any single game
+### 3. Identify Value Signals
 
-### 4. Score Each Pick
+**Priority order (highest edge first):**
+1. **Prop gap** — ≥ 0.5 unit difference across books, or line moved 0.5+ with no news
+2. **Model/expert convergence** — reputable model publishes quantified edge ≥6% (Dimers, BettingPros, RotoWire, DK Network, FanDuel Research), OR 2+ independent sources land on the same pick. Plus-money + model edge is the strongest retail-data signal.
+3. **Season-trend prop edge** — pitcher avg ≥0.8 K below the K line (or ≥0.8 above for Over), batter on 5+ game hit streak with matchup edge, role-player avg ≥1.0 unit from line in the favorable direction. Cleanest retail-reachable prop signal.
+4. **Total (over/under)** — structural inefficiency (injury to key offensive/defensive player, weather, pace mismatch)
+5. **Reverse line movement** — public on A, line moves toward B (confirm 70%+ public, actual move required)
+6. **ATS trend** — 5+ of last 7 ATS, situational angle (rest, travel, revenge, division)
+7. **Unpriced injury** — major injury, line hasn't adjusted (or teammate usage boost)
+8. **Moneyline** — only with confirmed RLM or steam; avoid heavy juice (worse than −130)
 
-Rate every candidate bet on two dimensions:
+Avoid: chasing public consensus, parlays, juice worse than −130 without Confidence ≥ 8.
 
-#### Confidence Score (1–10)
-| Signal | Points |
-|--------|--------|
-| Sharp money indicator confirmed | +3 |
-| Reverse line movement present | +2 |
-| Strong ATS trend (5+ of last 7) | +2 |
-| Key injury advantage | +2 |
-| Favorable weather/situational spot | +1 |
-| Expert consensus 60%+ aligned | +1 |
-| Conflicting signals or unclear edge | −2 |
-| Line already moved significantly | −1 |
+### 4. Score
 
-#### Value Score (1–10) — based on implied vs estimated probability
-| Edge | Score |
-|------|-------|
-| >8% positive EV estimated | 10 |
-| 5–8% positive EV | 8 |
-| 3–5% positive EV | 6 |
-| 1–3% positive EV | 4 |
-| Near breakeven (<1%) | 2 |
+**Confidence base: 4.** Add bonuses:
+- Prop gap confirmed across books: +4
+- Model/expert convergence (≥6% quant edge OR 2+ source agreement): +3
+- Sharp money / RLM confirmed (70%+, line moved): +3
+- Season-trend prop edge (≥0.8 unit from line in favorable direction): +2
+- Strong ATS trend (5+ of last 7): +2
+- Key injury advantage / unpriced usage boost: +2
+- Favorable situational spot: +1
+- Plus-money price (+100 or better) on a side a model likes: +1
+- Conflicting signals: −2
+- Single-book verified (no cross-book confirmation): −1
 
-**Overall Score = (Confidence × 0.6) + (Value × 0.4)**
+Cap at 10.
 
-### 5. Present Results
+**Value (1–10):** based on edge — >8% EV: 10 · 5–8%: 8 · 3–5%: 6 · 1–3%: 4 · <1%: 2
 
-Sort picks by Overall Score, highest first. Only include bets with Overall Score ≥ 5.0.
+**Overall = Confidence × 0.6 + Value × 0.4.** Recommend only if **≥ 6.0**.
 
----
+**Unit sizing:** Score ≥ 8.0 → 2u · Score 6.0–7.9 → 1u · Below 6.0 → no pick.
+**Hard cap: 2u maximum per pick. No exceptions.**
 
-## Today's Best Bets — [Date]
+### 4. Output
 
-**Market snapshot**: X games researched across Y sports · Z picks meet value threshold
-
----
-
-### 🏆 Top Picks
-
-| # | Bet | Line | Book | Sport | Conf | Value | Score | Rec |
-|---|-----|------|------|-------|------|-------|-------|-----|
-| 1 | Team A −3.5 | −110 | DraftKings | NBA | 🟢 8/10 | 🟢 8/10 | 8.0 | ✅ **Strong** |
-| 2 | Over 214.5 | −108 | FanDuel | NBA | 🟢 7/10 | 🟡 6/10 | 6.6 | ✅ **Play** |
-| 3 | Team B ML | +145 | BetMGM | MLB | 🟡 6/10 | 🟡 6/10 | 6.0 | ⚠️ **Lean** |
-
-**Color key:** 🟢 7–10 · 🟡 4–6 · 🔴 0–3
-
----
-
-### 📋 Pick Breakdowns
-
-For each top pick, provide:
-
-**[#]. [Bet Description]** · [Line] · [Sport/League]
-- **Edge**: [Primary reason this is a value bet — sharp action, injury, trend, etc.]
-- **Supporting factors**: [2–3 bullet points with specific data]
-- **Risk**: [Main counterargument or risk factor]
-- **Line movement**: [Opened at X, now at Y — moved toward/away from public]
-- **Suggested book**: [Where best line is available]
-- **Unit size**: 1u / 2u / 3u based on confidence
-
----
-
-### 📊 Summary Stats
-- **Total picks**: X
-- **Strong plays (Score 8+)**: X
-- **Value plays (Score 6–7.9)**: X
-- **Leans (Score 5–5.9)**: X
-- **Sports covered**: [list]
-
-### ❌ Games Researched But Skipped
-- **[Matchup]**: [1-line reason — e.g., "No edge, public side, line moved too far"]
-
-### 💡 Bankroll Notes
-- **1 unit** = your standard flat bet size (e.g., 1–2% of bankroll)
-- Never bet more than 3 units on a single game
-- Avoid parlays unless specifically noted as correlated value
-
-### 📝 Log Your Picks
-After presenting picks, ask the user: **"Which of these are you betting? I'll log them to the tracker."**
-
-For each confirmed bet, run:
-```bash
-python ".Codex/skills/bet-tracker/tracker.py" log \
-  --model v1-trends \
-  --sport "[sport]" \
-  --bet "[Full bet description including opponent — e.g. 'Braves ML vs PHI']" \
-  --line [odds] \
-  --units [1/2/3] \
-  --score [overall_score] \
-  --edge "[primary edge — e.g. ATS trend, RLM, injury]" \
-  --line-num [spread or RL number, 0 for ML, total number for over/under]
-```
-
-Confirm the logged pick ID to the user.
-
----
-
-### 📓 Update Betting Intelligence Log
-
-After logging picks, append a new entry to `.Codex/skills/bet-tracker/betting-intel.md` under **Session Log**. Use this format:
+Rank picks by score descending (highest confidence first) so top picks are easy to identify.
 
 ```
-### [YYYY-MM-DD] — V1-Trends Session
-
-**Games researched**: X across [sports]
-**Picks made**: X (Score X.X avg)
-
-**Signal observations**:
-- [Edge type] was [strong/weak/absent] today — [brief reason]
-- [Any market behavior worth noting — e.g. "public hammering favorites across NBA, lines holding firm"]
-
-**Calibration notes** (if any picks were close calls or borderline):
-- [Bet] at score [X] — [what tipped it in/out, what to watch for in results]
-
-**Patterns reinforced or challenged**:
-- [Any match with existing patterns, or new pattern emerging]
+🎯 V1-Trends Picks — [Date]
+X researched · Y props · Z game lines · [N] picks (ranked by score)
+Daily cap: [X/4 used across V1+V2]
 ```
 
-Only add entries that contain real observations. If nothing notable happened (e.g. no games found, or routine picks with no signal nuance), write a one-liner: `[Date] — V1-Trends: X picks logged, no notable observations.`
+Per pick:
+- **Type**: Prop / Total / Spread / ML
+- **Edge**: [primary reason]
+- **Lines**: DK [X] · FD [X] · MGM [X] → Best: [book]
+- **Support**: [2-3 specific data points]
+- **Risk**: [main counterargument]
+- **Units**: 1u or 2u
 
-After results come in (via `/bet-tracker`), revisit calibration notes and add outcome context if the result was surprising.
+If no picks: *"No qualifying picks today (threshold 6.5). Sitting out is the play."*
 
----
+### 5. Auto-Log
 
-## Slack Message Format
+Append each qualifying pick to `$PICKS` (set in Step 0 — create as `[]` if missing).
 
-**Delivery method**: Use the `mcp__Slack__slack_send_message` MCP tool with `channel_id: "U0ATA0A6NKB"`. Do NOT use curl + webhook — the sandbox egress proxy blocks `hooks.slack.com` (returns 403 `host_not_allowed`).
+Before reading, pull latest: `git -C "$GAMBLING" pull`
+After writing, push: `git -C "$GAMBLING" add .agents/skills/bet-tracker/picks.json && git -C "$GAMBLING" commit -m "chore: log picks" && git -C "$GAMBLING" push origin main`
 
-When sending results via Slack DM to `U0ATA0A6NKB`, use this phone-friendly format. NO markdown tables.
+```json
+{
+  "id": "[YYYYMMDD]-[sport]-[short-label]",
+  "date": "[YYYY-MM-DD]",
+  "game_time": "[H:MM AM/PM AZ or null if unknown]",
+  "model": "v1-trends",
+  "sport": "[sport]",
+  "bet_type": "prop|total|spread|moneyline|1H",
+  "bet": "[description]",
+  "line": "[odds @ best book]",
+  "units": [1-2],
+  "score": [0-10],
+  "primary_edge": "[Prop gap / ATS trend / RLM / Steam / Injury / Situational]",
+  "result": null,
+  "units_won_lost": null,
+  "closing_line": null,
+  "clv": null
+}
+```
 
-Line 1: 🎯 *V1-Trends Picks | [Weekday Mon DD]*
-Line 2 (italic): [X] picks · [Y] units at risk
+Tell user: "Logged X picks. Daily total: Y/4."
 
-Then a divider line, then for each pick:
-[sport emoji] *PICK N — [SPORT]*
-*[Bet description]*
-💰 [Line] @ [Book]
-📦 [X] unit(s) · Score [X.X] 🟢 STRONG  (🟢 if score 7+, 🟡 if 5-6.9)
-• [primary edge]
-• [supporting factor]
-• [supporting factor]
-⚠️ _[main risk]_
+## Slack Format
 
-Divider line between picks. At the end:
-❌ *Skipped:* [matchup] — [one-line reason]
+Send to DM `U0ATA0A6NKB`. No markdown tables.
 
-Finish with 1-2 short entertaining sentences — fun and punchy like a friend texting you picks. Hype the slate, roast the public, whatever fits the day.
+```
+🎯 *V1-Trends | [Weekday Mon DD]*
+_[X] picks · [Y]u at risk · [Z/4] daily cap used_
 
-## Self-Healing
-If any URLs return 404s or paywalls, update this SKILL.md with working alternatives. Preferred free sources: ActionNetwork free tier, Covers.com, ESPN BET, OddsShark, The Lines.
+[sport emoji] *[BET TYPE] · [SPORT]*
+*[Bet]*  ·  💰 [Line] @ [Best Book]
+📦 [X]u · Score [X.X] (🟢 8+, 🟡 6.5-7.9)
+• [edge]
+• Lines: DK [X] · FD [X] · MGM [X]
+⚠️ _[risk]_
+
+(repeat per pick, ranked by score)
+
+[1 punchy sentence]
+```
