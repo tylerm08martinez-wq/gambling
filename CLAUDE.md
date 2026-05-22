@@ -57,6 +57,8 @@ https://raw.githubusercontent.com/tylerm08martinez-wq/gambling/main/.agents/skil
 ```
 If the skill path ever changes again, update this URL in `dashboard.html` at the `const PICKS_URL` line — otherwise the dashboard will silently stop updating.
 
+> **⚠️ Gotcha (burned once 2026-05-22):** After any file reorganization, verify `const PICKS_URL` in `dashboard.html` still matches the active path. The URL does NOT auto-update — a stale path causes a silent GitHub 404 and the dashboard shows no picks. Always grep for `PICKS_URL` before closing a reorganization PR.
+
 ## Data File
 
 All picks are stored in `.agents/skills/bet-tracker/picks.json`.
