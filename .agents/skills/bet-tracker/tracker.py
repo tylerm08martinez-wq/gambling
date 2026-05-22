@@ -13,6 +13,7 @@ import sys
 import re
 import argparse
 import math
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 
@@ -194,6 +195,59 @@ def model_stats(picks: list) -> dict:
         units_wagered=units_wagered, units_net=units_net,
         win_pct=win_pct, roi=roi, avg_score=avg_score, open=open_count,
     )
+
+
+# ── MLB Stats API ─────────────────────────────────────────────────────────────
+
+def extract_bet_team(bet: str) -> str:
+    """Extract the team we're betting on from a bet description."""
+    parts = re.split(r'\s+(?:ML\b|[+-]?\d+\.?\d*\s+RL\b|[+-]?\d+\.?\d*\s+Spread\b)', bet, maxsplit=1, flags=re.IGNORECASE)
+    team = parts[0].strip()
+    if not team:
+        team = re.split(r'\s+vs\s+', bet, flags=re.IGNORECASE)[0].strip()
+    return team
+
+
+def fetch_mlb_result(date: str, team_name: str) -> dict | None:
+    """
+    Query MLB Stats API for a final game result on `date` involving `team_name`.
+    Returns a result dict or None if game not found / not yet final.
+    """
+    url = f"https://statsapi.mlb.com/api/v1/schedule?sportId=1&date={date}&hydrate=linescore"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as r:
+            data = json.loads(r.read())
+    except Exception as e:
+        print(f"⚠️  MLB API error: {e}", file=sys.stderr)
+        return None
+
+    team_lower = team_name.lower()
+    for date_entry in data.get("dates", []):
+        for game in date_entry.get("games", []):
+            home = game["teams"]["home"]["team"]["name"]
+            away = game["teams"]["away"]["team"]["name"]
+            if team_lower not in home.lower() and team_lower not in away.lower():
+                continue
+            status = game.get("status", {}).get("detailedState", "")
+            if "Final" not in status:
+                return None  # game not yet final
+            home_score = game["teams"]["home"].get("score", 0)
+            away_score = game["teams"]["away"].get("score", 0)
+            our_is_home = team_lower in home.lower()
+            our_score = home_score if our_is_home else away_score
+            opp_score = away_score if our_is_home else home_score
+            margin = our_score - opp_score
+            away_abbr = game["teams"]["away"]["team"].get("abbreviation", away[:3].upper())
+            home_abbr = game["teams"]["home"]["team"].get("abbreviation", home[:3].upper())
+            final_score = f"{away_abbr} {away_score}, {home_abbr} {home_score}"
+            return {
+                "home": home, "away": away,
+                "our_score": our_score, "opp_score": opp_score,
+                "margin": margin,
+                "final_score": final_score,
+                "status": status,
+            }
+    return None
 
 
 # ── Commands ──────────────────────────────────────────────────────────────────
@@ -407,6 +461,85 @@ def cmd_log(args):
     print(json.dumps(pick, indent=2))
 
 
+def cmd_auto_resolve(_args):
+    """Automatically resolve open picks using official APIs. MLB ML and RL only."""
+    picks = load_picks()
+    open_picks = [p for p in picks if p.get("result") is None]
+
+    if not open_picks:
+        print("✅ No open picks to resolve.")
+        return
+
+    resolved = []
+    skipped = []
+
+    for p in open_picks:
+        sport = p.get("sport", "").upper()
+        bet = p.get("bet", "")
+        date = p.get("date", datetime.now().strftime("%Y-%m-%d"))
+
+        if sport != "MLB":
+            skipped.append((p["id"], f"sport={sport} — only MLB supported"))
+            continue
+
+        team = extract_bet_team(bet)
+        if not team:
+            skipped.append((p["id"], "could not extract team name from bet"))
+            continue
+
+        result_data = fetch_mlb_result(date, team)
+        if result_data is None:
+            skipped.append((p["id"], f"game not found or not final for '{team}' on {date}"))
+            continue
+
+        margin = result_data["margin"]
+        line_num = p.get("line_num")
+        bet_lower = bet.lower()
+
+        if "rl" in bet_lower or "run line" in bet_lower:
+            if line_num is None:
+                skipped.append((p["id"], "RL pick missing line_num — resolve manually"))
+                continue
+            if margin > line_num:
+                outcome = "win"
+            elif margin == line_num and line_num == int(line_num):
+                outcome = "push"
+            else:
+                outcome = "loss"
+        else:
+            # Moneyline
+            if margin > 0:
+                outcome = "win"
+            elif margin < 0:
+                outcome = "loss"
+            else:
+                outcome = "push"
+
+        p["result"] = outcome
+        p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
+        p["final_score"] = result_data["final_score"]
+        p["game_margin"] = margin
+        # CLV skipped — no automated closing line source
+
+        sign = "+" if p["units_won_lost"] >= 0 else ""
+        print(f"✅ {p['id']}: {outcome.upper()} — {result_data['final_score']} (margin {margin:+d}) → {sign}{p['units_won_lost']}u")
+        resolved.append(p["id"])
+
+    if resolved:
+        save_picks(picks)
+
+    if skipped:
+        print(f"\n⏭️  Skipped {len(skipped)} pick(s):")
+        for pick_id, reason in skipped:
+            print(f"   • {pick_id}: {reason}")
+
+    if not resolved:
+        print("ℹ️  No picks were auto-resolved.")
+        sys.exit(0)
+
+    print(f"\n✅ Resolved {len(resolved)} pick(s). Run `stats` to see updated dashboard.")
+
+
 def cmd_resolve(args):
     picks = load_picks()
     pick = next((p for p in picks if p["id"] == args.id), None)
@@ -447,6 +580,7 @@ def main():
 
     sub.add_parser("stats", help="Show full performance dashboard")
     sub.add_parser("open", help="Print open picks as JSON")
+    sub.add_parser("auto-resolve", help="Auto-resolve open MLB picks via MLB Stats API")
 
     log_p = sub.add_parser("log", help="Log a new pick")
     log_p.add_argument("--model", required=True, choices=["v1-trends", "v2-sharp"])
@@ -481,6 +615,8 @@ def main():
         cmd_stats(args)
     elif args.command == "open":
         cmd_open(args)
+    elif args.command == "auto-resolve":
+        cmd_auto_resolve(args)
     elif args.command == "log":
         cmd_log(args)
     elif args.command == "resolve":
