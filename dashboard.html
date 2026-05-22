@@ -640,7 +640,7 @@
     <div class="bankroll-row">
       <label>Bankroll:</label>
       <input type="number" class="bankroll-input" id="bankrollInput" placeholder="$1000" min="1"
-             onchange="setBankroll(this.value); renderMyBetsTab(); renderMyBets()">
+             onchange="setBankroll(this.value); syncBankrollInputs(); renderMyBetsTab(); renderMyBets()">
       <span id="sync-status" style="font-size:11px;margin-left:8px">📱 local only</span>
     </div>
     <div id="token-setup" style="margin-top:12px">
@@ -1496,6 +1496,10 @@ function renderLog() {
             })()}
           </div>
           <div class="pick-detail-section">
+            <h4>Line / Odds</h4>
+            <p>${p.line ? `<span style="font-size:13px;font-weight:600;color:var(--text)">${p.line}</span>` : '<span class="dim">No line recorded</span>'}</p>
+          </div>
+          <div class="pick-detail-section">
             <h4>Notes</h4>
             <p>${notesText}</p>
           </div>
@@ -2003,6 +2007,50 @@ function renderMBLog() {
   }).join('') || '<tr><td colspan="9" style="color:var(--muted);text-align:center;padding:24px">No verified bets match filters. Open a pick in Pick Log and tap "✓ Bet it".</td></tr>';
 }
 
+// ── Bankroll quick-set helpers (top of My Bets tab) ─────────────
+function updateBankrollQuick() {
+  const br = getBankroll();
+  const display = document.getElementById('mb-bankroll-display');
+  const hint    = document.getElementById('mb-bankroll-quick-hint');
+  const input   = document.getElementById('mb-bankroll-quick-input');
+  if (!display) return;
+  if (br > 0) {
+    display.textContent = '$' + br.toLocaleString();
+    display.style.display = '';
+    if (hint) { hint.textContent = '✎'; hint.title = 'Edit bankroll'; }
+    if (input) input.value = br;
+  } else {
+    display.style.display = 'none';
+    if (hint) { hint.textContent = 'Set bankroll →'; hint.title = 'Enter your starting bankroll'; }
+  }
+}
+function focusBankrollQuickInput() {
+  const display = document.getElementById('mb-bankroll-display');
+  const input   = document.getElementById('mb-bankroll-quick-input');
+  const hint    = document.getElementById('mb-bankroll-quick-hint');
+  if (!input) return;
+  if (display) display.style.display = 'none';
+  if (hint) hint.style.display = 'none';
+  input.style.display = '';
+  input.value = getBankroll() || '';
+  input.focus();
+  input.select();
+}
+function hideBankrollQuickInput() {
+  const input = document.getElementById('mb-bankroll-quick-input');
+  if (input) input.style.display = 'none';
+  const hint = document.getElementById('mb-bankroll-quick-hint');
+  if (hint) hint.style.display = '';
+  updateBankrollQuick();
+}
+// Keep both bankroll inputs (quick-set and Settings) in sync
+function syncBankrollInputs() {
+  const br = getBankroll();
+  const mainInput = document.getElementById('bankrollInput');
+  if (mainInput) mainInput.value = br || '';
+  updateBankrollQuick();
+}
+
 function renderMyBetsTab() {
   renderMBKPIs();
   renderMBHighlights();
@@ -2013,6 +2061,7 @@ function renderMyBetsTab() {
   renderMBLog();
   const bankrollInput = document.getElementById('bankrollInput');
   if (bankrollInput && !bankrollInput.value) bankrollInput.value = getBankroll() || '';
+  updateBankrollQuick();
   updateTokenUI();
 }
 
