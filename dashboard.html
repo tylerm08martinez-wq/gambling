@@ -295,6 +295,29 @@
     }
   }
 
+  /* ── Quick-bet bottom sheet (mobile) ────────────────────────── */
+  .qb-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 1000; }
+  .qb-overlay.open { display: block; }
+  .qb-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); border-radius: 18px 18px 0 0; padding: 20px 20px 36px; z-index: 1001; transform: translateY(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); max-height: 90vh; overflow-y: auto; }
+  .qb-sheet.open { transform: translateY(0); }
+  .qb-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 18px; }
+  .qb-bet-name { font-size: 14px; font-weight: 600; line-height: 1.4; margin-bottom: 12px; word-break: break-word; }
+  .qb-kelly-hint { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .qb-kelly-hint strong { color: var(--blue); }
+  .qb-amount-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+  .qb-amount-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 28px; font-weight: 700; padding: 14px 16px; text-align: center; }
+  .qb-amount-input:focus { outline: none; border-color: var(--blue); }
+  .qb-amount-input::-webkit-outer-spin-button,
+  .qb-amount-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .qb-confirm-btn { display: block; width: 100%; margin-top: 14px; padding: 16px; background: #1a3d2b; border: 1px solid #2a5c3f; border-radius: 10px; color: var(--green); font-size: 16px; font-weight: 700; cursor: pointer; text-align: center; transition: background .15s; }
+  .qb-confirm-btn:active { background: #234f38; }
+
+  /* ── Today chip — interactive ────────────────────────────────── */
+  .today-bet-chip { cursor: pointer; transition: background .15s, border-color .15s; }
+  .today-bet-chip:hover { background: rgba(255,255,255,.1); border-color: var(--blue); }
+  .today-bet-chip .chip-time { display: block; font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .today-bet-chip .chip-goto { font-size: 10px; color: var(--blue); margin-left: 4px; }
+
   /* ── My Bet UI ───────────────────────────────────────────────── */
   .my-bet-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
   .my-bet-section h4 { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 8px; }
@@ -655,6 +678,17 @@
   </div>
 </div>
 
+<!-- Quick-bet bottom sheet -->
+<div class="qb-overlay" id="qb-overlay" onclick="closeQuickBetSheet()"></div>
+<div class="qb-sheet" id="qb-sheet">
+  <div class="qb-handle"></div>
+  <div class="qb-bet-name" id="qb-bet-name"></div>
+  <div class="qb-kelly-hint" id="qb-kelly-hint" style="display:none"></div>
+  <div class="qb-amount-label">$ Amount</div>
+  <input class="qb-amount-input" id="qb-amount" type="number" inputmode="decimal" placeholder="0" min="0" step="0.01">
+  <button class="qb-confirm-btn" onclick="confirmQuickBet()">Confirm Bet ✓</button>
+</div>
+
 <script>
 let picks = [];
 
@@ -893,6 +927,12 @@ function calcActualPL(pick, stake) {
 }
 
 function toggleVerified(pickId, btn) {
+  // On mobile (<=600px) open the quick-bet sheet instead of inline toggle
+  if (window.innerWidth <= 600) {
+    const pick = picks.find(p => String(p.id || picks.indexOf(p)) === String(pickId)) ||
+                 picks.find((p, i) => String(i) === String(pickId));
+    if (pick) { openQuickBetSheet(pickId, pick, btn); return; }
+  }
   const current = getActualBet(pickId);
   const newVal = !current.verified;
   saveActualBet(pickId, { verified: newVal });
@@ -1635,6 +1675,130 @@ function toggleDetail(id, row) {
     panel.classList.add('open');
     row.classList.add('expanded');
   }
+}
+
+// ── Navigate from Today callout to Pick Log ─────────────────────
+function gotoPickInLog(detailId) {
+  // Switch to Pick Log tab
+  const logTab = document.querySelector('.tab[onclick*="showTab('log'"]') ||
+    [...document.querySelectorAll('.tab')].find(t => t.textContent.trim() === 'Pick Log');
+  if (logTab) {
+    showTab('log', logTab);
+  }
+  // Reset filters so the pick is visible
+  const mf = document.getElementById('filter-model');
+  const rf = document.getElementById('filter-result');
+  const sf = document.getElementById('filter-sport');
+  const ef = document.getElementById('filter-edge');
+  const se = document.getElementById('filter-search');
+  if (mf) mf.value = '';
+  if (rf) rf.value = '';
+  if (sf) sf.value = '';
+  if (ef) ef.value = '';
+  if (se) se.value = '';
+  // Reset date range to All
+  activeDateRange = 'all';
+  document.querySelectorAll('.date-toggle button').forEach(b => b.classList.remove('active'));
+  const allBtn = document.querySelector('.date-toggle button');
+  if (allBtn) allBtn.classList.add('active');
+  renderLog();
+  // Wait a tick for DOM to update then open the detail panel + scroll
+  setTimeout(() => {
+    const panel = document.getElementById(detailId);
+    if (!panel) return;
+    // Close any open panels
+    document.querySelectorAll('.pick-detail-panel.open').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.pick-row.expanded').forEach(r => r.classList.remove('expanded'));
+    panel.classList.add('open');
+    // Mark the parent pick-row expanded
+    const detailRow = panel.closest('tr');
+    if (detailRow) {
+      const pickRow = detailRow.previousElementSibling;
+      if (pickRow && pickRow.classList.contains('pick-row')) pickRow.classList.add('expanded');
+    }
+    // Scroll the panel into view
+    panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 80);
+}
+
+// ── Quick-bet bottom sheet ────────────────────────────────────────
+let _qbPickId = null;
+let _qbBtn = null;
+
+function openQuickBetSheet(pickId, pick, btn) {
+  _qbPickId = pickId;
+  _qbBtn = btn;
+  const myBet = getActualBet(pickId);
+  const bankroll = getBankroll();
+  const k = kellyStake(pick, bankroll);
+  const { label: kellyLabel } = kellyFraction(pick);
+
+  const nameEl = document.getElementById('qb-bet-name');
+  if (nameEl) nameEl.textContent = pick.bet || '';
+
+  const kellyEl = document.getElementById('qb-kelly-hint');
+  if (kellyEl) {
+    if (k != null && k > 0) {
+      kellyEl.innerHTML = `Kelly suggest: <strong>$${k}</strong> <span>(${kellyLabel} · $${bankroll} bankroll)</span>`;
+      kellyEl.style.display = '';
+    } else if (!bankroll) {
+      kellyEl.innerHTML = 'Set bankroll in My Bets tab to see Kelly suggestion.';
+      kellyEl.style.display = '';
+    } else {
+      kellyEl.style.display = 'none';
+    }
+  }
+
+  const amountEl = document.getElementById('qb-amount');
+  if (amountEl) {
+    amountEl.value = myBet.stake || (k > 0 ? k : '');
+    setTimeout(() => amountEl.focus(), 300);
+  }
+
+  const overlay = document.getElementById('qb-overlay');
+  const sheet = document.getElementById('qb-sheet');
+  if (overlay) overlay.classList.add('open');
+  if (sheet) sheet.classList.add('open');
+}
+
+function closeQuickBetSheet() {
+  const overlay = document.getElementById('qb-overlay');
+  const sheet = document.getElementById('qb-sheet');
+  if (sheet) sheet.classList.remove('open');
+  if (overlay) overlay.classList.remove('open');
+}
+
+function confirmQuickBet() {
+  const amountEl = document.getElementById('qb-amount');
+  const val = amountEl ? parseFloat(amountEl.value) : null;
+  if (!_qbPickId) { closeQuickBetSheet(); return; }
+  // Mark verified + save stake
+  saveActualBet(_qbPickId, { verified: true, stake: val || null });
+  // Update the verify button state if still in DOM
+  if (_qbBtn) {
+    _qbBtn.classList.add('verified');
+    _qbBtn.textContent = '✓ Bet it';
+  }
+  // Refresh badge
+  const badge = document.getElementById('vbadge-' + _qbPickId);
+  if (badge) badge.style.display = '';
+  // Update inline P&L display
+  const pick = picks.find(p => String(p.id || picks.indexOf(p)) === String(_qbPickId)) ||
+               picks.find((p, i) => String(i) === String(_qbPickId));
+  const plEl = document.getElementById('actual-pl-' + _qbPickId);
+  if (plEl && pick && val) {
+    const pl = calcActualPL(pick, val);
+    if (pl !== null) {
+      plEl.textContent = (pl >= 0 ? '+' : '') + '$' + Math.abs(pl).toFixed(2) + ' actual';
+      plEl.className = 'actual-pl ' + (pl > 0 ? 'green' : pl < 0 ? 'red' : 'yellow');
+    } else {
+      plEl.textContent = '$' + val.toFixed(2) + ' at risk';
+      plEl.className = 'actual-pl';
+    }
+  }
+  renderMyBets();
+  renderTodayCallout();
+  closeQuickBetSheet();
 }
 
 // ── Kelly Criterion ───────────────────────────────────────────────
