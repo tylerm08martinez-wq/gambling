@@ -167,6 +167,14 @@ Append each qualifying pick to `$PICKS` (set in Step 0 — create as `[]` if mis
 Before reading, pull latest: `git -C "$GAMBLING" pull`
 After writing, push: `git -C "$GAMBLING" add .agents/skills/bet-tracker/picks.json && git -C "$GAMBLING" commit -m "chore: log picks" && git -C "$GAMBLING" push origin main`
 
+**game_time rules — read carefully:**
+- Source the start time from the game's own ESPN or MLB.com box score URL, not from a picks/odds page (odds sites sometimes list wrong or approximate times).
+- Always verify the time is for the *correct specific game* being bet — cross-check the two teams and date.
+- Convert to **AZ time (MST, UTC-7 year-round — Arizona does not observe DST)**:
+  - EDT (summer, Mar–Nov): AZ = ET − 3 hours (e.g. 7:05 PM ET → 4:05 PM AZ)
+  - EST (winter, Nov–Mar): AZ = ET − 2 hours (e.g. 7:05 PM ET → 5:05 PM AZ)
+- If uncertain after checking two sources, set `null` rather than guess.
+
 ```json
 {
   "id": "[YYYYMMDD]-[sport]-[short-label]",
