@@ -961,7 +961,7 @@ function renderMyBets() {
 // ── GitHub fetch ─────────────────────────────────────────────────
 // Repo is public — fetch raw picks.json directly, no auth.
 // Cache-buster prevents stale data after a recent push.
-const PICKS_URL = 'https://raw.githubusercontent.com/tylerm08martinez-wq/gambling/main/.claude/skills/bet-tracker/picks.json';
+const PICKS_URL = 'https://raw.githubusercontent.com/tylerm08martinez-wq/gambling/main/.agents/skills/bet-tracker/picks.json';
 
 async function loadPicks() {
   document.getElementById('last-updated').textContent = 'Loading...';
