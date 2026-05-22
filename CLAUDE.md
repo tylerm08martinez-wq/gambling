@@ -41,25 +41,39 @@ Help Tyler identify +EV (positive expected value) betting opportunities across s
 | `/sports-betting-sharp` | V2-Sharp: props + cross-book gaps first; RLM (70%+) and steam (3+ books) for game lines — high selectivity |
 | `/bet-tracker` | Log picks, record results, and compare ROI between V1 and V2 models |
 
+## File Paths — Critical
+
+**Active skill path:** `.agents/skills/bet-tracker/`
+- `picks.json` — single source of truth for all picks
+- `tracker.py` — CLI (always invoke with `python3`, never `python`)
+- `SKILL.md` — skill instructions
+- `betting-intel.md` — session observations and pattern notes
+
+**Stale path (do not use):** `.claude/skills/bet-tracker/` — this is an old copy, ignore it.
+
+**Dashboard GitHub URL** (hard-coded in `dashboard.html`):
+```
+https://raw.githubusercontent.com/tylerm08martinez-wq/gambling/main/.agents/skills/bet-tracker/picks.json
+```
+If the skill path ever changes again, update this URL in `dashboard.html` at the `const PICKS_URL` line — otherwise the dashboard will silently stop updating.
+
 ## Data File
 
-All picks are stored in `C:/Users/metro/Claude/gambling/.claude/skills/bet-tracker/picks.json`.
+All picks are stored in `.agents/skills/bet-tracker/picks.json`.
 
 This file is the single source of truth — it is read and written by:
 - `/sports-betting` and `/sports-betting-sharp` when logging new picks (pull before read, push after write)
 - The nightly auto-resolve agent (pushes results to GitHub every night at 11pm Phoenix)
 - `/bet-tracker` for stats and manual result entry (pull before read, push after write)
+- `scripts/resolve-and-push.sh` — one-command local resolution + push
 
 **Never edit picks.json manually** — always go through the skills or the nightly agent.
 
 ## Dashboard
 
-Live betting dashboard at `C:/Users/metro/Claude/gambling/dashboard.html`.
-
-To open: start a local server from the gambling folder, then open `http://localhost:8090/dashboard.html`.
+Live dashboard (auto-deployed via GitHub Pages):
 ```
-cd "C:\Users\metro\Claude\gambling"
-python -m http.server 8090
+https://tylerm08martinez-wq.github.io/gambling/dashboard.html
 ```
 
 The dashboard fetches picks directly from GitHub (always live, auto-refreshes every 5 min). Tabs:
