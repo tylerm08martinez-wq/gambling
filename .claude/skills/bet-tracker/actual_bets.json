@@ -1,0 +1,34 @@
+{
+  "20260520-mlb-over-total": {
+    "verified": true,
+    "stake": 10
+  },
+  "20260520-mlb-new-ml": {
+    "verified": true,
+    "stake": 10
+  },
+  "20260519-mlb-cincin-ml": {
+    "verified": false,
+    "stake": null
+  },
+  "20260521-mlb-arizon-ml": {
+    "verified": true,
+    "stake": 5
+  },
+  "20260522-mlb-under-total": {
+    "verified": true,
+    "stake": 9
+  },
+  "20260522-mlb-new-ml": {
+    "stake": 8,
+    "verified": true
+  },
+  "20260522-nba-victor-total": {
+    "verified": true,
+    "stake": 10
+  },
+  "20260522-mlb-gerrit-total": {
+    "stake": 10,
+    "verified": true
+  }
+}
