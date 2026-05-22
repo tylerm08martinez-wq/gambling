@@ -2176,17 +2176,38 @@ function renderMBLog() {
 }
 
 // ── Bankroll quick-set helpers (top of My Bets tab) ─────────────
-function updateBankrollQuick() {
+function getCurrentBalance() {
   const br = getBankroll();
+  if (!br) return null;
+  const bets = getActualBets();
+  let netPL = 0;
+  Object.keys(bets).forEach(id => {
+    const bet = bets[id];
+    if (!bet.verified || !bet.stake) return;
+    const pick = picks.find(p => String(p.id) === String(id)) || picks.find((p, i) => String(i) === String(id));
+    if (!pick) return;
+    const pl = calcActualPL(pick, bet.stake);
+    if (pl !== null) netPL += pl;
+  });
+  return { balance: br + netPL, netPL, starting: br };
+}
+
+function updateBankrollQuick() {
   const display = document.getElementById('mb-bankroll-display');
   const hint    = document.getElementById('mb-bankroll-quick-hint');
   const input   = document.getElementById('mb-bankroll-quick-input');
   if (!display) return;
-  if (br > 0) {
-    display.textContent = '$' + br.toLocaleString();
+  const data = getCurrentBalance();
+  if (data) {
+    const sign = data.netPL >= 0 ? '+' : '';
+    const plColor = data.netPL > 0 ? 'var(--green)' : data.netPL < 0 ? 'var(--red)' : 'var(--muted)';
+    const plStr = data.netPL !== 0
+      ? ` <span style="font-size:12px;color:${plColor};font-weight:600">(${sign}$${Math.abs(data.netPL).toFixed(2)})</span>`
+      : '';
+    display.innerHTML = `$${data.balance.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}${plStr}`;
     display.style.display = '';
-    if (hint) { hint.textContent = '✎'; hint.title = 'Edit bankroll'; }
-    if (input) input.value = br;
+    if (hint) { hint.textContent = '✎'; hint.title = 'Edit starting bankroll'; }
+    if (input) input.value = data.starting;
   } else {
     display.style.display = 'none';
     if (hint) { hint.textContent = 'Set bankroll →'; hint.title = 'Enter your starting bankroll'; }
