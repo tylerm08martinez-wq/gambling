@@ -28,7 +28,7 @@
     "stake": 10
   },
   "20260522-mlb-gerrit-total": {
-    "stake": 10,
-    "verified": true
+    "stake": null,
+    "verified": false
   }
 }
