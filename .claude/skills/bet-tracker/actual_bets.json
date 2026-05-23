@@ -34,5 +34,9 @@
   "20260523-mlb-under-total": {
     "stake": 7,
     "verified": true
+  },
+  "20260523-mlb-under-rl": {
+    "verified": true,
+    "stake": 15
   }
 }
