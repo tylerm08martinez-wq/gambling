@@ -28,7 +28,15 @@
     "stake": 10
   },
   "20260522-mlb-gerrit-total": {
-    "stake": 10,
+    "stake": null,
+    "verified": false
+  },
+  "20260523-mlb-under-total": {
+    "stake": 7,
     "verified": true
+  },
+  "20260523-mlb-under-rl": {
+    "verified": true,
+    "stake": 15
   }
 }
