@@ -722,3 +722,16 @@ None yet — will populate as data accumulates.
 **Pattern updates**:
 - COL opener/bulk day as broken-starter equivalent: first test passes, but by one run. Keep it as a low-to-medium confidence sub-rule until it wins with cleaner offensive separation.
 - Chalk-trap refinement held at -150: structural pitching disadvantage can justify moderate chalk, but the one-run finish argues against inflating score or units.
+
+### 2026-05-23 — Bet Tracker Results
+
+**Resolved**: 2 picks (2-0-0)
+
+**Observations**:
+- Under 8.5 Mariners at Royals (expert convergence + Kauffman run suppression, V1-Trends) — win, SEA 0 / KC 5, total finished 5. The under cleared by 3.5 runs and confirms the stadium + contact-management angle had real room.
+- Under 7.5 Mets at Marlins (dual-ace matchup + public-juiced over, V1-Trends) — win, NYM 1 / MIA 4, total finished 5. The near-pickem under against a juiced over was the right side, not just a cute contrarian lean.
+- Both newly settled picks were MLB unders and both landed with 2+ runs of cushion. That is meaningful, but still short of the 3+ consistent-results threshold for promotion.
+
+**Pattern updates**:
+- MLB under templates are heating up: Kauffman suppression plus dual-ace/low-total setups both cashed cleanly. Continue tracking separately from generic totals because the signals are different.
+- V1-Trends moved to 14-7 with +5.504u after these results; MLB remains the strongest sport split at 14-5 and +9.547u.
