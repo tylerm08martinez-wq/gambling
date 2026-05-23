@@ -84,17 +84,21 @@ Print a one-line context summary before researching, e.g.:
 
 ### 1. Prop Research — run FIRST (primary edge)
 
-Fetch these URLs directly — do not WebSearch for prop data:
+**These pages are JS-rendered — WebFetch will return empty tables. Use Chrome DevTools (navigate + evaluate_script) to load them. If Chrome DevTools is unavailable, fall back to WebSearch.**
 
-**Primary fetch (MLB + NBA):**
-- `https://www.rotowire.com/betting/mlb/player-props-plus-proj.php` — shows DK/FD/BetMGM/Caesars lines side-by-side vs. RotoWire projections. Gaps visible at a glance.
-- `https://www.rotowire.com/betting/nba/player-props-plus-proj.php` — same for NBA
+**Primary fetch — BettingPros (MLB pitcher props, full depth):**
+- `https://www.bettingpros.com/mlb/props/[player-name]/strikeouts/` — full line history, multi-book odds, hit rates, season averages, projection. Replace `[player-name]` with the pitcher's name (e.g., `zack-wheeler`). Best single source for prop research.
+- Check today's starting pitchers first, then fetch each one individually.
 
-**Secondary fetch (cross-book line shopping):**
+**Secondary fetch — RotoWire (overview, first 5 pitchers free):**
+- `https://www.rotowire.com/betting/mlb/player-props-plus-proj.php` — shows DK/FD/BetMGM/Caesars lines side-by-side vs. RotoWire projections. **Paywall hits after 5 rows** — use to quickly scan for obvious gaps, then go deeper on BettingPros.
+- `https://www.rotowire.com/betting/nba/player-props-plus-proj.php` — same for NBA (no paywall issue for NBA)
+
+**Cross-book line shopping:**
 - `https://www.oddstrader.com/mlb/player-props/` — free cross-book comparison grid
 - `https://www.oddstrader.com/nba/player-props/`
 
-**Tertiary fetch (public splits on props):**
+**Public splits on props:**
 - `https://playerprops.ai/trends` — ticket % and money % on props; confirms which direction the public is on
 
 **Target prop types by sport:**
@@ -107,7 +111,7 @@ Fetch these URLs directly — do not WebSearch for prop data:
 - OR prop line moved 0.5+ since open with no news
 
 **Prop Trend Confirmation (+0.5 bonus on Signal A score):**
-When a cross-book gap is found, check RotoWire's season average for that player. If the season average is on the same side as the gap (e.g., pitcher averaging 7.2 Ks with line at 6.5 and gap pointing Over), add +0.5 to the Signal A score. This replaces the former standalone Signal H.
+When a cross-book gap is found, check BettingPros' season average and hit rate for that player. If the season average K/G (or stat average) is on the same side as the gap (e.g., pitcher averaging 6.2 K/G with line at 5.5 and gap pointing Over), add +0.5 to the Signal A score.
 
 ---
 
