@@ -16,6 +16,7 @@ import math
 import urllib.request
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 # Force UTF-8 output on Windows
 if hasattr(sys.stdout, "reconfigure"):
@@ -208,7 +209,7 @@ def extract_bet_team(bet: str) -> str:
     return team
 
 
-def fetch_mlb_result(date: str, team_name: str) -> dict | None:
+def fetch_mlb_result(date: str, team_name: str) -> Optional[dict]:
     """
     Query MLB Stats API for a final game result on `date` involving `team_name`.
     Returns a result dict or None if game not found / not yet final.
