@@ -521,7 +521,8 @@ def cmd_log(args):
         btype = "total"
     else:
         btype = "spread"
-    pick_id = f"{date.replace('-','')}-{sport_abbrev}-{team_abbrev}-{btype}"
+    model_abbrev = "v1" if "v1" in args.model.lower() else "v2"
+    pick_id = f"{date.replace('-','')}-{sport_abbrev}-{model_abbrev}-{team_abbrev}-{btype}"
 
     if validation_notes and not override_reason:
         rejected = {

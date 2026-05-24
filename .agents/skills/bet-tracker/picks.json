@@ -523,7 +523,7 @@
     "prop_margin": null
   },
   {
-    "id": "20260524-mlb-nathan-total",
+    "id": "20260524-mlb-v1-nathan-total",
     "date": "2026-05-24",
     "model": "v1-trends",
     "sport": "MLB",
@@ -548,7 +548,7 @@
     "prop_margin": null
   },
   {
-    "id": "20260524-mlb-under-total",
+    "id": "20260524-mlb-v1-under-total",
     "date": "2026-05-24",
     "model": "v1-trends",
     "sport": "MLB",
@@ -573,7 +573,7 @@
     "prop_margin": null
   },
   {
-    "id": "20260524-mlb-nathan-total",
+    "id": "20260524-mlb-v2-nathan-total",
     "date": "2026-05-24",
     "model": "v2-sharp",
     "sport": "MLB",
