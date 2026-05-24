@@ -15,6 +15,39 @@
     "stake": null
   },
   "20260521-mlb-arizon-ml": {
+    "verified": true,
+    "stake": 5
+  },
+  "20260522-mlb-under-total": {
+    "verified": true,
+    "stake": 9
+  },
+  "20260522-mlb-new-ml": {
+    "stake": 8,
+    "verified": true
+  },
+  "20260522-nba-victor-total": {
+    "verified": true,
+    "stake": 10
+  },
+  "20260522-mlb-gerrit-total": {
+    "stake": null,
     "verified": false
+  },
+  "20260523-mlb-under-total": {
+    "stake": 7,
+    "verified": true
+  },
+  "20260523-mlb-under-rl": {
+    "verified": true,
+    "stake": 15
+  },
+  "20260523-mlb-cle-total": {
+    "verified": true,
+    "stake": 15
+  },
+  "20260523-mlb-zack-total": {
+    "verified": true,
+    "stake": 8.46
   }
 }

@@ -842,7 +842,7 @@ function fmtSigned(v, suffix = '') {
 }
 
 // ── My Bets — GitHub-backed, localStorage fallback ───────────────
-const BETS_FILE_PATH = '.claude/skills/bet-tracker/actual_bets.json';
+const BETS_FILE_PATH = '.agents/skills/bet-tracker/actual_bets.json';
 const BETS_API = `https://api.github.com/repos/tylerm08martinez-wq/gambling/contents/${BETS_FILE_PATH}`;
 let _betsSHA = null;
 let _syncDebounce = null;
