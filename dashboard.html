@@ -813,9 +813,19 @@ function winRate(ps) {
   const losses = ps.filter(p => p.result === 'loss').length;
   return wins + losses > 0 ? (wins / (wins + losses) * 100).toFixed(1) : '—';
 }
+// CLV is "Measured" only when non-null and non-zero. Picks with clv === 0
+// are placeholder entries from the nightly resolve agent (Pinnacle fetch unimplemented).
+// See CONTEXT.md → Measured CLV.
+function measuredClvPicks(ps) {
+  return ps.filter(p => p.clv !== null && p.clv !== undefined && p.clv !== 0);
+}
 function avgClv(ps) {
-  const clvs = ps.filter(p => p.clv !== null && p.clv !== undefined).map(p => p.clv);
+  const clvs = measuredClvPicks(ps).map(p => p.clv);
   return clvs.length > 0 ? (clvs.reduce((a, b) => a + b, 0) / clvs.length).toFixed(2) : '—';
+}
+function clvMeasuredLabel(ps) {
+  const measured = measuredClvPicks(ps).length;
+  return `${measured} of ${ps.length} measured`;
 }
 function netUnits(ps) {
   return ps.reduce((a, p) => a + (p.units_won_lost || 0), 0).toFixed(2);
@@ -1146,7 +1156,7 @@ function renderKPIs() {
     { label: 'ROI', value: s.length ? fmtSigned(r, '%') : '—', cls: colorNum(r), sub: `${s.length} settled picks` },
     { label: 'Net Units', value: s.length ? fmtSigned(net.toFixed(2), 'u') : '—', cls: colorNum(net), sub: `${picks.reduce((a,p)=>a+(p.units||0),0).toFixed(1)}u wagered` },
     { label: 'Win Rate', value: wr !== '—' ? wr + '%' : '—', cls: parseFloat(wr) >= 52.4 ? 'green' : wr !== '—' ? 'red' : '', sub: `${wins}W–${losses}L–${pushes}P` },
-    { label: 'Avg CLV', value: clv !== '—' ? fmtSigned(clv, '%') : '—', cls: colorNum(clv), sub: 'closing line value' },
+    { label: 'Avg CLV', value: clv !== '—' ? fmtSigned(clv, '%') : '—', cls: colorNum(clv), sub: clvMeasuredLabel(s) },
     { label: 'Streak', value: streak.text, cls: streak.cls, sub: 'recent results' },
     { label: 'Last 10', value: l10val, cls: l10cls, sub: `of ${s.length} settled` },
     { label: 'Open Picks', value: open, cls: 'blue', sub: `${picks.length} total` },

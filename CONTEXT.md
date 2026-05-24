@@ -3,6 +3,9 @@
 ## CLV (Closing Line Value)
 The difference between your entry price and the closing line, expressed as implied probability. Positive CLV means you got a better price than the market settled at = good process. Benchmark: Pinnacle's de-vigged closing line. Consistently beating Pinnacle by 2%+ is the documented definition of a profitable edge.
 
+## Measured CLV
+A CLV value computed from Pinnacle's actual de-vigged closing line at game start. Distinct from Unmeasured CLV (`null` or placeholder `+0.00%`), where the Pinnacle close was never fetched. Most picks today have Unmeasured CLV — the Pinnacle-fetch workflow is unimplemented. Statistics over CLV should exclude Unmeasured CLV picks rather than treat them as zero.
+
 ## Cross-Book Prop Gap
 A discrepancy of 0.5+ units on the same player prop across DK / FanDuel / BetMGM. Indicates sharp money already hit one book (the "sharp-hit book") and the other books haven't adjusted yet (the "stale books"). The edge is betting the stale price in the same direction the sharp-hit book moved.
 
@@ -15,8 +18,20 @@ A 20+ point gap between Handle % (dollars wagered) and Ticket % (number of bets)
 ## Prop Trend Confirmation
 A +0.5 score bonus applied to Signal A (prop gap) when the player's season average is on the same side as the gap. E.g., pitcher averaging 7.2 Ks with the gap pointing Over at a 6.5 line.
 
+## Pick
+A model recommendation to wager on a specific bet, logged by the skill with a Pick Score, edge, line, and units. A Pick represents model output — not a confirmed wager.
+
+## My Bet
+A verified wager placed by the bettor on a specific Pick. Has a dollar stake confirmed by the bettor. Not every Pick becomes a My Bet. My Bet stats reflect real money outcomes; Pick stats reflect model performance.
+
+## Pick Score
+A 1–10 confidence rating assigned by the skill at the time a pick is logged, reflecting the strength of the edge signal. Higher scores indicate more confirming factors (cross-book gap size, steam book count, RLM %, quant convergence). Not a win probability estimate — it measures signal quality, not outcome certainty.
+
 ## Primary Edge
 The betting signal that must independently satisfy its Signal Requirement before a pick can be logged.
+
+## Primary Edge Type
+The canonical, structured classification of a Primary Edge. The authoritative category used for dashboard filtering, grouping, and statistics. Distinct from the human-readable `primary_edge` text, which is freeform and meant for review context only. Canonical values: `cross_book_gap`, `steam`, `hard_rlm`, `soft_rlm`, `ats_trend`, `quant_convergence`, `pitching_edge`, `prop_trend`, `matchup_edge`, `plus_money_start`, `underdog_fade`. Legacy picks without a Primary Edge Type fall back to parsing the freeform `primary_edge`.
 
 ## Rejected Candidate
 A proposed bet that was not logged because its Primary Edge failed its Signal Requirement.
@@ -47,6 +62,9 @@ A betting source that can still provide research value but has a freshness, comp
 
 ## Dead Source
 A betting source that should be skipped because it is unavailable, blocked, stale beyond use, or not parseable.
+
+## Sharp Score
+A 0–100 process metric blending Win Rate (40pts), CLV (35pts), and ROI (25pts). A long-run signal, not a current snapshot. Becomes meaningful only once Pinnacle closing lines are recorded consistently — until then the CLV component is neutral by design and the score reflects Win Rate + ROI only.
 
 ## Soft RLM
 Handle/Ticket divergence of 20+ points without confirmed line movement. Weaker than Hard RLM — requires one additional confirming factor (line movement, prop gap, or quant convergence) before qualifying for a pick.

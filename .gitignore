@@ -1,0 +1,8 @@
+# Editor / IDE configs that may contain secrets
+.cursor/mcp.json
+.cursor/mcp.local.json
+
+# Environment files
+.env
+.env.local
+.env.*.local
