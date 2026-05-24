@@ -30,6 +30,7 @@ Ask the user for:
 6. Pick score from skill output (if available)
 7. Primary edge
 8. For spread/RL bets: the spread number (e.g. 1.5 for a -1.5 RL). For ML: 0. For totals: the total number.
+9. If the primary edge is Hard RLM: structured source evidence for public ticket data and line movement data.
 
 Then run:
 ```bash
@@ -41,9 +42,27 @@ python3 ".agents/skills/bet-tracker/tracker.py" log \
   --units <units> \
   --score <score_or_omit> \
   --edge "<primary edge>" \
+  --run-type manual \
   --line-num <spread_number> \
   --game-time "<start time in AZ time, e.g. '5:10 PM'>"
 ```
+
+### Hard RLM validation
+
+When logging a pick whose primary edge is Hard RLM, include structured validation fields:
+```bash
+  --primary-edge-type hard_rlm \
+  --source-evidence-json '[{"category":"public_ticket_data","status":"usable","source":"<source>","freshness":"<today/current slate>"},{"category":"line_movement_data","status":"usable","source":"<source>","freshness":"<today/current slate>"}]'
+```
+
+Hard RLM requires both usable `public_ticket_data` and usable `line_movement_data`. If either is missing or degraded, the pick is rejected and written to `rejected-candidates.json` instead of `picks.json`.
+
+Manual runs may override validation only with a written reason:
+```bash
+  --override-validation "Public ticket source was blocked, but source details were manually verified from screenshots"
+```
+
+Scheduled/cloud runs must pass `--run-type scheduled` and cannot override validation.
 
 Confirm the logged pick to the user.
 

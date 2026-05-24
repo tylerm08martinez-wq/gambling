@@ -24,6 +24,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 BASE_DIR = Path(__file__).parent
 PICKS_FILE = BASE_DIR / "picks.json"
+REJECTED_CANDIDATES_FILE = BASE_DIR / "rejected-candidates.json"
 
 
 # ── I/O ──────────────────────────────────────────────────────────────────────
@@ -39,6 +40,72 @@ def save_picks(picks):
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(picks, f, indent=2)
     tmp.replace(PICKS_FILE)
+
+def load_json_list(path: Path) -> list:
+    if not path.exists():
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    if not isinstance(data, list):
+        raise ValueError(f"{path} must contain a JSON list")
+    return data
+
+def save_json_list(path: Path, rows: list):
+    tmp = path.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(rows, f, indent=2)
+    tmp.replace(path)
+
+
+# ── Validation ───────────────────────────────────────────────────────────────
+
+def normalize_key(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    normalized = re.sub(r"[^a-z0-9]+", "_", str(value).strip().lower()).strip("_")
+    return normalized or None
+
+def parse_source_evidence(raw: str) -> list:
+    if not raw:
+        return []
+    try:
+        evidence = json.loads(raw)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"source evidence must be valid JSON: {e}") from e
+    if not isinstance(evidence, list):
+        raise ValueError("source evidence must be a JSON list")
+    for idx, item in enumerate(evidence, start=1):
+        if not isinstance(item, dict):
+            raise ValueError(f"source evidence item {idx} must be an object")
+    return evidence
+
+def validate_primary_edge(primary_edge_type: Optional[str], source_evidence: list) -> tuple[bool, list[str]]:
+    edge_type = normalize_key(primary_edge_type)
+    if edge_type != "hard_rlm":
+        return True, []
+
+    by_category: dict[str, list[dict]] = {}
+    for item in source_evidence:
+        category = normalize_key(item.get("category"))
+        if category:
+            by_category.setdefault(category, []).append(item)
+
+    required = ["public_ticket_data", "line_movement_data"]
+    failures = []
+    for category in required:
+        usable = [
+            item for item in by_category.get(category, [])
+            if normalize_key(item.get("status")) == "usable"
+        ]
+        if not usable:
+            failures.append(f"missing usable {category}")
+
+    return not failures, failures
+
+def record_rejected_candidate(candidate: dict):
+    rejected = load_json_list(REJECTED_CANDIDATES_FILE)
+    rejected.append(candidate)
+    save_json_list(REJECTED_CANDIDATES_FILE, rejected)
 
 
 # ── Math ─────────────────────────────────────────────────────────────────────
@@ -421,6 +488,27 @@ def cmd_open(_args):
 def cmd_log(args):
     picks = load_picks()
     date = datetime.now().strftime("%Y-%m-%d")
+    checked_at = datetime.now().isoformat(timespec="seconds")
+    try:
+        source_evidence = parse_source_evidence(args.source_evidence_json)
+    except ValueError as e:
+        print(f"❌ Validation input error: {e}", file=sys.stderr)
+        sys.exit(2)
+
+    primary_edge_type = normalize_key(args.primary_edge_type)
+    validation_passed, validation_notes = validate_primary_edge(primary_edge_type, source_evidence)
+    run_type = normalize_key(args.run_type) or "manual"
+    if run_type not in {"manual", "scheduled"}:
+        print("❌ --run-type must be manual or scheduled", file=sys.stderr)
+        sys.exit(2)
+    override_reason = (args.override_validation or "").strip()
+    if run_type == "scheduled" and override_reason:
+        print("❌ Scheduled runs cannot override validation", file=sys.stderr)
+        sys.exit(2)
+    if override_reason and not validation_notes:
+        print("❌ --override-validation is only allowed when validation fails", file=sys.stderr)
+        sys.exit(2)
+
     sport_abbrev = re.sub(r"[^a-z]", "", args.sport.lower())[:3]
     team_raw = re.split(r"[\s\-\+]", args.bet)[0].lower()
     team_abbrev = re.sub(r"[^a-z]", "", team_raw)[:6]
@@ -435,6 +523,37 @@ def cmd_log(args):
         btype = "spread"
     pick_id = f"{date.replace('-','')}-{sport_abbrev}-{team_abbrev}-{btype}"
 
+    if validation_notes and not override_reason:
+        rejected = {
+            "id": pick_id,
+            "date": date,
+            "checked_at": checked_at,
+            "run_type": run_type,
+            "model": args.model,
+            "sport": args.sport,
+            "bet": args.bet,
+            "line": args.line,
+            "units": args.units,
+            "score": args.score,
+            "primary_edge": args.edge or "",
+            "primary_edge_type": primary_edge_type,
+            "source_evidence": source_evidence,
+            "rejection_reason": "; ".join(validation_notes),
+            "validation_status": "failed",
+            "validation_notes": validation_notes,
+        }
+        record_rejected_candidate(rejected)
+        print(f"❌ Rejected: {pick_id}", file=sys.stderr)
+        print(f"Reason: {rejected['rejection_reason']}", file=sys.stderr)
+        print(f"Recorded in: {REJECTED_CANDIDATES_FILE}", file=sys.stderr)
+        sys.exit(1)
+
+    validation_status = "not_required"
+    if primary_edge_type:
+        validation_status = "passed" if validation_passed else "overridden"
+    if override_reason:
+        validation_notes = [*validation_notes, f"override: {override_reason}"]
+
     pick = {
         "id": pick_id,
         "date": date,
@@ -445,6 +564,10 @@ def cmd_log(args):
         "units": args.units,
         "score": args.score,
         "primary_edge": args.edge or "",
+        "primary_edge_type": primary_edge_type,
+        "source_evidence": source_evidence,
+        "validation_status": validation_status,
+        "validation_notes": validation_notes,
         "game_time": args.game_time or None,
         "result": None,
         "units_won_lost": None,
@@ -591,6 +714,14 @@ def main():
     log_p.add_argument("--units", type=int, required=True, choices=[1, 2, 3])
     log_p.add_argument("--score", type=float, default=None)
     log_p.add_argument("--edge", default="", help="Primary edge type")
+    log_p.add_argument("--primary-edge-type", default="",
+                       help="Structured primary edge type, e.g. hard_rlm")
+    log_p.add_argument("--source-evidence-json", default="",
+                       help="JSON list of source evidence objects for validation")
+    log_p.add_argument("--run-type", default="manual", choices=["manual", "scheduled"],
+                       help="manual allows reasoned override; scheduled cannot override")
+    log_p.add_argument("--override-validation", default="",
+                       help="Manual override reason when validation fails")
     log_p.add_argument("--line-num", type=float, default=None,
                        help="Spread/RL number (e.g. 1.5 for -1.5 RL, 0 for ML)")
     log_p.add_argument("--game-time", default="",
