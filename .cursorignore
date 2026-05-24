@@ -1,0 +1,8 @@
+# Exclude from @codebase semantic search
+.claude/projects/
+.claude/sessions/
+.claude/telemetry/
+node_modules/
+.git/
+*.pyc
+__pycache__/

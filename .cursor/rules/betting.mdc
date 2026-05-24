@@ -1,0 +1,27 @@
+---
+description: Betting project conventions and file structure
+alwaysApply: true
+---
+
+## Project: Sports Betting Decision Support
+
+### Critical File Paths
+- `picks.json` lives at `.agents/skills/bet-tracker/picks.json` — this is the ONLY source of truth for picks
+- NEVER read/write from `.claude/skills/bet-tracker/` — that path is stale and unused
+- Tracker CLI: `.agents/skills/bet-tracker/tracker.py` — always invoke with `python3`, NEVER `python`
+- Dashboard URL hardcoded in `dashboard.html` at `const PICKS_URL` — update this if the picks.json path ever changes
+
+### picks.json Rules
+- NEVER edit picks.json manually — always go through the skills or tracker CLI
+- Always `git pull` before reading picks.json and `git push` after writing it
+- After any file reorganization, grep for `PICKS_URL` in dashboard.html to verify the path is still correct
+
+### Python
+- Use `python3` for all Python invocations
+
+### Betting Concepts
+- CLV (Closing Line Value) is the process signal; ROI is the outcome signal — both matter
+- RLM threshold: 70%+ with actual line movement confirmation required
+- Steam moves require 3+ books simultaneously — single-book moves are noise
+- Primary edge: player props + cross-book line gaps
+- Kelly sizing: use fractional Kelly (half-Kelly) to reduce variance
