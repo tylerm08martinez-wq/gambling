@@ -45,17 +45,27 @@ Help Tyler identify +EV (positive expected value) betting opportunities across s
 
 **Active skill path:** `.agents/skills/bet-tracker/`
 - `picks.json` — single source of truth for all picks
+- `actual_bets.json` — single source of truth for My Bets verified wagers, stakes, and bankroll settings
 - `tracker.py` — CLI (always invoke with `python3`, never `python`)
 - `SKILL.md` — skill instructions
 - `betting-intel.md` — session observations and pattern notes
 
-**Stale path (do not use):** `.claude/skills/bet-tracker/` — this is an old copy, ignore it.
+**Stale path (do not use):** `.claude/skills/bet-tracker/` — this is an old copy, ignore it. If `.claude/skills/bet-tracker/actual_bets.json` reappears, run:
+```bash
+python3 ".agents/skills/bet-tracker/tracker.py" migrate-actual-bets
+```
 
 **Dashboard GitHub URL** (hard-coded in `dashboard.html`):
 ```
 https://raw.githubusercontent.com/tylerm08martinez-wq/gambling/main/.agents/skills/bet-tracker/picks.json
 ```
 If the skill path ever changes again, update this URL in `dashboard.html` at the `const PICKS_URL` line — otherwise the dashboard will silently stop updating.
+
+**My Bets GitHub path** (hard-coded in `dashboard.html`):
+```text
+.agents/skills/bet-tracker/actual_bets.json
+```
+The My Bets tab writes this file through the GitHub Contents API. It should be read-only without a GitHub token; do not reintroduce localStorage or `.claude` as source-of-truth fallbacks.
 
 > **⚠️ Gotcha (burned once 2026-05-22):** After any file reorganization, verify `const PICKS_URL` in `dashboard.html` still matches the active path. The URL does NOT auto-update — a stale path causes a silent GitHub 404 and the dashboard shows no picks. Always grep for `PICKS_URL` before closing a reorganization PR.
 

@@ -24,7 +24,9 @@ if hasattr(sys.stdout, "reconfigure"):
 
 BASE_DIR = Path(__file__).parent
 PICKS_FILE = BASE_DIR / "picks.json"
+ACTUAL_BETS_FILE = BASE_DIR / "actual_bets.json"
 REJECTED_CANDIDATES_FILE = BASE_DIR / "rejected-candidates.json"
+LEGACY_ACTUAL_BETS_FILE = BASE_DIR.parents[2] / ".claude" / "skills" / "bet-tracker" / "actual_bets.json"
 
 
 # ── I/O ──────────────────────────────────────────────────────────────────────
@@ -55,6 +57,33 @@ def save_json_list(path: Path, rows: list):
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(rows, f, indent=2)
     tmp.replace(path)
+
+def load_json_object(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return data
+
+def save_json_object(path: Path, rows: dict):
+    tmp = path.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(rows, f, indent=2)
+        f.write("\n")
+    tmp.replace(path)
+
+def merge_actual_bets(canonical: dict, legacy: dict) -> dict:
+    merged = dict(canonical)
+    for key, legacy_value in legacy.items():
+        if key == "_settings" and isinstance(legacy_value, dict):
+            merged[key] = {**legacy_value, **merged.get(key, {})}
+        elif key not in merged:
+            merged[key] = legacy_value
+        elif isinstance(legacy_value, dict) and isinstance(merged[key], dict):
+            merged[key] = {**legacy_value, **merged[key]}
+    return merged
 
 
 # ── Validation ───────────────────────────────────────────────────────────────
@@ -485,6 +514,22 @@ def cmd_open(_args):
     print(json.dumps(output, indent=2))
 
 
+def cmd_migrate_actual_bets(_args):
+    """Merge stale .claude My Bets data into the canonical .agents file."""
+    canonical = load_json_object(ACTUAL_BETS_FILE)
+    if not LEGACY_ACTUAL_BETS_FILE.exists():
+        print(f"No legacy actual bets file found at {LEGACY_ACTUAL_BETS_FILE}")
+        print(f"Canonical source of truth: {ACTUAL_BETS_FILE}")
+        return
+
+    legacy = load_json_object(LEGACY_ACTUAL_BETS_FILE)
+    merged = merge_actual_bets(canonical, legacy)
+    save_json_object(ACTUAL_BETS_FILE, merged)
+    LEGACY_ACTUAL_BETS_FILE.unlink()
+    print(f"Migrated {len(legacy)} legacy entries into {ACTUAL_BETS_FILE}")
+    print(f"Removed stale file: {LEGACY_ACTUAL_BETS_FILE}")
+
+
 def cmd_log(args):
     picks = load_picks()
     date = datetime.now().strftime("%Y-%m-%d")
@@ -706,6 +751,7 @@ def main():
     sub.add_parser("stats", help="Show full performance dashboard")
     sub.add_parser("open", help="Print open picks as JSON")
     sub.add_parser("auto-resolve", help="Auto-resolve open MLB picks via MLB Stats API")
+    sub.add_parser("migrate-actual-bets", help="Merge stale .claude My Bets data into .agents")
 
     log_p = sub.add_parser("log", help="Log a new pick")
     log_p.add_argument("--model", required=True, choices=["v1-trends", "v2-sharp"])
@@ -750,6 +796,8 @@ def main():
         cmd_open(args)
     elif args.command == "auto-resolve":
         cmd_auto_resolve(args)
+    elif args.command == "migrate-actual-bets":
+        cmd_migrate_actual_bets(args)
     elif args.command == "log":
         cmd_log(args)
     elif args.command == "resolve":

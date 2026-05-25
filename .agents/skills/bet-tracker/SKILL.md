@@ -13,9 +13,15 @@ All data logic (stats, math, formatting) is handled by `tracker.py`. This skill 
 3. Writing the Daily Recap and intel log (the creative/analytical parts Codex does better)
 
 **Script location:** `.agents/skills/bet-tracker/tracker.py`
-**Data files:** `picks.json`, `betting-intel.md` — both in the same directory.
+**Data files:** `picks.json`, `actual_bets.json`, `betting-intel.md` — all in the same directory.
 
 Use `python3` when running tracker commands on macOS; `python` may not be installed.
+
+`actual_bets.json` is the only source of truth for the dashboard's My Bets tab. If a stale `.claude/skills/bet-tracker/actual_bets.json` file appears, run:
+```bash
+python3 ".agents/skills/bet-tracker/tracker.py" migrate-actual-bets
+```
+This merges legacy entries into `.agents/skills/bet-tracker/actual_bets.json` and removes the stale file. Do not point dashboard code at `.claude`.
 
 ---
 

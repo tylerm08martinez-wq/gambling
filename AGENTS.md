@@ -41,9 +41,9 @@ Help Tyler identify +EV (positive expected value) betting opportunities across s
 | `/sports-betting-sharp` | V2-Sharp: props + cross-book gaps first; RLM (70%+) and steam (3+ books) for game lines — high selectivity |
 | `/bet-tracker` | Log picks, record results, and compare ROI between V1 and V2 models |
 
-## Data File
+## Data Files
 
-All picks are stored in `C:/Users/metro/Codex/gambling/.Codex/skills/bet-tracker/picks.json`.
+All picks are stored in `.agents/skills/bet-tracker/picks.json`.
 
 This file is the single source of truth — it is read and written by:
 - `/sports-betting` and `/sports-betting-sharp` when logging new picks (pull before read, push after write)
@@ -52,9 +52,18 @@ This file is the single source of truth — it is read and written by:
 
 **Never edit picks.json manually** — always go through the skills or the nightly agent.
 
+My Bets data is stored in `.agents/skills/bet-tracker/actual_bets.json`.
+
+This file is the only source of truth for verified personal bets, stakes, and bankroll settings. The dashboard must read/write this path through GitHub Contents API; it must not use `.claude/skills/bet-tracker/actual_bets.json` or device-local fallback data as truth.
+
+If stale legacy data appears at `.claude/skills/bet-tracker/actual_bets.json`, migrate it once with:
+```bash
+python3 ".agents/skills/bet-tracker/tracker.py" migrate-actual-bets
+```
+
 ## Dashboard
 
-Live betting dashboard at `C:/Users/metro/Codex/gambling/dashboard.html`.
+Live betting dashboard at `dashboard.html`.
 
 To open: start a local server from the gambling folder, then open `http://localhost:8090/dashboard.html`.
 ```

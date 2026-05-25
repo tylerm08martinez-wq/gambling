@@ -553,8 +553,8 @@
 
 <div id="tab-mybets" class="page">
   <div id="mb-sync-banner" style="display:none;margin-bottom:12px;padding:10px 14px;background:#2a1a00;border:1px solid var(--orange);border-radius:8px;font-size:12px;color:var(--orange)">
-    ⚠️ <strong>Bets are local-only on this device.</strong> Add a GitHub token in Settings below to sync across devices.
-    <span style="color:var(--muted)"> Bets made here won't appear on desktop until synced.</span>
+    <strong>Read-only until a GitHub token is saved.</strong>
+    <span style="color:var(--muted)"> My Bets now uses <code>.agents/skills/bet-tracker/actual_bets.json</code> as the only source of truth.</span>
   </div>
   <div id="mb-bankroll-quick" style="margin-bottom:16px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;cursor:pointer" onclick="focusBankrollQuickInput()" title="Tap to edit">
     <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Balance</div>
@@ -672,14 +672,14 @@
       <label>Bankroll:</label>
       <input type="number" class="bankroll-input" id="bankrollInput" placeholder="$1000" min="1"
              onchange="setBankroll(this.value); syncBankrollInputs(); renderMyBetsTab(); renderMyBets()">
-      <span id="sync-status" style="font-size:11px;margin-left:8px;font-weight:600">📱 local only</span>
+      <span id="sync-status" style="font-size:11px;margin-left:8px;font-weight:600">loading</span>
     </div>
     <div style="margin-top:12px">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <input type="password" id="gh-token-input" class="bankroll-input" style="width:220px;font-size:12px"
                placeholder="GitHub token (ghp_…)"
                onchange="setGHToken(this.value); loadActualBetsFromGH(); updateTokenUI()">
-        <span style="font-size:11px;color:var(--muted)">for cross-device sync</span>
+        <span style="font-size:11px;color:var(--muted)">to update actual_bets.json</span>
       </div>
       <div id="token-hint" style="font-size:10px;color:var(--muted);margin-top:4px"></div>
     </div>
@@ -841,32 +841,56 @@ function fmtSigned(v, suffix = '') {
   return (n >= 0 ? '+' : '') + v + suffix;
 }
 
-// ── My Bets — GitHub-backed, localStorage fallback ───────────────
+// ── My Bets — GitHub-backed actual_bets.json source of truth ─────
 const BETS_FILE_PATH = '.agents/skills/bet-tracker/actual_bets.json';
 const BETS_API = `https://api.github.com/repos/tylerm08martinez-wq/gambling/contents/${BETS_FILE_PATH}`;
 let _betsSHA = null;
 let _syncDebounce = null;
+let _actualBets = {};
+let _actualBetsLoaded = false;
+let _lastSyncedActualBets = '{}';
 
 function getGHToken() { return localStorage.getItem('gh_pat') || ''; }
 function setGHToken(t) { localStorage.setItem('gh_pat', t.trim()); }
-function getActualBets() {
-  try { return JSON.parse(localStorage.getItem('actualBets') || '{}'); } catch { return {}; }
-}
+function getActualBets() { return _actualBets || {}; }
 function getActualBet(id) { return getActualBets()[id] || {}; }
 function saveActualBet(id, data) {
+  if (!ensureCanWriteActualBets()) return false;
   const all = getActualBets();
   all[id] = { ...all[id], ...data };
-  localStorage.setItem('actualBets', JSON.stringify(all));
+  _actualBets = all;
   debouncedSync();
+  return true;
 }
-function getBankroll() { return parseFloat(localStorage.getItem('bankroll') || '0'); }
-function setBankroll(v) { localStorage.setItem('bankroll', parseFloat(v) || 0); }
+function getBankroll() { return parseFloat(getActualBets()._settings?.bankroll || '0'); }
+function setBankroll(v) {
+  if (!ensureCanWriteActualBets()) return false;
+  const all = getActualBets();
+  all._settings = { ...(all._settings || {}), bankroll: parseFloat(v) || 0 };
+  _actualBets = all;
+  debouncedSync();
+  return true;
+}
+
+function ensureCanWriteActualBets() {
+  if (getGHToken()) return true;
+  setSyncStatus('readonly');
+  updateTokenUI();
+  return false;
+}
+
+function restoreLastSyncedActualBets() {
+  try { _actualBets = JSON.parse(_lastSyncedActualBets || '{}'); }
+  catch { _actualBets = {}; }
+  renderMyBets();
+  renderLog();
+  renderMyBetsTab();
+}
 
 function setSyncStatus(state) {
   const el = document.getElementById('sync-status');
   if (!el) return;
   const map = {
-    local:    { text: '📱 local only',  cls: 'yellow' },
     syncing:  { text: '⟳ syncing…',    cls: '' },
     synced:   { text: '✓ synced',       cls: 'green' },
     readonly: { text: '👁 read-only',   cls: 'blue' },
@@ -883,19 +907,25 @@ async function loadActualBetsFromGH() {
   try {
     const headers = token ? { Authorization: `token ${token}` } : {};
     const res = await fetch(BETS_API, { headers });
-    if (res.status === 404) { setSyncStatus(token ? 'synced' : 'local'); return; }
+    if (res.status === 404) {
+      _actualBets = {};
+      _actualBetsLoaded = true;
+      _lastSyncedActualBets = '{}';
+      setSyncStatus(token ? 'synced' : 'readonly');
+      renderMyBets();
+      renderLog();
+      renderMyBetsTab();
+      return;
+    }
     if (!res.ok) { setSyncStatus('error'); return; }
     const data = await res.json();
     _betsSHA = data.sha;
     const remote = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
-    // Merge: keep all remote keys, but preserve any local-only keys (device made bets before token was set)
-    const local = getActualBets();
-    const localOnlyKeys = Object.keys(local).filter(k => !(k in remote));
-    const merged = { ...remote };
-    localOnlyKeys.forEach(k => { merged[k] = local[k]; });
-    localStorage.setItem('actualBets', JSON.stringify(merged));
-    // If we had local-only keys, push the merged result up immediately
-    if (token && localOnlyKeys.length > 0) pushToGH();
+    _actualBets = remote && typeof remote === 'object' ? remote : {};
+    _actualBetsLoaded = true;
+    _lastSyncedActualBets = JSON.stringify(_actualBets);
+    localStorage.removeItem('actualBets');
+    localStorage.removeItem('bankroll');
     setSyncStatus(token ? 'synced' : 'readonly');
     renderMyBets();
     renderLog();
@@ -905,7 +935,7 @@ async function loadActualBetsFromGH() {
 
 async function pushToGH() {
   const token = getGHToken();
-  if (!token) return;
+  if (!token) { setSyncStatus('readonly'); return; }
   setSyncStatus('syncing');
   try {
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(getActualBets(), null, 2))));
@@ -919,9 +949,19 @@ async function pushToGH() {
     if (res.ok) {
       const d = await res.json();
       _betsSHA = d.content.sha;
+      _lastSyncedActualBets = JSON.stringify(getActualBets());
       setSyncStatus('synced');
-    } else { setSyncStatus('error'); }
-  } catch { setSyncStatus('error'); }
+      renderMyBets();
+      renderLog();
+      renderMyBetsTab();
+    } else {
+      setSyncStatus('error');
+      restoreLastSyncedActualBets();
+    }
+  } catch {
+    setSyncStatus('error');
+    restoreLastSyncedActualBets();
+  }
 }
 
 function debouncedSync() {
@@ -937,7 +977,7 @@ function updateTokenUI() {
   const banner = document.getElementById('mb-sync-banner');
   if (input && !input.value && token) input.value = '••••••••••••••••';
   if (hint) hint.textContent = token
-    ? '✓ token saved — clears if you delete it'
+    ? '✓ token saved — writes go to .agents/skills/bet-tracker/actual_bets.json'
     : 'Create a token at github.com → Settings → Developer settings → Personal access tokens → Fine-grained · needs Contents: Read & Write on this repo';
   if (banner) banner.style.display = token ? 'none' : '';
 }
@@ -961,7 +1001,7 @@ function toggleVerified(pickId, btn) {
   }
   const current = getActualBet(pickId);
   const newVal = !current.verified;
-  saveActualBet(pickId, { verified: newVal });
+  if (!saveActualBet(pickId, { verified: newVal })) return;
   btn.textContent = newVal ? '✓ Bet it' : '✓ Bet it';
   btn.classList.toggle('verified', newVal);
   renderMyBets();
@@ -972,7 +1012,7 @@ function toggleVerified(pickId, btn) {
 
 function saveActualStake(pickId, val) {
   const stake = parseFloat(val) || null;
-  saveActualBet(pickId, { stake });
+  if (!saveActualBet(pickId, { stake })) return;
   renderMyBets();
   // Refresh actual P&L display inside the panel
   const pick = picks.find(p => (p.id || picks.indexOf(p)) == pickId) ||
@@ -1810,7 +1850,7 @@ function confirmQuickBet() {
   const val = amountEl ? parseFloat(amountEl.value) : null;
   if (!_qbPickId) { closeQuickBetSheet(); return; }
   // Mark verified + save stake
-  saveActualBet(_qbPickId, { verified: true, stake: val || null });
+  if (!saveActualBet(_qbPickId, { verified: true, stake: val || null })) return;
   // Update the verify button state if still in DOM
   if (_qbBtn) {
     _qbBtn.classList.add('verified');
