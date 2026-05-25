@@ -5,7 +5,7 @@ Usage:
   tracker.py stats
   tracker.py open
   tracker.py log --model <v1-trends|v2-sharp> --sport <sport> --bet <bet> --line <line> --units <1-3> [--score <float>] [--edge <str>]
-  tracker.py resolve <id> <win|loss|push> --final-score <str> --game-margin <int> --line-num <float> [--prop-result <str>]
+  tracker.py resolve <id> <win|loss|push|void> --final-score <str> --game-margin <int> --line-num <float> [--prop-result <str>]
 """
 
 import json
@@ -140,7 +140,7 @@ def record_rejected_candidate(candidate: dict):
 # ── Math ─────────────────────────────────────────────────────────────────────
 
 def calc_units_won_lost(line_str: str, units: int, result: str) -> float:
-    if result == "push":
+    if result in {"push", "void"}:
         return 0.0
     if result == "loss":
         return float(-units)
@@ -180,9 +180,12 @@ def fmt_score(s) -> str:
     return f"{s:.1f}/10" if s is not None else "—"
 
 def fmt_record(s: dict) -> str:
-    return f"{s['wins']}-{s['losses']}-{s['pushes']}"
+    base = f"{s['wins']}-{s['losses']}-{s['pushes']}"
+    if s.get("voids"):
+        return f"{base} ({s['voids']} void)"
+    return base
 
-RESULT_ICON = {"win": "✅ Win", "loss": "❌ Loss", "push": "➡️ Push", None: "⏳ Open"}
+RESULT_ICON = {"win": "✅ Win", "loss": "❌ Loss", "push": "➡️ Push", "void": "🚫 Void", None: "⏳ Open"}
 
 
 # ── Context line (two-line Recent Picks format) ───────────────────────────────
@@ -198,6 +201,8 @@ def build_context(pick: dict) -> str:
 
     if result is None:
         return "⏳ Pending"
+    if result == "void":
+        return prop_result or final_score or "Void / DNP"
 
     score_prefix = f"{final_score} — " if final_score else ""
 
@@ -240,6 +245,9 @@ def build_cover_check(pick: dict) -> str:
     bet = pick.get("bet", "").lower()
     prop_result = pick.get("prop_result")
 
+    if result == "void":
+        return pick.get("prop_result") or "Void / DNP"
+
     if prop_result:
         if result == "win":
             return f"Hit — {pick['prop_result']}"
@@ -275,7 +283,8 @@ def extract_matchup(bet: str) -> str:
 # ── Stats calculation ─────────────────────────────────────────────────────────
 
 def model_stats(picks: list) -> dict:
-    settled = [p for p in picks if p.get("result") is not None]
+    settled = [p for p in picks if p.get("result") in {"win", "loss", "push"}]
+    voids = sum(1 for p in picks if p.get("result") == "void")
     wins = sum(1 for p in settled if p["result"] == "win")
     losses = sum(1 for p in settled if p["result"] == "loss")
     pushes = sum(1 for p in settled if p["result"] == "push")
@@ -287,7 +296,7 @@ def model_stats(picks: list) -> dict:
     avg_score = sum(scores) / len(scores) if scores else None
     open_count = sum(1 for p in picks if p.get("result") is None)
     return dict(
-        total=len(picks), settled=len(settled),
+        total=len(picks), settled=len(settled), voids=voids,
         wins=wins, losses=losses, pushes=pushes,
         units_wagered=units_wagered, units_net=units_net,
         win_pct=win_pct, roi=roi, avg_score=avg_score, open=open_count,
@@ -369,8 +378,9 @@ def cmd_stats(_args):
     v2 = model_stats(v2_picks)
     cb = model_stats(picks)
 
-    settled_all = [p for p in picks if p.get("result")]
+    settled_all = [p for p in picks if p.get("result") in {"win", "loss", "push"}]
     open_picks = [p for p in picks if p.get("result") is None]
+    void_picks = [p for p in picks if p.get("result") == "void"]
 
     diff = v1["units_net"] - v2["units_net"]
     if diff > 0:
@@ -381,7 +391,8 @@ def cmd_stats(_args):
         leader = "Tied"
 
     print(f"\n📊 BETTING TRACKER — {today}")
-    print(f"{len(picks)} picks tracked · {cb['settled']} settled · {cb['open']} open\n")
+    void_label = f" · {len(void_picks)} void" if void_picks else ""
+    print(f"{len(picks)} picks tracked · {cb['settled']} settled · {cb['open']} open{void_label}\n")
     print(divider())
 
     # ── Model cards ──
@@ -411,7 +422,7 @@ def cmd_stats(_args):
         result = p.get("result")
         icon = RESULT_ICON.get(result, "—").split()[0]
         date_short = p["date"][5:]  # MM-DD
-        pl_str = fmt_net(p.get("units_won_lost") or 0) if result else "pending"
+        pl_str = "void" if result == "void" else fmt_net(p.get("units_won_lost") or 0) if result else "pending"
         bet_display = p["bet"][:38]
         print(f"{icon} {date_short} · {model_label} · {bet_display} · {p['line']} · {p['units']}u · {pl_str}")
         ctx = build_context(p)
@@ -776,7 +787,7 @@ def main():
 
     res_p = sub.add_parser("resolve", help="Record a result for an open pick")
     res_p.add_argument("id", help="Pick ID")
-    res_p.add_argument("outcome", choices=["win", "loss", "push"])
+    res_p.add_argument("outcome", choices=["win", "loss", "push", "void"])
     res_p.add_argument("--closing-line", default="",
                        help="American odds at close, e.g. '-110' or '+105'. Used to compute CLV.")
     res_p.add_argument("--final-score", default="", help="e.g. 'ARI 6, TOR 3'")

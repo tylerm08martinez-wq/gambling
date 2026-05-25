@@ -109,6 +109,15 @@
 
   .notice { background: #1f2d3d; border: 1px solid #2d4a6b; border-radius: 8px; padding: 14px 18px; color: var(--blue); font-size: 13px; margin-bottom: 20px; }
   .breakeven { font-size: 11px; color: var(--muted); margin-top: 8px; }
+  .health-banner { display: none; margin: 12px 28px 0; padding: 12px 14px; background: #2a1214; border: 1px solid rgba(248,81,73,.45); border-radius: 8px; color: var(--text); font-size: 12px; line-height: 1.45; }
+  .health-banner.show { display: block; }
+  .health-banner-title { color: var(--red); font-weight: 700; margin-bottom: 6px; }
+  .health-banner-list { display: grid; gap: 8px; }
+  .health-banner-item { padding-top: 8px; border-top: 1px solid rgba(248,81,73,.18); }
+  .health-banner-item:first-child { padding-top: 0; border-top: 0; }
+  .health-banner-summary { font-weight: 700; color: var(--orange); }
+  .health-banner-detail { color: var(--muted); word-break: break-word; }
+  .health-banner code { color: var(--blue); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); border-radius: 4px; padding: 1px 4px; }
 
   canvas { max-height: 220px; }
 
@@ -180,6 +189,7 @@
 
     /* Pages */
     .page { padding: 16px 18px; }
+    .health-banner { margin: 10px 18px 0; }
 
     /* KPI — 2×2 grid instead of 4-wide */
     .kpi-strip { grid-template-columns: 1fr 1fr !important; }
@@ -224,6 +234,7 @@
 
     /* Pages */
     .page { padding: 16px; }
+    .health-banner { margin: 10px 16px 0; font-size: 11px; }
 
     /* KPI — 2 columns on phone */
     .kpi-strip { grid-template-columns: 1fr 1fr !important; }
@@ -316,6 +327,8 @@
   .qb-amount-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .qb-confirm-btn { display: block; width: 100%; margin-top: 14px; padding: 16px; background: #1a3d2b; border: 1px solid #2a5c3f; border-radius: 10px; color: var(--green); font-size: 16px; font-weight: 700; cursor: pointer; text-align: center; transition: background .15s; }
   .qb-confirm-btn:active { background: #234f38; }
+  .qb-remove-btn { display: none; width: 100%; margin-top: 10px; padding: 13px; background: transparent; border: 1px solid #5a2a2a; border-radius: 10px; color: var(--red); font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; }
+  .qb-remove-btn.show { display: block; }
 
   /* ── Today chip — interactive ────────────────────────────────── */
   .today-bet-chip { cursor: pointer; transition: background .15s, border-color .15s; }
@@ -329,6 +342,7 @@
   .my-bet-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .verify-btn { padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; }
   .verify-btn.verified { background: #1a3d2b; color: var(--green); border-color: #2a5c3f; }
+  .remove-bet-btn { padding: 3px 7px; border-radius: 5px; border: 1px solid #5a2a2a; background: transparent; color: var(--red); font-size: 12px; font-weight: 700; cursor: pointer; margin-left: 6px; }
   .stake-input { background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-size: 12px; padding: 5px 8px; width: 90px; }
   .stake-input:focus { outline: none; border-color: var(--blue); }
   .actual-pl { font-size: 12px; font-weight: 600; margin-top: 6px; }
@@ -399,6 +413,8 @@
     </button>
   </div>
 </header>
+
+<div id="dashboard-health-banner" class="health-banner" role="status" aria-live="polite"></div>
 
 <div class="tabs-wrap">
 <div class="tabs" id="tabs-bar">
@@ -518,6 +534,7 @@
       <option value="loss">Losses</option>
       <option value="push">Pushes</option>
       <option value="open">Open</option>
+      <option value="void">Void</option>
     </select>
     <select id="filter-sport" onchange="renderLog()">
       <option value="">All Sports</option>
@@ -599,6 +616,7 @@
         <option value="loss">Losses</option>
         <option value="push">Pushes</option>
         <option value="open">Open</option>
+        <option value="void">Void</option>
       </select>
       <select id="mb-filter-sport" onchange="renderMBLog()">
         <option value="">All Sports</option>
@@ -695,16 +713,103 @@
   <div class="qb-amount-label">$ Amount</div>
   <input class="qb-amount-input" id="qb-amount" type="number" inputmode="decimal" placeholder="0" min="0" step="0.01">
   <button class="qb-confirm-btn" onclick="confirmQuickBet()">Confirm Bet ✓</button>
+  <button class="qb-remove-btn" id="qb-remove-btn" onclick="removeQuickBet()">Remove Bet</button>
 </div>
 
 <script>
 let picks = [];
+let dashboardHealthIssues = {};
 
 // Chart instances — destroy before recreating to prevent re-render bug
 let plChart = null, sportChart = null, clvChart = null, modelChart = null;
 let mbPlChart = null, mbSportChart = null, calibChart = null, mbBankrollChart = null;
 
 // ── Helpers ──────────────────────────────────────────────────────
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
+function trimDetail(value, max = 220) {
+  const text = String(value ?? '').replace(/\s+/g, ' ').trim();
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+function renderDashboardHealth() {
+  const banner = document.getElementById('dashboard-health-banner');
+  if (!banner) return;
+  const issues = Object.values(dashboardHealthIssues).filter(Boolean);
+  if (!issues.length) {
+    banner.classList.remove('show');
+    banner.innerHTML = '';
+    return;
+  }
+
+  banner.innerHTML = `
+    <div class="health-banner-title">Dashboard health warning</div>
+    <div class="health-banner-list">
+      ${issues.map(issue => `
+        <div class="health-banner-item">
+          <div class="health-banner-summary">${escapeHtml(issue.summary)}</div>
+          ${issue.details.map(detail => `<div class="health-banner-detail">${detail.label}: <code>${escapeHtml(detail.value)}</code></div>`).join('')}
+          ${issue.hint ? `<div class="health-banner-detail">${escapeHtml(issue.hint)}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `;
+  banner.classList.add('show');
+}
+
+function setDashboardHealthIssue(key, issue) {
+  if (issue) dashboardHealthIssues[key] = issue;
+  else delete dashboardHealthIssues[key];
+  renderDashboardHealth();
+}
+
+function explainStatus(status, tokenPresent) {
+  if (status === 401) return 'Bad token or expired token.';
+  if (status === 403) return tokenPresent
+    ? 'Token is valid enough to reach GitHub, but lacks Contents permission, repo access, or is rate-limited.'
+    : 'GitHub denied the unauthenticated request or rate-limited this client.';
+  if (status === 404) return tokenPresent
+    ? 'Bad path, wrong repo/branch, or token cannot see this repo.'
+    : 'Bad path, wrong repo/branch, or private resource without a token.';
+  if (status >= 500) return 'GitHub returned a server error.';
+  return 'Unexpected GitHub response.';
+}
+
+async function readFailureBody(res) {
+  try {
+    const text = await res.text();
+    if (!text) return '';
+    try {
+      const parsed = JSON.parse(text);
+      return trimDetail([parsed.message, parsed.documentation_url].filter(Boolean).join(' | '));
+    } catch {
+      return trimDetail(text);
+    }
+  } catch {
+    return '';
+  }
+}
+
+function buildFetchIssue({ summary, path, url, method = 'GET', res, bodyText = '', tokenPresent = false, error = null }) {
+  const details = [
+    { label: 'Path', value: path || 'n/a' },
+    { label: 'Request', value: `${method} ${url}` },
+    { label: 'Token', value: tokenPresent ? 'saved' : 'missing/not used' },
+  ];
+  if (res) details.push({ label: 'GitHub response', value: `${res.status} ${res.statusText || ''}`.trim() });
+  if (bodyText) details.push({ label: 'Body', value: bodyText });
+  if (error) details.push({ label: 'Error', value: error.message || String(error) });
+  return {
+    summary,
+    details,
+    hint: res ? explainStatus(res.status, tokenPresent) : 'Network, CORS, or JSON parsing failed before GitHub returned a usable response.',
+  };
+}
+
 function bookBetUrl(pick) {
   const line = pick.line || '';
   const bookMatch = line.match(/@\s*(.+)$/i);
@@ -769,9 +874,9 @@ function inferBetType(pick) {
   if (b.includes(' rl ') || b.includes('run line') || b.includes('-1.5') || b.includes('+1.5')) return 'Run Line';
   if (b.includes('puck line')) return 'Puck Line';
   if (b.includes('moneyline') || b.includes(' ml') || / ml$/i.test(b)) return 'Moneyline';
+  if (b.includes('prop') || b.includes('strikeout') || b.includes('hits') || b.includes('yards') || b.includes('points') || b.includes('assists') || b.includes('rebounds')) return 'Prop';
   if (b.includes('under') || b.includes('over')) return 'Total';
   if (/[+-]\d+(\.\d+)?/.test(b) && (b.includes('spread') || b.includes(' vs ') || b.includes(' @ '))) return 'Spread';
-  if (b.includes('prop') || b.includes('strikeout') || b.includes('hits') || b.includes('yards') || b.includes('points') || b.includes('assists') || b.includes('rebounds')) return 'Prop';
   return 'Moneyline';
 }
 
@@ -799,7 +904,10 @@ function edgeType(raw) {
   return sep > 0 ? r.slice(0, sep) : r.split(',')[0].slice(0, 24);
 }
 
-const settled = () => picks.filter(p => p.result !== null);
+const isSettledResult = p => p.result === 'win' || p.result === 'loss' || p.result === 'push';
+const isOpenPick = p => p.result === null || p.result === undefined;
+const settled = () => picks.filter(isSettledResult);
+const voided = () => picks.filter(p => p.result === 'void');
 const byModel = m => picks.filter(p => p.model === m);
 const settledByModel = m => settled().filter(p => p.model === m);
 
@@ -862,6 +970,14 @@ function saveActualBet(id, data) {
   debouncedSync();
   return true;
 }
+function removeActualBet(id) {
+  if (!ensureCanWriteActualBets()) return false;
+  const all = { ...getActualBets() };
+  delete all[id];
+  _actualBets = all;
+  debouncedSync();
+  return true;
+}
 function getBankroll() { return parseFloat(getActualBets()._settings?.bankroll || '0'); }
 function setBankroll(v) {
   if (!ensureCanWriteActualBets()) return false;
@@ -875,6 +991,15 @@ function setBankroll(v) {
 function ensureCanWriteActualBets() {
   if (getGHToken()) return true;
   setSyncStatus('readonly');
+  setDashboardHealthIssue('actual-bets-token', {
+    summary: 'actual_bets.json write blocked because no GitHub token is saved',
+    details: [
+      { label: 'Path', value: BETS_FILE_PATH },
+      { label: 'API', value: BETS_API },
+      { label: 'Token', value: 'missing' },
+    ],
+    hint: 'Save a fine-grained GitHub token with Contents: Read and Write for this repo.',
+  });
   updateTokenUI();
   return false;
 }
@@ -882,6 +1007,10 @@ function ensureCanWriteActualBets() {
 function restoreLastSyncedActualBets() {
   try { _actualBets = JSON.parse(_lastSyncedActualBets || '{}'); }
   catch { _actualBets = {}; }
+  renderActualBetsViews();
+}
+
+function renderActualBetsViews() {
   renderMyBets();
   renderLog();
   renderMyBetsTab();
@@ -904,20 +1033,40 @@ function setSyncStatus(state) {
 async function loadActualBetsFromGH() {
   const token = getGHToken();
   setSyncStatus('syncing');
+  setDashboardHealthIssue('actual-bets-token', null);
   try {
     const headers = token ? { Authorization: `token ${token}` } : {};
     const res = await fetch(BETS_API, { headers });
     if (res.status === 404) {
+      const bodyText = await readFailureBody(res);
+      setDashboardHealthIssue('actual-bets-read', buildFetchIssue({
+        summary: 'actual_bets.json read returned 404',
+        path: BETS_FILE_PATH,
+        url: BETS_API,
+        res,
+        bodyText,
+        tokenPresent: Boolean(token),
+      }));
       _actualBets = {};
       _actualBetsLoaded = true;
       _lastSyncedActualBets = '{}';
       setSyncStatus(token ? 'synced' : 'readonly');
-      renderMyBets();
-      renderLog();
-      renderMyBetsTab();
+      renderActualBetsViews();
       return;
     }
-    if (!res.ok) { setSyncStatus('error'); return; }
+    if (!res.ok) {
+      const bodyText = await readFailureBody(res);
+      setSyncStatus('error');
+      setDashboardHealthIssue('actual-bets-read', buildFetchIssue({
+        summary: 'actual_bets.json read failed',
+        path: BETS_FILE_PATH,
+        url: BETS_API,
+        res,
+        bodyText,
+        tokenPresent: Boolean(token),
+      }));
+      return;
+    }
     const data = await res.json();
     _betsSHA = data.sha;
     const remote = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
@@ -927,10 +1076,18 @@ async function loadActualBetsFromGH() {
     localStorage.removeItem('actualBets');
     localStorage.removeItem('bankroll');
     setSyncStatus(token ? 'synced' : 'readonly');
-    renderMyBets();
-    renderLog();
-    renderMyBetsTab();
-  } catch { setSyncStatus('error'); }
+    setDashboardHealthIssue('actual-bets-read', null);
+    renderActualBetsViews();
+  } catch (e) {
+    setSyncStatus('error');
+    setDashboardHealthIssue('actual-bets-read', buildFetchIssue({
+      summary: 'actual_bets.json read failed before a usable GitHub response',
+      path: BETS_FILE_PATH,
+      url: BETS_API,
+      tokenPresent: Boolean(token),
+      error: e,
+    }));
+  }
 }
 
 async function pushToGH() {
@@ -951,15 +1108,34 @@ async function pushToGH() {
       _betsSHA = d.content.sha;
       _lastSyncedActualBets = JSON.stringify(getActualBets());
       setSyncStatus('synced');
+      setDashboardHealthIssue('actual-bets-write', null);
       renderMyBets();
       renderLog();
       renderMyBetsTab();
     } else {
+      const bodyText = await readFailureBody(res);
       setSyncStatus('error');
+      setDashboardHealthIssue('actual-bets-write', buildFetchIssue({
+        summary: 'actual_bets.json write failed',
+        path: BETS_FILE_PATH,
+        url: BETS_API,
+        method: 'PUT',
+        res,
+        bodyText,
+        tokenPresent: true,
+      }));
       restoreLastSyncedActualBets();
     }
-  } catch {
+  } catch (e) {
     setSyncStatus('error');
+    setDashboardHealthIssue('actual-bets-write', buildFetchIssue({
+      summary: 'actual_bets.json write failed before a usable GitHub response',
+      path: BETS_FILE_PATH,
+      url: BETS_API,
+      method: 'PUT',
+      tokenPresent: true,
+      error: e,
+    }));
     restoreLastSyncedActualBets();
   }
 }
@@ -997,17 +1173,48 @@ function toggleVerified(pickId, btn) {
   if (window.innerWidth <= 600) {
     const pick = picks.find(p => String(p.id || picks.indexOf(p)) === String(pickId)) ||
                  picks.find((p, i) => String(i) === String(pickId));
-    if (pick) { openQuickBetSheet(pickId, pick, btn); return; }
+    if (pick) {
+      if (getActualBet(pickId).verified) {
+        undoActualBet(pickId, btn);
+      } else {
+        openQuickBetSheet(pickId, pick, btn);
+      }
+      return;
+    }
   }
   const current = getActualBet(pickId);
   const newVal = !current.verified;
-  if (!saveActualBet(pickId, { verified: newVal })) return;
-  btn.textContent = newVal ? '✓ Bet it' : '✓ Bet it';
+  const saved = newVal ? saveActualBet(pickId, { verified: true }) : removeActualBet(pickId);
+  if (!saved) return;
+  btn.textContent = newVal ? 'Undo bet' : '✓ Bet it';
   btn.classList.toggle('verified', newVal);
   renderMyBets();
+  renderMyBetsTab();
+  renderTodayCallout();
   // Refresh the ✓ badge on the row
   const badge = document.getElementById('vbadge-' + pickId);
   if (badge) badge.style.display = newVal ? '' : 'none';
+}
+
+function undoActualBet(pickId, btn = null) {
+  if (!removeActualBet(pickId)) return;
+  if (btn) {
+    btn.textContent = '✓ Bet it';
+    btn.classList.remove('verified');
+  }
+  const badge = document.getElementById('vbadge-' + pickId);
+  if (badge) badge.style.display = 'none';
+  const stakeInput = document.getElementById('stake-' + pickId);
+  if (stakeInput) stakeInput.value = '';
+  const plEl = document.getElementById('actual-pl-' + pickId);
+  if (plEl) {
+    plEl.textContent = '';
+    plEl.className = 'actual-pl';
+  }
+  renderLog();
+  renderMyBets();
+  renderTodayCallout();
+  renderMyBetsTab();
 }
 
 function saveActualStake(pickId, val) {
@@ -1084,19 +1291,52 @@ function renderMyBets() {
 }
 
 // ── GitHub fetch ─────────────────────────────────────────────────
-// Repo is public — fetch raw picks.json directly, no auth.
-// Cache-buster prevents stale data after a recent push.
-const PICKS_URL = 'https://raw.githubusercontent.com/tylerm08martinez-wq/gambling/main/.agents/skills/bet-tracker/picks.json';
+// Repo is public. Use GitHub Contents API instead of raw.githubusercontent.com
+// so the dashboard does not get stuck behind raw CDN cache after a recent push.
+const PICKS_FILE_PATH = '.agents/skills/bet-tracker/picks.json';
+const PICKS_API = `https://api.github.com/repos/tylerm08martinez-wq/gambling/contents/${PICKS_FILE_PATH}?ref=main`;
 
 async function loadPicks() {
   document.getElementById('last-updated').textContent = 'Loading...';
   try {
-    const res = await fetch(`${PICKS_URL}?t=${Date.now()}`);
-    if (!res.ok) throw new Error(`GitHub ${res.status}`);
-    picks = await res.json();
+    const url = `${PICKS_API}&t=${Date.now()}`;
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) {
+      const bodyText = await readFailureBody(res);
+      setDashboardHealthIssue('picks', buildFetchIssue({
+        summary: 'picks.json raw fetch failed',
+        path: PICKS_FILE_PATH,
+        url,
+        res,
+        bodyText,
+      }));
+      throw new Error(`GitHub ${res.status}`);
+    }
+    try {
+      const data = await res.json();
+      picks = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
+    } catch (parseError) {
+      setDashboardHealthIssue('picks', buildFetchIssue({
+        summary: 'picks.json raw fetch returned invalid JSON',
+        path: PICKS_FILE_PATH,
+        url,
+        res,
+        error: parseError,
+      }));
+      throw parseError;
+    }
+    setDashboardHealthIssue('picks', null);
     const now = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     document.getElementById('last-updated').textContent = `${picks.length} picks · synced ${now}`;
   } catch (e) {
+    if (!dashboardHealthIssues.picks) {
+      setDashboardHealthIssue('picks', buildFetchIssue({
+        summary: 'picks.json raw fetch failed before a usable GitHub response',
+        path: PICKS_FILE_PATH,
+        url: PICKS_API,
+        error: e,
+      }));
+    }
     document.getElementById('last-updated').textContent = `Fetch failed: ${e.message}`;
     picks = [];
   }
@@ -1516,16 +1756,18 @@ function renderLog() {
   });
   if (cutoff) rows = rows.filter(p => p.date >= cutoff);
   if (mf) rows = rows.filter(p => p.model === mf);
-  if (rf === 'open') rows = rows.filter(p => p.result === null);
+  if (rf === 'open') rows = rows.filter(isOpenPick);
   else if (rf) rows = rows.filter(p => p.result === rf);
   if (sf) rows = rows.filter(p => p.sport === sf);
   if (ef) rows = rows.filter(p => edgeType(p.primary_edge) === ef);
   if (search) rows = rows.filter(p => (p.bet || '').toLowerCase().includes(search) || (p.primary_edge || '').toLowerCase().includes(search));
 
   document.getElementById('log-body').innerHTML = rows.map((p, i) => {
-    const rClass = p.result === 'win' ? 'result-w' : p.result === 'loss' ? 'result-l' : p.result === 'push' ? 'result-p' : 'result-o';
+    const rClass = p.result === 'win' ? 'result-w' : p.result === 'loss' ? 'result-l' : p.result === 'push' || p.result === 'void' ? 'result-p' : 'result-o';
     const rText = p.result ? p.result.toUpperCase() : '⏳';
-    const pl = p.units_won_lost !== null
+    const pl = p.result === 'void'
+      ? '<span style="color:var(--muted)">void</span>'
+      : p.units_won_lost !== null
       ? `<span class="${p.units_won_lost >= 0 ? 'green' : 'red'}">${fmtSigned(p.units_won_lost.toFixed(2), 'u')}</span>`
       : '—';
     const clvCell = p.clv !== null && p.clv !== undefined
@@ -1573,9 +1815,9 @@ function renderLog() {
       <td class="${rClass}">${(() => {
         // Desktop: plain text. Mobile: pill with P&L
         const pillCls = p.result === 'win' ? 'result-pill-w' : p.result === 'loss' ? 'result-pill-l' : 'result-pill-p';
-        if (p.result === 'win' || p.result === 'loss' || p.result === 'push') {
-          const plVal = p.units_won_lost !== null ? `<span style="font-size:10px;font-weight:500;opacity:.85">${fmtSigned(p.units_won_lost.toFixed(2), 'u')}</span>` : '';
-          return `<span class="result-text">${rText}</span><span class="result-pill ${pillCls}">${p.result === 'win' ? 'W' : p.result === 'loss' ? 'L' : 'P'} ${plVal}</span>`;
+        if (p.result === 'win' || p.result === 'loss' || p.result === 'push' || p.result === 'void') {
+          const plVal = p.result === 'void' ? '' : p.units_won_lost !== null ? `<span style="font-size:10px;font-weight:500;opacity:.85">${fmtSigned(p.units_won_lost.toFixed(2), 'u')}</span>` : '';
+          return `<span class="result-text">${rText}</span><span class="result-pill ${pillCls}">${p.result === 'win' ? 'W' : p.result === 'loss' ? 'L' : p.result === 'void' ? 'V' : 'P'} ${plVal}</span>`;
         }
         return `<span class="result-text">${rText}</span><span class="result-pill" style="display:none">${rText}</span>`;
       })()}</td>
@@ -1630,8 +1872,8 @@ function renderLog() {
               <h4>My Bet</h4>
               ${(() => { const k = kellyStake(p, getBankroll()); const { label } = kellyFraction(p); if (k != null && k > 0) { return `<div style="margin-bottom:8px"><span style="display:inline-flex;align-items:center;gap:6px;background:#1a3060;border:1px solid #2a4fa0;border-radius:20px;padding:5px 12px;font-size:13px;font-weight:700;color:var(--blue)">💰 Bet $${k} <span style="font-size:11px;font-weight:400;opacity:.8">${label}${getBankroll() ? ' · $'+getBankroll()+' bankroll' : ''}</span></span></div>`; } if (k === 0 && getBankroll()) { return `<div style="margin-bottom:8px"><span style="display:inline-flex;align-items:center;gap:6px;background:#2a1a1a;border:1px solid #5a2a2a;border-radius:20px;padding:5px 12px;font-size:12px;color:#e57373">⚠️ Negative EV at current odds — Kelly recommends no bet</span></div>`; } return getBankroll() ? '' : '<div style="margin-bottom:6px;font-size:11px;color:var(--muted)">Set bankroll in My Bets tab to get Kelly suggestions.</div>'; })()}
               <div class="my-bet-controls">
-                <button class="verify-btn ${myBet.verified ? 'verified' : ''}" onclick="toggleVerified('${pickId}', this)">✓ Bet it</button>
-                <input type="number" class="stake-input" placeholder="$ amount" min="0" step="1"
+                <button class="verify-btn ${myBet.verified ? 'verified' : ''}" onclick="toggleVerified('${pickId}', this)">${myBet.verified ? 'Undo bet' : '✓ Bet it'}</button>
+                <input type="number" class="stake-input" id="stake-${pickId}" placeholder="$ amount" min="0" step="1"
                        value="${myBet.stake || ''}"
                        onchange="saveActualStake('${pickId}', this.value)"
                        oninput="saveActualStake('${pickId}', this.value)">
@@ -1831,6 +2073,8 @@ function openQuickBetSheet(pickId, pick, btn) {
     amountEl.value = myBet.stake || (k > 0 ? k : '');
     setTimeout(() => amountEl.focus(), 300);
   }
+  const removeBtn = document.getElementById('qb-remove-btn');
+  if (removeBtn) removeBtn.classList.toggle('show', !!(myBet.verified || myBet.stake));
 
   const overlay = document.getElementById('qb-overlay');
   const sheet = document.getElementById('qb-sheet');
@@ -1854,7 +2098,7 @@ function confirmQuickBet() {
   // Update the verify button state if still in DOM
   if (_qbBtn) {
     _qbBtn.classList.add('verified');
-    _qbBtn.textContent = '✓ Bet it';
+    _qbBtn.textContent = 'Undo bet';
   }
   // Refresh badge
   const badge = document.getElementById('vbadge-' + _qbPickId);
@@ -1874,7 +2118,14 @@ function confirmQuickBet() {
     }
   }
   renderMyBets();
+  renderMyBetsTab();
   renderTodayCallout();
+  closeQuickBetSheet();
+}
+
+function removeQuickBet() {
+  if (!_qbPickId) { closeQuickBetSheet(); return; }
+  undoActualBet(_qbPickId, _qbBtn);
   closeQuickBetSheet();
 }
 
@@ -2222,7 +2473,7 @@ function renderMBLog() {
   if (sf) rows = rows.filter(r => r.p.sport === sf);
   const tbody = document.getElementById('mb-log-body');
   if (!tbody) return;
-  tbody.innerHTML = rows.map(({ p, bet }) => {
+  tbody.innerHTML = rows.map(({ p, id, bet }) => {
     const stake = bet.stake || 0;
     const pl = calcActualPL(p, stake);
     const rClass = p.result === 'win' ? 'result-w' : p.result === 'loss' ? 'result-l' : p.result === 'push' ? 'result-p' : 'result-o';
@@ -2234,6 +2485,7 @@ function renderMBLog() {
     const shortDate = p.date ? p.date.slice(5) : '—';
     const gameTime = p.game_time ? `<div class="game-time" style="font-size:10px;color:var(--muted);margin-top:2px">${p.game_time}</div>` : '';
     const checkLink = `<a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" style="color:var(--accent);font-size:15px;text-decoration:none" title="Check score / result">🔍</a>`;
+    const undoBtn = `<button class="remove-bet-btn" onclick="undoActualBet('${id}')" title="Remove from My Bets">Undo</button>`;
     return `<tr>
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span>${gameTime}</td>
       <td>${badge}</td>
@@ -2243,7 +2495,7 @@ function renderMBLog() {
       <td>$${stake ? stake.toFixed(2) : '—'}</td>
       <td class="${rClass}">${rText}</td>
       <td>${plHtml}</td>
-      <td style="text-align:center">${checkLink}</td>
+      <td style="text-align:center;white-space:nowrap">${checkLink}${undoBtn}</td>
     </tr>`;
   }).join('') || '<tr><td colspan="9" style="color:var(--muted);text-align:center;padding:24px">No verified bets match filters. Open a pick in Pick Log and tap "✓ Bet it".</td></tr>';
 }

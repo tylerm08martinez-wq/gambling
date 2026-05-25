@@ -74,7 +74,7 @@ Confirm the logged pick to the user.
 
 ---
 
-## Action: `result <id> <win|loss|push>`
+## Action: `result <id> <win|loss|push|void>`
 
 Look up the pick by ID, then run:
 ```bash
@@ -92,6 +92,7 @@ python3 ".agents/skills/bet-tracker/tracker.py" resolve <id> <outcome> \
 - `--line-num`: the spread number for cover check display (e.g. 3 for -3 spread; 0 for ML)
 - `--prop-result`: for player props, the stat line (e.g. "3/9 from three")
 - `--prop-margin`: actual stat minus threshold (e.g. needed 4, got 3 → -1)
+- Use `void` when a wager did not stand (for example, pitcher/player DNP). Voids are recorded with `0` units and excluded from win-rate/ROI calculations.
 
 Then run `tracker.py stats` and show the output.
 

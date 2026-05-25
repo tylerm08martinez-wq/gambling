@@ -537,14 +537,14 @@
     "validation_status": "not_required",
     "validation_notes": [],
     "game_time": "4:20 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "void",
+    "units_won_lost": 0,
     "closing_line": null,
     "clv": null,
-    "final_score": null,
+    "final_score": "LAA 2, TEX 1",
     "game_margin": null,
     "line_num": 6.5,
-    "prop_result": null,
+    "prop_result": "DNP / Eovaldi did not pitch",
     "prop_margin": null
   },
   {
@@ -587,14 +587,14 @@
     "validation_status": "not_required",
     "validation_notes": [],
     "game_time": "4:20 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "void",
+    "units_won_lost": 0,
     "closing_line": null,
     "clv": null,
-    "final_score": null,
+    "final_score": "LAA 2, TEX 1",
     "game_margin": null,
     "line_num": 5.5,
-    "prop_result": null,
+    "prop_result": "DNP / Eovaldi did not pitch",
     "prop_margin": null
   }
 ]
