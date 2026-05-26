@@ -17,5 +17,5 @@ Variants:
 Verdict:
 
 ```text
-Fill in after review. Delete losing variants and fold the winner into the real quick-bet sheet.
+Variant B won. Promote the amount-first sheet with Kelly, half-Kelly, and 1% bankroll presets; remove the A/C branches and prototype switcher.
 ```

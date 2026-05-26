@@ -338,23 +338,10 @@
   .qb-meta-value { font-size: 13px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .qb-presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 12px; }
   .qb-preset { padding: 11px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer; }
+  .qb-preset:disabled { opacity: .45; cursor: not-allowed; }
   .qb-preset span { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; font-weight: 500; }
-  .qb-review { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin: 12px 0; }
-  .qb-review-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--border-subtle); font-size: 13px; }
-  .qb-review-row:last-child { border-bottom: 0; }
-  .qb-review-row span:first-child { color: var(--muted); }
-  .qb-state { margin-top: 12px; padding: 9px 10px; background: rgba(88,166,255,.06); border: 1px dashed rgba(88,166,255,.35); border-radius: 8px; color: var(--muted); font-size: 11px; line-height: 1.45; }
-  .qb-state strong { color: var(--blue); }
-  .qb-sheet.variant-b .qb-amount-input { text-align: left; font-size: 34px; border-radius: 12px; }
-  .qb-sheet.variant-b .qb-confirm-btn { position: sticky; bottom: 0; box-shadow: 0 -12px 18px rgba(22,27,34,.88); }
-  .qb-sheet.variant-c { background: #10161d; }
-  .qb-sheet.variant-c .qb-amount-input { font-size: 24px; }
-  .entry-prototype-switcher { position: fixed; left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 1200; display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #f0f6fc; color: #0d1117; border: 1px solid rgba(13,17,23,.25); border-radius: 999px; box-shadow: 0 10px 30px rgba(0,0,0,.35); font-size: 12px; font-weight: 700; }
-  .entry-prototype-switcher button { width: 30px; height: 30px; border-radius: 999px; border: 1px solid rgba(13,17,23,.25); background: #fff; color: #0d1117; font-size: 18px; cursor: pointer; }
-  .entry-prototype-switcher span { min-width: 126px; text-align: center; white-space: nowrap; }
-  @media (min-width: 601px) {
-    .entry-prototype-switcher { display: none; }
-  }
+  .qb-amount-input { text-align: left; font-size: 34px; border-radius: 12px; }
+  .qb-confirm-btn { position: sticky; bottom: 0; box-shadow: 0 -12px 18px rgba(22,27,34,.88); }
 
   /* ── Today chip — interactive ────────────────────────────────── */
   .today-bet-chip { cursor: pointer; transition: background .15s, border-color .15s; }
@@ -733,7 +720,7 @@
 <!-- Quick-bet bottom sheet -->
 <div class="qb-overlay" id="qb-overlay" onclick="closeQuickBetSheet()"></div>
 <div class="qb-sheet" id="qb-sheet">
-  <div id="qb-prototype-content"></div>
+  <div id="qb-content"></div>
 </div>
 
 <script>
@@ -1189,7 +1176,7 @@ function calcActualPL(pick, stake) {
 }
 
 function toggleVerified(pickId, btn) {
-  // On mobile (<=600px) open the quick-bet sheet instead of inline toggle
+  // On mobile (<=600px) open the quick-bet sheet instead of inline toggle.
   if (window.innerWidth <= 600) {
     const pick = picks.find(p => String(p.id || picks.indexOf(p)) === String(pickId)) ||
                  picks.find((p, i) => String(i) === String(pickId));
@@ -2061,56 +2048,9 @@ function gotoPickInLog(detailId) {
 }
 
 // ── Quick-bet bottom sheet ────────────────────────────────────────
-// PROTOTYPE: Mobile bet entry flow variants. Question: which one-thumb sheet
-// keeps bet entry fastest without hiding Kelly, stake, or saved-state context?
-const ENTRY_VARIANTS = [
-  { key: 'A', name: 'Fast sheet' },
-  { key: 'B', name: 'Preset ladder' },
-  { key: 'C', name: 'Review card' },
-];
 let _qbPickId = null;
 let _qbBtn = null;
 let _qbPick = null;
-
-function getEntryVariantKey() {
-  const requested = new URLSearchParams(window.location.search).get('entryVariant') || 'A';
-  return ENTRY_VARIANTS.some(v => v.key === requested.toUpperCase()) ? requested.toUpperCase() : 'A';
-}
-
-function getEntryVariant() {
-  const key = getEntryVariantKey();
-  return ENTRY_VARIANTS.find(v => v.key === key) || ENTRY_VARIANTS[0];
-}
-
-function setEntryVariant(key) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('entryVariant', key);
-  window.history.replaceState({}, '', url);
-  ensureEntryPrototypeSwitcher();
-  if (_qbPickId && _qbPick) renderQuickBetPrototype(_qbPickId, _qbPick);
-}
-
-function cycleEntryVariant(dir) {
-  const current = getEntryVariantKey();
-  const idx = ENTRY_VARIANTS.findIndex(v => v.key === current);
-  const next = ENTRY_VARIANTS[(idx + dir + ENTRY_VARIANTS.length) % ENTRY_VARIANTS.length];
-  setEntryVariant(next.key);
-}
-
-function ensureEntryPrototypeSwitcher() {
-  if (!new URLSearchParams(window.location.search).has('entryVariant')) return;
-  let el = document.getElementById('entry-prototype-switcher');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'entry-prototype-switcher';
-    el.className = 'entry-prototype-switcher';
-    el.innerHTML = '<button type="button" onclick="cycleEntryVariant(-1)" aria-label="Previous prototype variant">‹</button><span id="entry-prototype-label"></span><button type="button" onclick="cycleEntryVariant(1)" aria-label="Next prototype variant">›</button>';
-    document.body.appendChild(el);
-  }
-  const v = getEntryVariant();
-  const label = document.getElementById('entry-prototype-label');
-  if (label) label.textContent = `${v.key} — ${v.name}`;
-}
 
 function quickBetLineSummary(pick) {
   const line = pick.line || '';
@@ -2127,33 +2067,19 @@ function quickBetPresetButtons(k, bankroll) {
   ];
   return `<div class="qb-presets">${values.map(preset => {
     const disabled = preset.value == null;
-    return `<button type="button" class="qb-preset" ${disabled ? 'disabled style="opacity:.45"' : `onclick="setQuickBetAmount(${preset.value})"`}>${preset.label}<span>${disabled ? preset.sub : '$' + preset.value}</span></button>`;
+    return `<button type="button" class="qb-preset" ${disabled ? 'disabled' : `onclick="setQuickBetAmount(${preset.value})"`}>${preset.label}<span>${disabled ? preset.sub : '$' + preset.value}</span></button>`;
   }).join('')}</div>`;
 }
 
-function quickBetStateHtml(pickId, pick, myBet, k, variant) {
-  const stake = document.getElementById('qb-amount')?.value || myBet.stake || '';
-  return `<div class="qb-state">
-    <strong>Prototype state:</strong>
-    variant=${variant.key}; pick=${escapeHtml(pickId)}; saved=${myBet.verified ? 'yes' : 'no'};
-    stake=${stake ? '$' + escapeHtml(stake) : 'empty'}; bankroll=${getBankroll() ? '$' + getBankroll() : 'unset'};
-    kelly=${k > 0 ? '$' + k : 'none'}
-  </div>`;
-}
-
-function renderQuickBetPrototype(pickId, pick) {
-  const variant = getEntryVariant();
+function renderQuickBetSheet(pickId, pick) {
   const myBet = getActualBet(pickId);
   const bankroll = getBankroll();
   const k = kellyStake(pick, bankroll);
   const { label: kellyLabel } = kellyFraction(pick);
   const { book, odds } = quickBetLineSummary(pick);
   const amount = myBet.stake || (k > 0 ? k : '');
-  const content = document.getElementById('qb-prototype-content');
-  const sheet = document.getElementById('qb-sheet');
-  if (!content || !sheet) return;
-  sheet.classList.remove('variant-a', 'variant-b', 'variant-c');
-  sheet.classList.add(`variant-${variant.key.toLowerCase()}`);
+  const content = document.getElementById('qb-content');
+  if (!content) return;
 
   const kellyHtml = k != null && k > 0
     ? `<div class="qb-kelly-hint" id="qb-kelly-hint">Kelly suggest: <strong>$${k}</strong> <span>(${kellyLabel} · $${bankroll} bankroll)</span></div>`
@@ -2162,57 +2088,25 @@ function renderQuickBetPrototype(pickId, pick) {
     : '<div class="qb-kelly-hint" id="qb-kelly-hint" style="display:none"></div>';
   const removeClass = myBet.verified || myBet.stake ? ' show' : '';
   const escapedBet = escapeHtml(pick.bet || '');
-  const input = `<input class="qb-amount-input" id="qb-amount" type="number" inputmode="decimal" placeholder="0" min="0" step="0.01" value="${escapeHtml(amount)}" oninput="updateQuickBetState()">`;
+  const input = `<input class="qb-amount-input" id="qb-amount" type="number" inputmode="decimal" placeholder="0" min="0" step="0.01" value="${escapeHtml(amount)}">`;
   const confirm = '<button class="qb-confirm-btn" onclick="confirmQuickBet()">Confirm Bet ✓</button>';
   const remove = `<button class="qb-remove-btn${removeClass}" id="qb-remove-btn" onclick="removeQuickBet()">Remove Bet</button>`;
 
-  if (variant.key === 'B') {
-    content.innerHTML = `
-      <div class="qb-handle"></div>
-      <div class="qb-title-row"><div><div class="qb-meta-label">Amount first</div><div class="qb-bet-name" id="qb-bet-name">${escapedBet}</div></div><button type="button" class="qb-close-btn" onclick="closeQuickBetSheet()">×</button></div>
-      ${quickBetPresetButtons(k, bankroll)}
-      <div class="qb-amount-label">Stake</div>
-      ${input}
-      <div class="qb-meta-grid"><div class="qb-meta"><div class="qb-meta-label">Odds</div><div class="qb-meta-value">${escapeHtml(odds)}</div></div><div class="qb-meta"><div class="qb-meta-label">Book</div><div class="qb-meta-value">${escapeHtml(book)}</div></div></div>
-      ${kellyHtml}${confirm}${remove}${quickBetStateHtml(pickId, pick, myBet, k, variant)}`;
-  } else if (variant.key === 'C') {
-    content.innerHTML = `
-      <div class="qb-handle"></div>
-      <div class="qb-title-row"><div><div class="qb-meta-label">Review then save</div><div class="qb-bet-name" id="qb-bet-name">${escapedBet}</div></div><button type="button" class="qb-close-btn" onclick="closeQuickBetSheet()">×</button></div>
-      <div class="qb-review">
-        <div class="qb-review-row"><span>Line</span><strong>${escapeHtml(odds)}</strong></div>
-        <div class="qb-review-row"><span>Book</span><strong>${escapeHtml(book)}</strong></div>
-        <div class="qb-review-row"><span>Kelly</span><strong>${k > 0 ? '$' + k + ' · ' + kellyLabel : 'No suggestion'}</strong></div>
-      </div>
-      <div class="qb-amount-label">$ Amount</div>
-      ${input}
-      ${quickBetPresetButtons(k, bankroll)}${confirm}${remove}${quickBetStateHtml(pickId, pick, myBet, k, variant)}`;
-  } else {
-    content.innerHTML = `
-      <div class="qb-handle"></div>
-      <div class="qb-title-row"><div class="qb-bet-name" id="qb-bet-name">${escapedBet}</div><button type="button" class="qb-close-btn" onclick="closeQuickBetSheet()">×</button></div>
-      ${kellyHtml}
-      <div class="qb-meta-grid"><div class="qb-meta"><div class="qb-meta-label">Odds</div><div class="qb-meta-value">${escapeHtml(odds)}</div></div><div class="qb-meta"><div class="qb-meta-label">Book</div><div class="qb-meta-value">${escapeHtml(book)}</div></div></div>
-      <div class="qb-amount-label">$ Amount</div>
-      ${input}${confirm}${remove}${quickBetStateHtml(pickId, pick, myBet, k, variant)}`;
-  }
+  content.innerHTML = `
+    <div class="qb-handle"></div>
+    <div class="qb-title-row"><div><div class="qb-meta-label">Amount first</div><div class="qb-bet-name" id="qb-bet-name">${escapedBet}</div></div><button type="button" class="qb-close-btn" onclick="closeQuickBetSheet()">×</button></div>
+    ${quickBetPresetButtons(k, bankroll)}
+    <div class="qb-amount-label">Stake</div>
+    ${input}
+    <div class="qb-meta-grid"><div class="qb-meta"><div class="qb-meta-label">Odds</div><div class="qb-meta-value">${escapeHtml(odds)}</div></div><div class="qb-meta"><div class="qb-meta-label">Book</div><div class="qb-meta-value">${escapeHtml(book)}</div></div></div>
+    ${kellyHtml}${confirm}${remove}`;
 }
 
 function setQuickBetAmount(value) {
   const amountEl = document.getElementById('qb-amount');
   if (!amountEl || value == null) return;
   amountEl.value = value;
-  updateQuickBetState();
   amountEl.focus();
-}
-
-function updateQuickBetState() {
-  if (!_qbPickId || !_qbPick) return;
-  const stateEl = document.querySelector('.qb-state');
-  if (!stateEl) return;
-  const variant = getEntryVariant();
-  const k = kellyStake(_qbPick, getBankroll());
-  stateEl.outerHTML = quickBetStateHtml(_qbPickId, _qbPick, getActualBet(_qbPickId), k, variant);
 }
 
 function openQuickBetSheet(pickId, pick, btn) {
@@ -2222,12 +2116,11 @@ function openQuickBetSheet(pickId, pick, btn) {
   const myBet = getActualBet(pickId);
   const bankroll = getBankroll();
   const k = kellyStake(pick, bankroll);
-  renderQuickBetPrototype(pickId, pick);
+  renderQuickBetSheet(pickId, pick);
 
   const amountEl = document.getElementById('qb-amount');
   if (amountEl) {
     amountEl.value = myBet.stake || (k > 0 ? k : '');
-    updateQuickBetState();
     setTimeout(() => amountEl.focus(), 300);
   }
   const removeBtn = document.getElementById('qb-remove-btn');
@@ -2875,14 +2768,6 @@ setInterval(() => {
   }, { passive: true });
 })();
 
-// ── Entry prototype variant switcher ─────────────────────────────
-ensureEntryPrototypeSwitcher();
-window.addEventListener('keydown', (event) => {
-  if (!new URLSearchParams(window.location.search).has('entryVariant')) return;
-  if (event.target && event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
-  if (event.key === 'ArrowLeft') cycleEntryVariant(-1);
-  if (event.key === 'ArrowRight') cycleEntryVariant(1);
-});
 </script>
 </body>
 </html>
