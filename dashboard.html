@@ -830,6 +830,8 @@ function bookBetUrl(pick) {
   if (book.includes('betrivers'))  return 'https://www.betrivers.com/';
   if (book.includes('bet365'))     return 'https://www.bet365.com/';
   if (book.includes('pinnacle'))   return 'https://www.pinnacle.com/';
+  if (book === 'dk' || book.includes('draft kings')) return 'https://sportsbook.draftkings.com/';
+  if (book === 'fd' || book.includes('fan duel'))    return 'https://sportsbook.fanduel.com/';
   return null;
 }
 
@@ -1830,7 +1832,7 @@ function renderLog() {
       })()}</td>
       <td>${clvCell}</td>
       <td>${pl}</td>
-      <td class="col-betlink" onclick="event.stopPropagation()" style="white-space:nowrap">${(() => { const u = bookBetUrl(p); const betLink = u ? `<a href="${u}" target="_blank" rel="noopener" class="bet-now-btn">Bet →</a>` : ''; const cleanBet = (p.bet||'').replace(/\s*\([^)]*\)/g,'').trim(); const searchLink = `<a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" style="color:var(--accent);font-size:15px;text-decoration:none;margin-left:${u?'6px':'0'}" title="Check score / result">🔍</a>`; return betLink + searchLink; })()}</td>
+      <td class="col-betlink" onclick="event.stopPropagation()" style="white-space:nowrap">${(() => { const u = bookBetUrl(p); const betLink = u ? `<a href="${u}" target="_blank" rel="noopener" class="bet-now-btn">Bet →</a>` : `<a href="https://sportsbook.draftkings.com/" target="_blank" rel="noopener" class="bet-now-btn">Bet →</a>`; const cleanBet = (p.bet||'').replace(/\s*\([^)]*\)/g,'').trim(); const searchLink = `<a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" style="color:var(--accent);font-size:15px;text-decoration:none;margin-left:6px" title="Check score / result">🔍</a>`; return betLink + searchLink; })()}</td>
     </tr>
     <tr class="pick-detail-row">
       <td colspan="13">
@@ -1855,7 +1857,10 @@ function renderLog() {
               const isDK = primaryUrl?.includes('draftkings');
               const altUrl  = isFD ? 'https://sportsbook.draftkings.com/' : 'https://sportsbook.fanduel.com/';
               const altName = isFD ? 'DraftKings' : 'FanDuel';
-              if (!primaryUrl) return '';
+              if (!primaryUrl) return `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                <a href="https://sportsbook.draftkings.com/" target="_blank" rel="noopener" class="bet-now-btn" onclick="event.stopPropagation()" style="font-size:12px;padding:5px 12px">Bet → DraftKings</a>
+                <a href="https://sportsbook.fanduel.com/" target="_blank" rel="noopener" class="bet-now-btn" onclick="event.stopPropagation()" style="opacity:0.7;font-size:12px;padding:5px 12px">Bet → FanDuel</a>
+              </div>`;
               return `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
                 <a href="${primaryUrl}" target="_blank" rel="noopener" class="bet-now-btn" onclick="event.stopPropagation()" style="font-size:12px;padding:5px 12px">Bet → ${primaryLabel}</a>
                 <a href="${altUrl}" target="_blank" rel="noopener" class="bet-now-btn" onclick="event.stopPropagation()" style="opacity:0.5;font-size:10px;padding:3px 8px">Check ${altName} →</a>
