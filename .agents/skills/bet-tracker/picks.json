@@ -646,5 +646,30 @@
     "line_num": 5.5,
     "prop_result": "6 strikeouts (over 5.5)",
     "prop_margin": null
+  },
+  {
+    "id": "20260526-mlb-v2-braxto-total",
+    "date": "2026-05-26",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Braxton Ashcraft Over 5.5 Strikeouts vs Chicago Cubs (Pirates home)",
+    "line": "-110 @ VSiN-listed US book",
+    "units": 2,
+    "score": 8.3,
+    "primary_edge": "Prop CLV / price gap: VSiN noted 43-cent value vs Pinnacle; Ashcraft 6+ Ks in 7 of last 9 and 9 Ks vs Cubs earlier",
+    "primary_edge_type": null,
+    "source_evidence": [],
+    "validation_status": "not_required",
+    "validation_notes": [],
+    "game_time": "3:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 5.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
