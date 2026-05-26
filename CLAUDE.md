@@ -125,3 +125,11 @@ Public repo: `https://github.com/tylerm08martinez-wq/gambling`
 Live dashboard (auto-deployed): https://tylerm08martinez-wq.github.io/gambling/dashboard.html
 
 All picks are version-controlled here. The nightly agent resolves results and pushes to main automatically. The dashboard reads directly from GitHub — no manual sync needed.
+
+## Agent skills
+### Issue tracker
+Issues live in GitHub Issues. See docs/agents/issue-tracker.md.
+### Triage labels
+Default five-role vocabulary (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See docs/agents/triage-labels.md.
+### Domain docs
+Single-context repo — one CONTEXT.md at root, ADRs in docs/adr/. See docs/agents/domain.md.
