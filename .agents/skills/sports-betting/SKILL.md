@@ -16,7 +16,7 @@ Identify value bets from props, ATS trends, situational spots, line movement, an
 - **NFL:** September – February (preseason Aug, regular season Sep–Jan, playoffs through Feb)
 - If today's date falls outside a sport's season, skip it entirely.
 
-**Daily cap: 4 picks maximum across V1 and V2 combined.** Check Step 0 for today's count before researching. If already at 4, output "Daily cap reached — sitting out."
+**Daily cap: 5 picks maximum across V1 and V2 combined, with no more than 3 V1 picks and no more than 3 V2 picks. No minimum picks.** Check Step 0 for today's count before researching. If already at 5 total or 3 V1 picks, output "Daily cap reached — sitting out."
 
 ## Process
 
@@ -35,7 +35,7 @@ git -C "$GAMBLING" pull
 ```
 
 From the settled v1-trends picks, compute:
-- **Today's pick count** — count all picks (v1-trends + v2-sharp) with today's date. If ≥ 4, stop: "Daily cap reached."
+- **Today's pick count** — count all picks (v1-trends + v2-sharp) with today's date. If ≥ 5 total or ≥ 3 v1-trends picks, stop: "Daily cap reached."
 - **Win rate by sport** — which sports are hitting vs. losing
 - **Win rate by edge type** — which signal types (ATS trend, RLM, Steam, Injury, Prop gap, Situational) are profitable
 - **Win rate by score tier** — are higher-scored picks actually outperforming lower ones?
@@ -107,7 +107,7 @@ Always recommend the best line you actually saw, with the book name. If lines ar
 
 **Priority order (highest edge first):**
 1. **Prop gap** — ≥ 0.5 unit difference across books, or line moved 0.5+ with no news
-2. **Model/expert convergence** — reputable model publishes quantified edge ≥6% (Dimers, BettingPros, RotoWire, DK Network, FanDuel Research), OR 2+ independent sources land on the same pick. Plus-money + model edge is the strongest retail-data signal.
+2. **Market-confirmed model/expert convergence** — reputable model publishes quantified edge ≥6% (Dimers, BettingPros, RotoWire, DK Network, FanDuel Research), OR 2+ independent sources land on the same pick, AND the pick has current market confirmation such as CLV, cross-book price gap, stale line, RLM, steam, or line value. Expert/model consensus alone is supporting evidence, not a scheduled-run Primary Edge.
 3. **Season-trend prop edge** — pitcher avg ≥0.8 K below the K line (or ≥0.8 above for Over), batter on 5+ game hit streak with matchup edge, role-player avg ≥1.0 unit from line in the favorable direction. Cleanest retail-reachable prop signal.
 4. **Total (over/under)** — structural inefficiency (injury to key offensive/defensive player, weather, pace mismatch)
 5. **Reverse line movement** — public on A, line moves toward B (confirm 70%+ public, actual move required)
@@ -147,7 +147,7 @@ Rank picks by score descending (highest confidence first) so top picks are easy 
 ```
 🎯 V1-Trends Picks — [Date]
 X researched · Y props · Z game lines · [N] picks (ranked by score)
-Daily cap: [X/4 used across V1+V2]
+Daily cap: [X/5 used across V1+V2] · V1 cap: [Y/3 used]
 ```
 
 Per pick:
@@ -162,10 +162,10 @@ If no picks: *"No qualifying picks today (threshold 6.5). Sitting out is the pla
 
 ### 5. Auto-Log
 
-Append each qualifying pick to `$PICKS` (set in Step 0 — create as `[]` if missing).
+Never append directly to `$PICKS`. All qualifying picks must be logged through the tracker CLI so duplicate checks, validation, rejected-candidate logging, and future write-boundary guardrails apply.
 
 Before reading, pull latest: `git -C "$GAMBLING" pull`
-After writing, push: `git -C "$GAMBLING" add .agents/skills/bet-tracker/picks.json && git -C "$GAMBLING" commit -m "chore: log picks" && git -C "$GAMBLING" push origin main`
+After logging, push only tracker-managed changes: `git -C "$GAMBLING" add .agents/skills/bet-tracker/picks.json .agents/skills/bet-tracker/rejected-candidates.json && git -C "$GAMBLING" commit -m "chore: log picks" && git -C "$GAMBLING" push origin main`
 
 **game_time rules — read carefully:**
 - Source the start time from the game's own ESPN or MLB.com box score URL, not from a picks/odds page (odds sites sometimes list wrong or approximate times).
@@ -173,29 +173,27 @@ After writing, push: `git -C "$GAMBLING" add .agents/skills/bet-tracker/picks.js
 - Convert to **AZ time (MST, UTC-7 year-round — Arizona does not observe DST)**:
   - EDT (summer, Mar–Nov): AZ = ET − 3 hours (e.g. 7:05 PM ET → 4:05 PM AZ)
   - EST (winter, Nov–Mar): AZ = ET − 2 hours (e.g. 7:05 PM ET → 5:05 PM AZ)
-- If uncertain after checking two sources, set `null` rather than guess.
+- If uncertain after checking two sources, omit `--game-time` rather than guess.
 
-```json
-{
-  "id": "[YYYYMMDD]-[sport]-[short-label]",
-  "date": "[YYYY-MM-DD]",
-  "game_time": "[H:MM AM/PM AZ or null if unknown]",
-  "model": "v1-trends",
-  "sport": "[sport]",
-  "bet_type": "prop|total|spread|moneyline|1H",
-  "bet": "[description]",
-  "line": "[odds @ best book]",
-  "units": [1-2],
-  "score": [0-10],
-  "primary_edge": "[Prop gap / ATS trend / RLM / Steam / Injury / Situational]",
-  "result": null,
-  "units_won_lost": null,
-  "closing_line": null,
-  "clv": null
-}
+```bash
+python3 ".agents/skills/bet-tracker/tracker.py" log \
+  --model v1-trends \
+  --sport "<sport>" \
+  --bet "<full bet description incl opponent>" \
+  --line "<odds @ best book>" \
+  --units <1|2> \
+  --score <score> \
+  --edge "<human-readable primary edge>" \
+  --primary-edge-type <canonical_edge_type> \
+  --source-evidence-json '<json list of usable current source evidence>' \
+  --line-num <spread_or_total_number_or_0> \
+  --game-time "<H:MM AM/PM AZ>" \
+  --run-type manual
 ```
 
-Tell user: "Logged X picks. Daily total: Y/4."
+Use `--run-type scheduled` for unattended/scheduled runs. Scheduled runs must include `--primary-edge-type` and `--source-evidence-json`; candidates missing either should be skipped or recorded as rejected, not hand-written into `picks.json`.
+
+Tell user: "Logged X picks. V1 total: Y/3. Daily total: Z/5."
 
 ## Slack Format
 

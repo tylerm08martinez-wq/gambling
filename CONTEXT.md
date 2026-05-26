@@ -6,6 +6,15 @@ The difference between your entry price and the closing line, expressed as impli
 ## Measured CLV
 A CLV value computed from Pinnacle's actual de-vigged closing line at game start. Distinct from Unmeasured CLV (`null` or placeholder `+0.00%`), where the Pinnacle close was never fetched. Most picks today have Unmeasured CLV — the Pinnacle-fetch workflow is unimplemented. Statistics over CLV should exclude Unmeasured CLV picks rather than treat them as zero.
 
+## CLV Coverage
+The percentage of settled picks with Measured CLV. ROI is not a mature trust signal until CLV Coverage is at least 90%.
+
+## CLV-Positive +EV Candidate
+A pre-game betting candidate whose current available line appears mispriced relative to a sharper market or auditable edge signal. Preferred over "high-ROI pick" before results exist.
+
+## High-ROI Pick
+A retrospective label for a settled pick or pick cohort that produced strong return on invested units. Avoid using this term for pre-game candidates.
+
 ## Cross-Book Prop Gap
 A discrepancy of 0.5+ units on the same player prop across DK / FanDuel / BetMGM. Indicates sharp money already hit one book (the "sharp-hit book") and the other books haven't adjusted yet (the "stale books"). The edge is betting the stale price in the same direction the sharp-hit book moved.
 
@@ -32,6 +41,21 @@ The betting signal that must independently satisfy its Signal Requirement before
 
 ## Primary Edge Type
 The canonical, structured classification of a Primary Edge. The authoritative category used for dashboard filtering, grouping, and statistics. Distinct from the human-readable `primary_edge` text, which is freeform and meant for review context only. Canonical values: `cross_book_gap`, `steam`, `hard_rlm`, `soft_rlm`, `ats_trend`, `quant_convergence`, `pitching_edge`, `prop_trend`, `matchup_edge`, `plus_money_start`, `underdog_fade`. Legacy picks without a Primary Edge Type fall back to parsing the freeform `primary_edge`.
+
+## Source Evidence
+Structured proof attached to a pick candidate showing which source supported the Primary Edge and whether that source was current, parseable, and usable.
+
+## Expert/Model Consensus
+Agreement between public-facing pick sites, projection models, or analysts. Supporting evidence only for Scheduled Runs, not a standalone Primary Edge.
+
+## Market-Confirmed Primary Edge
+A Primary Edge supported by current market price evidence such as CLV, cross-book gaps, hard RLM, steam, or line value.
+
+## Scheduled Run
+An unattended betting routine run that may log picks only when structured edge type and source evidence are present. Distinct from a Manual Run, which may capture incomplete candidates for human review.
+
+## Daily Pick Cap
+The maximum number of picks a Scheduled Run may log for one date: 5 total, no more than 3 from V1-Trends and no more than 3 from V2-Sharp, with no minimum.
 
 ## Rejected Candidate
 A proposed bet that was not logged because its Primary Edge failed its Signal Requirement.
@@ -87,3 +111,9 @@ A rapid line shift of ≥1pt spread or ≥15c ML at 3+ books simultaneously with
 - Usable **Line Movement Data** includes the opening line, current line, and a **Freshness Marker**.
 - Usable **Public Ticket Data** includes the ticket percentage, public side, and a **Freshness Marker**.
 - If a **Signal Requirement** is not met, that signal cannot qualify as the primary edge, but the pick may still qualify through a different signal whose requirement is met.
+- A **CLV-Positive +EV Candidate** may become a **Pick** only after its **Primary Edge** satisfies its **Signal Requirement**.
+- A **High-ROI Pick** can only be identified after settlement; it is not a valid pre-game target label.
+- A **Scheduled Run** must include **Source Evidence** and a **Primary Edge Type** for every logged **Pick**.
+- A **Scheduled Run** must obey the **Daily Pick Cap**.
+- **Expert/Model Consensus** may support a **Pick**, but a **Scheduled Run** needs a **Market-Confirmed Primary Edge** before logging.
+- ROI should not be treated as mature until **CLV Coverage** reaches at least 90%.

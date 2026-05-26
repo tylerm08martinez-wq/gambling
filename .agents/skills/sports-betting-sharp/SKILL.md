@@ -36,7 +36,7 @@ Markets are efficient. The primary goal is **beating the closing line (positive 
 - **NHL:** Playoffs only (April – June) — totals and moneylines only, no props
 - If today's date falls outside a sport's season, skip it entirely.
 
-**Daily cap: 3 picks maximum for V2-Sharp.** Check Step 0. If already at 3 V2 picks, output "V2 cap reached — sitting out." Total combined cap across V1 + V2 is 5 picks per day.
+**Daily cap: 5 picks maximum across V1 and V2 combined, with no more than 3 V1 picks and no more than 3 V2 picks. No minimum picks.** Check Step 0. If already at 3 V2 picks, output "V2 cap reached — sitting out." If already at 5 total picks, output "Daily cap reached — sitting out."
 
 Selective by design. 0–2 picks/day is normal. "No signals today" is a valid output.
 
@@ -182,7 +182,7 @@ If only one or two books are surfaced, use what you have and note "single-book v
 | **D. Unpriced injury** | Top-3 player out, line not adjusted; or teammate role increase boosting prop. |
 | **E. Underdog/under value** | Public % heavily on favorite/over (65%+), line hasn't moved to reflect it, sharp indicators point the other way. |
 | **F. Late move** | Significant line move in final 2–3 hours before game time (higher limits, fresher info — weight more than early steam). |
-| **G. Quant convergence** | 2+ **methodologically independent** sources agree on the same side with ≥6% edge. Sources must use different methodologies (e.g., Dimers simulation model + RotoWire statistical projection + BettingPros top-leaderboard expert with audited positive track record). Two cappers using the same data = one signal, not two. |
+| **G. Quant convergence** | 2+ **methodologically independent** sources agree on the same side with ≥6% edge, plus current market confirmation such as CLV, cross-book price gap, stale line, RLM, steam, or line value. Expert/model consensus alone is supporting evidence, not a scheduled-run Primary Edge. Sources must use different methodologies (e.g., Dimers simulation model + RotoWire statistical projection + BettingPros top-leaderboard expert with audited positive track record). Two cappers using the same data = one signal, not two. |
 
 **Discard if any of these are true:**
 - A public injury report or lineup news explains the move
@@ -250,10 +250,10 @@ If no picks: *"No sharp signals confirmed today. Sitting out is the play."*
 
 ### 8. Auto-Log
 
-Append each qualifying pick to `$PICKS` (set in Step 0 — create as `[]` if missing).
+Never append directly to `$PICKS`. All qualifying picks must be logged through the tracker CLI so duplicate checks, validation, rejected-candidate logging, and future write-boundary guardrails apply.
 
 Before reading, pull latest: `git -C "$GAMBLING" pull`
-After writing, push: `git -C "$GAMBLING" add .agents/skills/bet-tracker/picks.json && git -C "$GAMBLING" commit -m "chore: log picks" && git -C "$GAMBLING" push origin main`
+After logging, push only tracker-managed changes: `git -C "$GAMBLING" add .agents/skills/bet-tracker/picks.json .agents/skills/bet-tracker/rejected-candidates.json && git -C "$GAMBLING" commit -m "chore: log picks" && git -C "$GAMBLING" push origin main`
 
 **game_time rules — read carefully:**
 - Source the start time from the game's own ESPN or MLB.com box score URL, not from a picks/odds page.
@@ -261,27 +261,25 @@ After writing, push: `git -C "$GAMBLING" add .agents/skills/bet-tracker/picks.js
 - Convert to **AZ time (MST, UTC-7 year-round — Arizona does not observe DST)**:
   - EDT (summer, Mar–Nov): AZ = ET − 3 hours
   - EST (winter, Nov–Mar): AZ = ET − 2 hours
-- If uncertain after checking two sources, set `null` rather than guess.
+- If uncertain after checking two sources, omit `--game-time` rather than guess.
 
-```json
-{
-  "id": "[YYYYMMDD]-[sport]-[short-label]",
-  "date": "[YYYY-MM-DD]",
-  "game_time": "[H:MM AM/PM AZ or null if unknown]",
-  "model": "v2-sharp",
-  "sport": "[sport]",
-  "bet_type": "prop|total|spread|moneyline|1H",
-  "bet": "[description]",
-  "line": "[odds @ best book]",
-  "units": 1,
-  "score": [0-10],
-  "primary_edge": "[Prop gap / Prop steam / RLM / Steam / Injury / Underdog fade]",
-  "result": null,
-  "units_won_lost": null,
-  "closing_line": null,
-  "clv": null
-}
+```bash
+python3 ".agents/skills/bet-tracker/tracker.py" log \
+  --model v2-sharp \
+  --sport "<sport>" \
+  --bet "<full bet description incl opponent>" \
+  --line "<odds @ best book>" \
+  --units <1|2> \
+  --score <score> \
+  --edge "<human-readable primary edge>" \
+  --primary-edge-type <canonical_edge_type> \
+  --source-evidence-json '<json list of usable current source evidence>' \
+  --line-num <spread_or_total_number_or_0> \
+  --game-time "<H:MM AM/PM AZ>" \
+  --run-type manual
 ```
+
+Use `--run-type scheduled` for unattended/scheduled runs. Scheduled runs must include `--primary-edge-type` and `--source-evidence-json`; candidates missing either should be skipped or recorded as rejected, not hand-written into `picks.json`.
 
 Tell user: "Logged X picks. V2 total: Y/3. Daily total: Z/5."
 

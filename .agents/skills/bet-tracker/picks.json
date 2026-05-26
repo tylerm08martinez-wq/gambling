@@ -657,9 +657,28 @@
     "units": 2,
     "score": 8.3,
     "primary_edge": "Prop CLV / price gap: VSiN noted 43-cent value vs Pinnacle; Ashcraft 6+ Ks in 7 of last 9 and 9 Ks vs Cubs earlier",
-    "primary_edge_type": null,
-    "source_evidence": [],
-    "validation_status": "not_required",
+    "primary_edge_type": "prop_trend",
+    "source_evidence": [
+      {
+        "category": "market_price_check",
+        "status": "usable",
+        "source": "VSiN MLB Player Props",
+        "freshness": "2026-05-26",
+        "url": "https://vsin.com/mlb/best-mlb-player-props-today-may-26-2026-picks-predictions/",
+        "market": "Braxton Ashcraft Over 5.5 Strikeouts",
+        "line": "-110",
+        "details": "Article cited a 43-cent price advantage versus Pinnacle and recent strikeout form."
+      },
+      {
+        "category": "game_time",
+        "status": "usable",
+        "source": "MLB Stats API schedule",
+        "freshness": "2026-05-26",
+        "market": "Chicago Cubs at Pittsburgh Pirates",
+        "details": "Confirmed 3:40 PM Arizona start time."
+      }
+    ],
+    "validation_status": "passed",
     "validation_notes": [],
     "game_time": "3:40 PM",
     "result": null,

@@ -88,6 +88,22 @@ def merge_actual_bets(canonical: dict, legacy: dict) -> dict:
 
 # ── Validation ───────────────────────────────────────────────────────────────
 
+CANONICAL_PRIMARY_EDGE_TYPES = {
+    "cross_book_gap",
+    "steam",
+    "hard_rlm",
+    "soft_rlm",
+    "ats_trend",
+    "quant_convergence",
+    "pitching_edge",
+    "prop_trend",
+    "matchup_edge",
+    "plus_money_start",
+    "underdog_fade",
+}
+SCHEDULED_DAILY_PICK_CAP = 5
+SCHEDULED_DAILY_MODEL_CAP = 3
+
 def normalize_key(value: Optional[str]) -> Optional[str]:
     if value is None:
         return None
@@ -110,8 +126,12 @@ def parse_source_evidence(raw: str) -> list:
 
 def validate_primary_edge(primary_edge_type: Optional[str], source_evidence: list) -> tuple[bool, list[str]]:
     edge_type = normalize_key(primary_edge_type)
+    failures = []
+    if edge_type and edge_type not in CANONICAL_PRIMARY_EDGE_TYPES:
+        failures.append(f"unknown primary_edge_type: {edge_type}")
+
     if edge_type != "hard_rlm":
-        return True, []
+        return not failures, failures
 
     by_category: dict[str, list[dict]] = {}
     for item in source_evidence:
@@ -120,7 +140,6 @@ def validate_primary_edge(primary_edge_type: Optional[str], source_evidence: lis
             by_category.setdefault(category, []).append(item)
 
     required = ["public_ticket_data", "line_movement_data"]
-    failures = []
     for category in required:
         usable = [
             item for item in by_category.get(category, [])
@@ -130,6 +149,56 @@ def validate_primary_edge(primary_edge_type: Optional[str], source_evidence: lis
             failures.append(f"missing usable {category}")
 
     return not failures, failures
+
+def validate_scheduled_contract(primary_edge_type: Optional[str], source_evidence: list) -> list[str]:
+    failures = []
+    edge_type = normalize_key(primary_edge_type)
+    if not edge_type:
+        failures.append("scheduled run missing primary_edge_type")
+    elif edge_type not in CANONICAL_PRIMARY_EDGE_TYPES:
+        failures.append(f"unknown primary_edge_type: {edge_type}")
+
+    usable_sources = [
+        item for item in source_evidence
+        if normalize_key(item.get("status")) == "usable"
+        and str(item.get("source", "")).strip()
+        and str(item.get("freshness", "")).strip()
+    ]
+    if not usable_sources:
+        failures.append("scheduled run missing usable source evidence with source and freshness")
+
+    return failures
+
+def validate_scheduled_cap(picks: list, model: str, date: str) -> list[str]:
+    todays_picks = [pick for pick in picks if pick.get("date") == date]
+    model_picks = [pick for pick in todays_picks if pick.get("model") == model]
+    failures = []
+    if len(todays_picks) >= SCHEDULED_DAILY_PICK_CAP:
+        failures.append(f"scheduled daily pick cap reached: {len(todays_picks)}/{SCHEDULED_DAILY_PICK_CAP}")
+    if len(model_picks) >= SCHEDULED_DAILY_MODEL_CAP:
+        failures.append(f"scheduled daily model cap reached for {model}: {len(model_picks)}/{SCHEDULED_DAILY_MODEL_CAP}")
+    return failures
+
+def normalize_bet_key(value: str) -> str:
+    normalized = str(value or "").lower()
+    normalized = normalized.replace("&", " and ")
+    normalized = re.sub(r"\s[-+]\s", " ", normalized)
+    normalized = re.sub(r"[^a-z0-9.+-]+", " ", normalized)
+    return re.sub(r"\s+", " ", normalized).strip()
+
+def validate_scheduled_duplicate_market(picks: list, sport: str, bet: str, date: str) -> list[str]:
+    sport_key = normalize_key(sport)
+    bet_key = normalize_bet_key(bet)
+    if not bet_key:
+        return []
+    for pick in picks:
+        if pick.get("date") != date:
+            continue
+        if normalize_key(pick.get("sport")) != sport_key:
+            continue
+        if normalize_bet_key(pick.get("bet", "")) == bet_key:
+            return [f"scheduled duplicate market already logged: {pick.get('id')}"]
+    return []
 
 def record_rejected_candidate(candidate: dict):
     rejected = load_json_list(REJECTED_CANDIDATES_FILE)
@@ -557,6 +626,10 @@ def cmd_log(args):
     if run_type not in {"manual", "scheduled"}:
         print("❌ --run-type must be manual or scheduled", file=sys.stderr)
         sys.exit(2)
+    if run_type == "scheduled":
+        validation_notes.extend(validate_scheduled_contract(primary_edge_type, source_evidence))
+        validation_notes.extend(validate_scheduled_cap(picks, args.model, date))
+        validation_notes.extend(validate_scheduled_duplicate_market(picks, args.sport, args.bet, date))
     override_reason = (args.override_validation or "").strip()
     if run_type == "scheduled" and override_reason:
         print("❌ Scheduled runs cannot override validation", file=sys.stderr)
