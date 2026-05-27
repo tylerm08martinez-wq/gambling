@@ -690,5 +690,101 @@
     "line_num": -110.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260527-mlb-v1-cristo-total",
+    "date": "2026-05-27",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Cristopher Sanchez Over 6.5 Strikeouts (Phillies at Padres)",
+    "line": "-108 @ FanDuel",
+    "units": 2,
+    "score": 8.8,
+    "primary_edge": "Season-trend prop edge + multi-source convergence \u2014 7.8 K/start season avg vs 6.5 line (+1.3 unit gap); 4 of 5 recent starts cleared 6.5; 10.7 K/9, 29.1% K rate, 2.57 SIERA; FD Research + Covers + OddsIndex all recommend; Petco Park (pitcher-friendly)",
+    "primary_edge_type": "prop_trend",
+    "source_evidence": [
+      {
+        "category": "model_convergence",
+        "status": "usable",
+        "source": "FanDuel Research",
+        "freshness": "2026-05-27",
+        "url": "https://www.fanduel.com/research/mlb-strikeout-props-today-4-best-mlb-strikeout-prop-bets-for-wednesday-may-27-2026",
+        "market": "Cristopher Sanchez Over 6.5 Strikeouts",
+        "line": "-108",
+        "details": "FD Research rates as gift at -108. Stats: 10.7 K/9, 29.1% K rate, 1.62 ERA, 86 Ks in 72.3 IP, 2.57 SIERA, cleared 6.5 in 4 of last 5 starts."
+      },
+      {
+        "category": "model_convergence",
+        "status": "usable",
+        "source": "Covers/OddsIndex multiple sources",
+        "freshness": "2026-05-27",
+        "market": "Cristopher Sanchez Over 6.5 Strikeouts",
+        "details": "Multiple sources list Sanchez Over 6.5 as top K prop pick. Season avg 7.8 K/start vs 6.5 line."
+      },
+      {
+        "category": "game_time",
+        "status": "usable",
+        "source": "MLB schedule",
+        "freshness": "2026-05-27",
+        "market": "Philadelphia Phillies @ San Diego Padres",
+        "details": "4:10 PM ET / 1:10 PM AZ start time confirmed."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 6.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260527-mlb-v1-walker-total",
+    "date": "2026-05-27",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Walker Buehler Under 4.5 Strikeouts (Phillies at Padres)",
+    "line": "-110 @ FanDuel",
+    "units": 1,
+    "score": 6.8,
+    "primary_edge": "Season-trend prop edge (recent decline) \u2014 FD Research cites 3.1 K/start recent average vs 4.5 line (1.4 gap below); season stats 41 Ks in 46.1 IP / 10 starts; K rate trending down from early season; 5.05 ERA, 1.40 WHIP; stale line still reflects early-season average",
+    "primary_edge_type": "prop_trend",
+    "source_evidence": [
+      {
+        "category": "model_convergence",
+        "status": "usable",
+        "source": "FanDuel Research",
+        "freshness": "2026-05-27",
+        "url": "https://www.fanduel.com/research/mlb-strikeout-props-today-4-best-mlb-strikeout-prop-bets-for-wednesday-may-27-2026",
+        "market": "Walker Buehler Under 4.5 Strikeouts",
+        "line": "~-110",
+        "details": "FD Research lists Under 4.5 as one of 4 best K props. Cites 3.1 K/start recent average vs 4.5 line. Season: 41 Ks in 46.1 IP over 10 starts, 5.05 ERA, 1.40 WHIP."
+      },
+      {
+        "category": "game_time",
+        "status": "usable",
+        "source": "MLB schedule",
+        "freshness": "2026-05-27",
+        "market": "Philadelphia Phillies @ San Diego Padres",
+        "details": "4:10 PM ET / 1:10 PM AZ start time confirmed."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 4.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
