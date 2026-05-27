@@ -1167,10 +1167,26 @@ function updateTokenUI() {
   if (banner) banner.style.display = token ? 'none' : '';
 }
 
-function calcActualPL(pick, stake) {
+function impliedProb(odds) {
+  return odds > 0 ? 100 / (odds + 100) : Math.abs(odds) / (Math.abs(odds) + 100);
+}
+function adjClv(pick, actualOdds) {
+  const closingMatch = (pick.closing_line || '').match(/([+-]?\d{2,4})/);
+  if (!closingMatch || actualOdds == null) return null;
+  const closingOdds = parseInt(closingMatch[1]);
+  if (!closingOdds) return null;
+  return ((impliedProb(closingOdds) - impliedProb(actualOdds)) / impliedProb(actualOdds) * 100).toFixed(2);
+}
+
+function calcActualPL(pick, stake, actualOdds) {
   if (!pick.result || pick.result === null || stake == null) return null;
-  const oddsMatch = (pick.line || '').match(/([+-]?\d{2,4})/);
-  const odds = oddsMatch ? parseInt(oddsMatch[1]) : -110;
+  let odds;
+  if (actualOdds != null) {
+    odds = actualOdds;
+  } else {
+    const oddsMatch = (pick.line || '').match(/([+-]?\d{2,4})/);
+    odds = oddsMatch ? parseInt(oddsMatch[1]) : -110;
+  }
   if (pick.result === 'win') return odds > 0 ? stake * (odds / 100) : stake * (100 / Math.abs(odds));
   if (pick.result === 'loss') return -stake;
   if (pick.result === 'push') return 0;
@@ -1230,18 +1246,35 @@ function saveActualStake(pickId, val) {
   const stake = parseFloat(val) || null;
   if (!saveActualBet(pickId, { stake })) return;
   renderMyBets();
-  // Refresh actual P&L display inside the panel
   const pick = picks.find(p => (p.id || picks.indexOf(p)) == pickId) ||
                picks.find((p, i) => String(p.id || i) === String(pickId));
   const plEl = document.getElementById('actual-pl-' + pickId);
   if (plEl && pick) {
-    const pl = calcActualPL(pick, stake);
+    const bet = getActualBet(pickId);
+    const pl = calcActualPL(pick, stake, bet.actual_odds);
     if (pl !== null) {
       plEl.textContent = (pl >= 0 ? '+' : '') + '$' + Math.abs(pl).toFixed(2) + ' actual';
       plEl.className = 'actual-pl ' + (pl > 0 ? 'green' : pl < 0 ? 'red' : 'yellow');
     } else {
       plEl.textContent = stake ? '$' + stake.toFixed(2) + ' at risk' : '';
       plEl.className = 'actual-pl';
+    }
+  }
+}
+
+function saveActualOdds(pickId, value) {
+  const odds = value ? parseInt(value) : null;
+  if (!saveActualBet(pickId, { actual_odds: odds })) return;
+  renderMyBets();
+  const pick = picks.find(p => (p.id || picks.indexOf(p)) == pickId) ||
+               picks.find((p, i) => String(p.id || i) === String(pickId));
+  const bet = getActualBet(pickId);
+  const plEl = document.getElementById('actual-pl-' + pickId);
+  if (plEl && pick && bet.stake) {
+    const pl = calcActualPL(pick, bet.stake, bet.actual_odds);
+    if (pl !== null) {
+      plEl.textContent = (pl >= 0 ? '+' : '') + '$' + Math.abs(pl).toFixed(2) + ' actual';
+      plEl.className = 'actual-pl ' + (pl > 0 ? 'green' : pl < 0 ? 'red' : 'yellow');
     }
   }
 }
@@ -1268,7 +1301,7 @@ function renderMyBets() {
     if (!pick) return;
     const stake = bet.stake || 0;
     wagered += stake;
-    const actualPL = calcActualPL(pick, stake);
+    const actualPL = calcActualPL(pick, stake, bet.actual_odds);
     if (actualPL !== null) {
       pl += actualPL;
       if (actualPL > 0) wins++;
@@ -1806,7 +1839,7 @@ function renderLog() {
     const pickId = p.id || i;
     const myBet = getActualBet(pickId);
     const vBadge = myBet.verified ? `<span class="verified-badge" id="vbadge-${pickId}">✓</span>` : `<span class="verified-badge" id="vbadge-${pickId}" style="display:none">✓</span>`;
-    const actualPLVal = myBet.verified && myBet.stake ? calcActualPL(p, myBet.stake) : null;
+    const actualPLVal = myBet.verified && myBet.stake ? calcActualPL(p, myBet.stake, myBet.actual_odds) : null;
     const actualPLHtml = actualPLVal !== null
       ? `<div class="actual-pl ${actualPLVal >= 0 ? 'green' : 'red'}" id="actual-pl-${pickId}">${actualPLVal >= 0 ? '+' : ''}$${Math.abs(actualPLVal).toFixed(2)} actual</div>`
       : myBet.stake ? `<div class="actual-pl" id="actual-pl-${pickId}" style="color:var(--muted)">$${myBet.stake.toFixed(2)} at risk</div>`
@@ -1817,7 +1850,7 @@ function renderLog() {
       <td>${p.sport || '—'}</td>
       <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}</td>
       <td>${inferBetType(p)}</td>
-      <td>${p.line || '—'}</td>
+      <td>${(() => { const loggedMatch = (p.line || '').match(/([+-]?\d{2,4})/); const loggedNum = loggedMatch ? parseInt(loggedMatch[1]) : null; if (myBet.actual_odds != null && myBet.actual_odds !== loggedNum) { const a = myBet.actual_odds; return `<span style="font-weight:600">${a > 0 ? '+' : ''}${a}</span> <span style="color:var(--muted);font-size:10px;text-decoration:line-through">${loggedNum != null ? (loggedNum > 0 ? '+' : '') + loggedNum : ''}</span>`; } return p.line || '—'; })()}</td>
       <td>${p.units || '—'}u</td>
       <td>${scorePill}</td>
       <td style="font-size:11px;color:var(--muted)">${edgeType(p.primary_edge)}</td>
@@ -1841,6 +1874,7 @@ function renderLog() {
           ${(p.score || (p.clv !== null && p.clv !== undefined)) ? `<div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:2px">
             ${p.score ? `<span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Score</span><span class="pill ${p.score >= 8 ? 'pill-green' : p.score >= 6 ? 'pill-yellow' : 'pill-red'}">${p.score}</span><span style="font-size:11px;color:var(--muted)">${p.score >= 8 ? 'High confidence' : p.score >= 6 ? 'Medium confidence' : 'Low confidence'}</span>` : ''}
             ${p.clv !== null && p.clv !== undefined ? `<span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-left:6px">CLV</span><span class="pill ${p.clv >= 0 ? 'pill-green' : 'pill-red'}" title="Closing line value">${fmtSigned(p.clv.toFixed(2), '%')}</span>` : ''}
+            ${(() => { const aClv = adjClv(p, myBet.actual_odds); if (aClv === null) return ''; const loggedMatch = (p.line||'').match(/([+-]?\d{2,4})/); const loggedNum = loggedMatch ? parseInt(loggedMatch[1]) : null; if (myBet.actual_odds == null || myBet.actual_odds === loggedNum) return ''; return `<span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-left:4px">Adj CLV</span><span class="pill ${parseFloat(aClv) >= 0 ? 'pill-green' : 'pill-red'}" title="CLV using your actual odds">${fmtSigned(aClv, '%')}</span>`; })()}
           </div>` : ''}
           <div class="pick-detail-section">
             <h4>Game Result</h4>
@@ -1889,6 +1923,11 @@ function renderLog() {
                        value="${myBet.stake || ''}"
                        onchange="saveActualStake('${pickId}', this.value)"
                        oninput="saveActualStake('${pickId}', this.value)">
+                <input type="number" class="stake-input" id="odds-${pickId}" placeholder="Odds" style="width:72px"
+                       title="Override odds (e.g. -108, +115)"
+                       value="${myBet.actual_odds != null ? myBet.actual_odds : (() => { const m = (p.line||'').match(/([+-]?\d{2,4})/); return m ? m[1] : ''; })()}"
+                       onchange="saveActualOdds('${pickId}', this.value)"
+                       oninput="saveActualOdds('${pickId}', this.value)">
               </div>
               ${actualPLHtml}
             </div>
@@ -2083,6 +2122,7 @@ function renderQuickBetSheet(pickId, pick) {
   const { label: kellyLabel } = kellyFraction(pick);
   const { book, odds } = quickBetLineSummary(pick);
   const amount = myBet.stake || (k > 0 ? k : '');
+  const savedOdds = myBet.actual_odds != null ? myBet.actual_odds : odds;
   const content = document.getElementById('qb-content');
   if (!content) return;
 
@@ -2093,9 +2133,10 @@ function renderQuickBetSheet(pickId, pick) {
     : '<div class="qb-kelly-hint" id="qb-kelly-hint" style="display:none"></div>';
   const removeClass = myBet.verified || myBet.stake ? ' show' : '';
   const escapedBet = escapeHtml(pick.bet || '');
-  const input = `<input class="qb-amount-input" id="qb-amount" type="number" inputmode="decimal" placeholder="0" min="0" step="0.01" value="${escapeHtml(amount)}">`;
+  const input = `<input class="qb-amount-input" id="qb-amount" type="number" inputmode="decimal" placeholder="0" min="0" step="0.01" value="${escapeHtml(String(amount))}">`;
   const confirm = '<button class="qb-confirm-btn" onclick="confirmQuickBet()">Confirm Bet ✓</button>';
   const remove = `<button class="qb-remove-btn${removeClass}" id="qb-remove-btn" onclick="removeQuickBet()">Remove Bet</button>`;
+  const oddsInput = `<input id="qb-odds" type="number" inputmode="numeric" class="qb-amount-input" style="font-size:20px;padding:10px 12px;text-align:center" value="${escapeHtml(String(savedOdds))}">`;
 
   content.innerHTML = `
     <div class="qb-handle"></div>
@@ -2103,7 +2144,7 @@ function renderQuickBetSheet(pickId, pick) {
     ${quickBetPresetButtons(k, bankroll)}
     <div class="qb-amount-label">Stake</div>
     ${input}
-    <div class="qb-meta-grid"><div class="qb-meta"><div class="qb-meta-label">Odds</div><div class="qb-meta-value">${escapeHtml(odds)}</div></div><div class="qb-meta"><div class="qb-meta-label">Book</div><div class="qb-meta-value">${escapeHtml(book)}</div></div></div>
+    <div class="qb-meta-grid"><div class="qb-meta"><div class="qb-meta-label">Odds (tap to edit)</div>${oddsInput}</div><div class="qb-meta"><div class="qb-meta-label">Book</div><div class="qb-meta-value">${escapeHtml(book)}</div></div></div>
     ${kellyHtml}${confirm}${remove}`;
 }
 
@@ -2149,8 +2190,9 @@ function confirmQuickBet() {
   const amountEl = document.getElementById('qb-amount');
   const val = amountEl ? parseFloat(amountEl.value) : null;
   if (!_qbPickId) { closeQuickBetSheet(); return; }
-  // Mark verified + save stake
-  if (!saveActualBet(_qbPickId, { verified: true, stake: val || null })) return;
+  const oddsEl = document.getElementById('qb-odds');
+  const actualOdds = oddsEl && oddsEl.value ? parseInt(oddsEl.value) || null : null;
+  if (!saveActualBet(_qbPickId, { verified: true, stake: val || null, actual_odds: actualOdds })) return;
   // Update the verify button state if still in DOM
   if (_qbBtn) {
     _qbBtn.classList.add('verified');
@@ -2164,7 +2206,7 @@ function confirmQuickBet() {
                picks.find((p, i) => String(i) === String(_qbPickId));
   const plEl = document.getElementById('actual-pl-' + _qbPickId);
   if (plEl && pick && val) {
-    const pl = calcActualPL(pick, val);
+    const pl = calcActualPL(pick, val, actualOdds);
     if (pl !== null) {
       plEl.textContent = (pl >= 0 ? '+' : '') + '$' + Math.abs(pl).toFixed(2) + ' actual';
       plEl.className = 'actual-pl ' + (pl > 0 ? 'green' : pl < 0 ? 'red' : 'yellow');
@@ -2331,7 +2373,7 @@ function renderMBBankrollChart() {
   }
   const bets = getActualBets();
   const points = picks
-    .map((p, i) => { const id = String(p.id || i); const bet = bets[id]; if (!bet?.verified || !bet.stake || p.result === null) return null; const pl = calcActualPL(p, bet.stake); return pl !== null ? { date: p.date, pl } : null; })
+    .map((p, i) => { const id = String(p.id || i); const bet = bets[id]; if (!bet?.verified || !bet.stake || p.result === null) return null; const pl = calcActualPL(p, bet.stake, bet.actual_odds); return pl !== null ? { date: p.date, pl } : null; })
     .filter(Boolean)
     .sort((a, b) => a.date > b.date ? 1 : -1);
   if (!points.length) {
@@ -2391,7 +2433,7 @@ function renderMBKPIs() {
     const stake = bet.stake || 0;
     if (stake > 0) stakeCount++;
     wagered += stake;
-    const actualPL = calcActualPL(pick, stake);
+    const actualPL = calcActualPL(pick, stake, bet.actual_odds);
     if (actualPL !== null) {
       pl += actualPL;
       if (actualPL > 0) wins++;
@@ -2426,7 +2468,7 @@ function renderMBHighlights() {
     const id = String(p.id || picks.indexOf(p));
     const bet = bets[id];
     if (!bet?.verified || p.result === null) return;
-    const pl = calcActualPL(p, bet.stake || 0);
+    const pl = calcActualPL(p, bet.stake || 0, bet.actual_odds);
     if (pl === null) return;
     if (pl > bigWinPL) { bigWinPL = pl; bigWin = p; }
     if (pl < worstLossPL) { worstLossPL = pl; worstLoss = p; }
@@ -2436,7 +2478,7 @@ function renderMBHighlights() {
     const id = String(p.id || picks.indexOf(p));
     const bet = bets[id];
     if (!bet?.verified || p.result === null) continue;
-    const pl = calcActualPL(p, bet.stake || 0);
+    const pl = calcActualPL(p, bet.stake || 0, bet.actual_odds);
     if (pl === null) continue;
     const res = pl > 0 ? 'win' : pl < 0 ? 'loss' : 'push';
     if (streakType === null) streakType = res;
@@ -2465,7 +2507,7 @@ function renderMBHighlights() {
 function renderMBPlChart() {
   const bets = getActualBets();
   const points = picks
-    .map((p, i) => { const id = String(p.id || i); const bet = bets[id]; if (!bet?.verified || !bet.stake || p.result === null) return null; const pl = calcActualPL(p, bet.stake); return pl !== null ? { date: p.date, pl } : null; })
+    .map((p, i) => { const id = String(p.id || i); const bet = bets[id]; if (!bet?.verified || !bet.stake || p.result === null) return null; const pl = calcActualPL(p, bet.stake, bet.actual_odds); return pl !== null ? { date: p.date, pl } : null; })
     .filter(Boolean)
     .sort((a, b) => a.date > b.date ? 1 : -1);
   const canvas = document.getElementById('mbPlChart');
@@ -2490,7 +2532,7 @@ function renderMBSportChart() {
   picks.forEach((p, i) => {
     const id = String(p.id || i); const bet = bets[id];
     if (!bet?.verified || !bet.stake || p.result === null || !p.sport) return;
-    const pl = calcActualPL(p, bet.stake); if (pl === null) return;
+    const pl = calcActualPL(p, bet.stake, bet.actual_odds); if (pl === null) return;
     sportPL[p.sport] = (sportPL[p.sport] || 0) + pl;
   });
   const canvas = document.getElementById('mbSportChart');
@@ -2531,7 +2573,7 @@ function renderMBLog() {
   if (!tbody) return;
   tbody.innerHTML = rows.map(({ p, id, bet }) => {
     const stake = bet.stake || 0;
-    const pl = calcActualPL(p, stake);
+    const pl = calcActualPL(p, stake, bet.actual_odds);
     const rClass = p.result === 'win' ? 'result-w' : p.result === 'loss' ? 'result-l' : p.result === 'push' ? 'result-p' : 'result-o';
     const rText  = p.result ? p.result.toUpperCase() : '⏳';
     const plHtml = pl !== null
@@ -2547,7 +2589,7 @@ function renderMBLog() {
       <td>${badge}</td>
       <td>${p.sport || '—'}</td>
       <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.bet || ''}">${p.bet || '—'}</td>
-      <td style="font-size:12px;color:var(--muted)">${p.line || '—'}</td>
+      <td style="font-size:12px">${(() => { const loggedMatch = (p.line || '').match(/([+-]?\d{2,4})/); const loggedNum = loggedMatch ? parseInt(loggedMatch[1]) : null; if (bet.actual_odds != null && bet.actual_odds !== loggedNum) { const a = bet.actual_odds; return `<span style="font-weight:600">${a > 0 ? '+' : ''}${a}</span> <span style="color:var(--muted);font-size:10px;text-decoration:line-through">${loggedNum != null ? (loggedNum > 0 ? '+' : '') + loggedNum : ''}</span>`; } return `<span style="color:var(--muted)">${p.line || '—'}</span>`; })()}</td>
       <td>$${stake ? stake.toFixed(2) : '—'}</td>
       <td class="${rClass}">${rText}</td>
       <td>${plHtml}</td>
@@ -2567,7 +2609,7 @@ function getCurrentBalance() {
     if (!bet.verified || !bet.stake) return;
     const pick = picks.find(p => String(p.id) === String(id)) || picks.find((p, i) => String(i) === String(id));
     if (!pick) return;
-    const pl = calcActualPL(pick, bet.stake);
+    const pl = calcActualPL(pick, bet.stake, bet.actual_odds);
     if (pl !== null) netPL += pl;
   });
   return { balance: br + netPL, netPL, starting: br };
