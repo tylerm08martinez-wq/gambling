@@ -835,14 +835,14 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "1:10 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "void",
+    "units_won_lost": 0.0,
     "closing_line": null,
     "clv": null,
     "final_score": null,
     "game_margin": null,
     "line_num": 6.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "Voided: logged FanDuel +110 was not live-confirmed; user saw ~-140",
+    "prop_margin": 0
   }
 ]
