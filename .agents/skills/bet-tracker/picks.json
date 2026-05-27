@@ -681,13 +681,13 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "3:40 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "loss",
+    "units_won_lost": -2.0,
     "closing_line": null,
     "clv": null,
-    "final_score": null,
-    "game_margin": null,
-    "line_num": 5.5,
+    "final_score": "PIT 12, CHC 1",
+    "game_margin": 11,
+    "line_num": -110.0,
     "prop_result": null,
     "prop_margin": null
   }
