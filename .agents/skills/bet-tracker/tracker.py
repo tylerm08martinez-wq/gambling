@@ -231,6 +231,23 @@ def american_to_implied_prob(line_str: str) -> float:
         return abs(line) / (abs(line) + 100)
     return 100 / (line + 100)
 
+def determine_outcome(bet_type: str, margin: int, line_num) -> str:
+    """Pure function: derive win/push/loss from bet type, actual margin, and line threshold."""
+    bt = (bet_type or "").lower()
+    if "rl" in bt or "run line" in bt:
+        if margin > line_num:
+            return "win"
+        if margin == line_num and line_num == int(line_num):
+            return "push"
+        return "loss"
+    # Moneyline
+    if margin > 0:
+        return "win"
+    if margin < 0:
+        return "loss"
+    return "push"
+
+
 def calc_clv(bet_line: str, closing_line: str) -> float:
     """CLV in percentage points (closing_implied_prob - bet_implied_prob) * 100.
     Positive = you got a better price than the market settled at = good process."""
@@ -754,20 +771,9 @@ def cmd_auto_resolve(_args):
             if line_num is None:
                 skipped.append((p["id"], "RL pick missing line_num — resolve manually"))
                 continue
-            if margin > line_num:
-                outcome = "win"
-            elif margin == line_num and line_num == int(line_num):
-                outcome = "push"
-            else:
-                outcome = "loss"
+            outcome = determine_outcome("rl", margin, line_num)
         else:
-            # Moneyline
-            if margin > 0:
-                outcome = "win"
-            elif margin < 0:
-                outcome = "loss"
-            else:
-                outcome = "push"
+            outcome = determine_outcome("ml", margin, line_num)
 
         p["result"] = outcome
         p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
