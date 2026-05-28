@@ -844,5 +844,83 @@
     "line_num": 6.5,
     "prop_result": "Voided: logged FanDuel +110 was not live-confirmed; user saw ~-140",
     "prop_margin": 0
+  },
+  {
+    "id": "20260528-mlb-v1-under-total",
+    "date": "2026-05-28",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Under 7.5 Astros at Rangers (Arrighetti vs Eovaldi)",
+    "line": "-110 @ FanDuel",
+    "units": 1,
+    "score": 6.4,
+    "primary_edge": "Pitcher-driven under with Arrighetti/Eovaldi form plus line value versus alternate quoted -125 under",
+    "primary_edge_type": "matchup_edge",
+    "source_evidence": [
+      {
+        "status": "usable",
+        "source": "MLB.com schedule",
+        "category": "official_schedule",
+        "url": "https://www.mlb.com/schedule/2026-05-28",
+        "freshness": "current slate 2026-05-28",
+        "market": "HOU at TEX",
+        "line": "8:05 PM ET / 5:05 PM AZ",
+        "details": "Official schedule lists Astros at Rangers at 8:05 PM ET."
+      },
+      {
+        "status": "usable",
+        "source": "FanDuel Research",
+        "category": "market_line",
+        "url": "https://www.fanduel.com/research/rangers-vs-astros-mlb-odds-prediction-point-spread-over-under-and-betting-trends-for-5-28-2026",
+        "freshness": "odds updated 2026-05-28 12:12 PM ET",
+        "market": "game total",
+        "line": "Under 7.5 -110",
+        "book": "FanDuel",
+        "observed_at": "2026-05-28 12:12 PM ET",
+        "details": "FanDuel listed total 7.5 with Under -110; probable starters Arrighetti/Eovaldi."
+      },
+      {
+        "status": "usable",
+        "source": "SportsbookReview",
+        "category": "matchup_analysis",
+        "url": "https://www.sportsbookreview.com/picks/mlb/astros-vs-rangers-prediction-picks-odds-may-28-2026/",
+        "freshness": "published 2026-05-28 7:50 AM ET",
+        "market": "game total",
+        "line": "Under 7.5 lean",
+        "details": "Analysis notes Arrighetti recently carried a no-hitter into the eighth against Texas and Eovaldi threw seven scoreless against Houston this season."
+      },
+      {
+        "status": "usable",
+        "source": "Freetips",
+        "category": "independent_total_support",
+        "url": "https://www.freetips.com/baseball/houston-astros-at-texas-rangers-mlb-betting-tips-20260528-0018/",
+        "freshness": "updated 2026-05-28 10:01",
+        "market": "game total",
+        "line": "Under 7.5",
+        "details": "Recommends Under 7.5, citing Arrighetti 6-1, 1.32 ERA and Eovaldi 5-5, 3.65 ERA."
+      },
+      {
+        "status": "usable",
+        "source": "CoverTheSpread/Shurzy odds board",
+        "category": "line_value",
+        "url": "https://www.reddit.com/r/CoverTheSpread/comments/1tq3wxg/daily_mlb_lines_may_28_2026/",
+        "freshness": "current thread 2026-05-28",
+        "market": "game total",
+        "line": "Under 7.5 -125",
+        "details": "Comparable odds board showed Under 7.5 -125, making FanDuel -110 a better entry price if still available."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:05 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 7.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
