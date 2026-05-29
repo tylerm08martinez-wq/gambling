@@ -65,5 +65,8 @@
   "20260527-mlb-v2-cristo-total": {
     "verified": true,
     "stake": 8
+  },
+  "20260529-mlb-v1-taj-total": {
+    "actual_odds": -1
   }
 }
