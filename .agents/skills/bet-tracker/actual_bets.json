@@ -68,6 +68,7 @@
   },
   "20260529-mlb-v1-taj-total": {
     "actual_odds": -130,
-    "stake": 10
+    "stake": 10,
+    "verified": true
   }
 }
