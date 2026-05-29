@@ -922,5 +922,67 @@
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260529-mlb-v1-taj-total",
+    "date": "2026-05-29",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Taj Bradley Over 5.5 Strikeouts vs Pittsburgh Pirates",
+    "line": "-118 @ DraftKings",
+    "units": 1,
+    "score": 7.2,
+    "primary_edge": "Prop trend with 6.4 K projection vs 5.5 line, 10.21 K/9, Pirates 24.1% opponent K rate, plus DK -118 entry better than Pinnacle -133 and other books",
+    "primary_edge_type": "prop_trend",
+    "source_evidence": [
+      {
+        "status": "usable",
+        "source": "CLEATZ MLB Strikeout Props Today",
+        "freshness": "2026-05-29 current slate, updated 11:37 AM ET",
+        "category": "prop_projection_and_market",
+        "url": "https://cleatz.com/mlb-strikeout-props-today/",
+        "market": "Taj Bradley strikeouts over 5.5",
+        "line": "DK 5.5 O -118; FD 5.5 O -128; MGM 5.5 O -150; Pinnacle 5.5 O -133",
+        "book": "DraftKings",
+        "observed_at": "2026-05-29 11:37 AM ET",
+        "details": "Projection 6.4 Ks vs 5.5 line, +0.86 K model edge, 61% win probability, 10.21 K/9, opponent K% 24.1."
+      },
+      {
+        "status": "usable",
+        "source": "FantasyAlarm MLB Best Bets Today",
+        "freshness": "2026-05-29 current slate",
+        "category": "independent_prop_support",
+        "url": "https://www.fantasyalarm.com/articles/mlb/best-bets/mlb-best-bets-today-picks-predictions-player-props-may-29-2026/190776",
+        "market": "Taj Bradley over 5.5 strikeouts",
+        "line": "-139 at Novig",
+        "book": "Novig",
+        "observed_at": "2026-05-29",
+        "details": "Independent article lists Taj Bradley Over 5.5 Ks as a best bet, noting 7+ Ks in three straight starts and Pittsburgh left-handed lineup exposure."
+      },
+      {
+        "status": "usable",
+        "source": "FanDuel Research MLB Strikeout Props May 29",
+        "freshness": "2026-05-29 current slate, published 9h before research",
+        "category": "prop_line_and_season_average",
+        "url": "https://www.fanduel.com/research/mlb-strikeout-prop-odds-5-29-2026",
+        "market": "Taj Bradley strikeouts over 5.5",
+        "line": "Over -146 / Under +110",
+        "book": "FanDuel",
+        "observed_at": "2026-05-29",
+        "details": "FanDuel Research lists Bradley at 5.5 Ks with 6.6 strikeouts per game in 9 appearances."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:45 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 5.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
