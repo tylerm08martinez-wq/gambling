@@ -208,7 +208,9 @@ def make_boxscore():
                 "ID1": {"person": {"fullName": "Corbin Burnes"},
                         "stats": {"pitching": {"strikeOuts": 8}}},
                 "ID2": {"person": {"fullName": "Mookie Betts"},
-                        "stats": {"batting": {"hits": 2, "totalBases": 4, "rbi": 1}}},
+                        "stats": {"batting": {"hits": 2, "totalBases": 4, "rbi": 1,
+                                              "baseOnBalls": 1, "runs": 2, "doubles": 1,
+                                              "homeRuns": 1, "stolenBases": 0}}},
             }},
             "home": {"players": {
                 "ID3": {"person": {"fullName": "Chad Betts"},
@@ -285,7 +287,33 @@ class TestExtractProp(unittest.TestCase):
         self.assertEqual(spec["stat_key"], "totalBases")
 
     def test_unmapped_stat_returns_none(self):
-        self.assertIsNone(tracker.extract_prop("Mike Trout Over 1.5 doubles", 1.5))
+        # "triples" is intentionally NOT in PROP_STAT_MAP → must not be scored.
+        self.assertIsNone(tracker.extract_prop("Mike Trout Over 1.5 triples", 1.5))
+
+    def test_surname_containing_keyword_does_not_false_match(self):
+        # Whole-word matching: short stat keys must NOT match inside surnames.
+        # Each bet is for the UNMAPPED stat "triples" → must return None, never
+        # silently resolve as walks/runs/hits from the surname (walk⊂Walker,
+        # run⊂Bruno, hit⊂White).
+        for bet in ("Christian Walker Over 0.5 triples",
+                    "Bruno Over 0.5 triples",
+                    "Tyler White Over 0.5 triples"):
+            self.assertIsNone(tracker.extract_prop(bet, 0.5), bet)
+
+    def test_mapped_stat_still_matches_for_colliding_surname(self):
+        # The fix must not over-correct: a real walks prop for Walker still resolves.
+        spec = tracker.extract_prop("Christian Walker Over 0.5 walks", 0.5)
+        self.assertEqual(spec["stat_key"], "baseOnBalls")
+        self.assertEqual(spec["player"], "christian walker")
+
+    def test_walks_maps_to_batting_base_on_balls(self):
+        spec = tracker.extract_prop("Mookie Betts Over 0.5 walks", 0.5)
+        self.assertEqual(spec["stat_group"], "batting")
+        self.assertEqual(spec["stat_key"], "baseOnBalls")
+
+    def test_home_runs_multiword_maps_correctly(self):
+        spec = tracker.extract_prop("Mookie Betts Over 0.5 home runs", 0.5)
+        self.assertEqual(spec["stat_key"], "homeRuns")
 
     def test_no_side_returns_none(self):
         self.assertIsNone(tracker.extract_prop("Mike Trout 2 hits", None))
@@ -538,6 +566,83 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         p = make_pick(bet="Corbin Burnes Over 6.5 strikeouts", line_num=6.5)
         exited = self._run([p], find_mlb_game_for_bet=None)  # game not final / not found
         self.assertIsNone(p["result"])
+        self.assertTrue(exited)
+
+    # ── #22: expanded MLB stat-keyword map (end-to-end routing regression) ────────
+    # Fixture Mookie Betts: walks=1, runs=2, doubles=1, homeRuns=1, stolenBases=0.
+
+    def _resolve_betts_prop(self, bet, line_num):
+        p = make_pick(bet=bet, line_num=line_num)
+        self._run([p],
+                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
+                  fetch_mlb_boxscore=make_boxscore())
+        return p
+
+    def test_walks_prop_resolves_win(self):
+        p = self._resolve_betts_prop("Mookie Betts Over 0.5 walks", 0.5)
+        self.assertEqual(p["result"], "win")  # 1 walk vs over 0.5
+        self.assertNotIn("game_margin", p)
+
+    def test_walks_prop_resolves_loss(self):
+        p = self._resolve_betts_prop("Mookie Betts Over 1.5 walks", 1.5)
+        self.assertEqual(p["result"], "loss")  # 1 walk vs over 1.5
+
+    def test_runs_scored_prop_resolves_win(self):
+        p = self._resolve_betts_prop("Mookie Betts Over 1.5 runs", 1.5)
+        self.assertEqual(p["result"], "win")  # 2 runs vs over 1.5
+
+    def test_doubles_prop_resolves_win(self):
+        p = self._resolve_betts_prop("Mookie Betts Over 0.5 doubles", 0.5)
+        self.assertEqual(p["result"], "win")  # 1 double vs over 0.5
+
+    def test_home_run_prop_resolves_win(self):
+        p = self._resolve_betts_prop("Mookie Betts Over 0.5 home runs", 0.5)
+        self.assertEqual(p["result"], "win")  # 1 HR vs over 0.5
+
+    def test_stolen_base_prop_resolves_loss(self):
+        p = self._resolve_betts_prop("Mookie Betts Over 0.5 stolen bases", 0.5)
+        self.assertEqual(p["result"], "loss")  # 0 SB vs over 0.5
+
+    def test_walks_push(self):
+        # N+ form: "2+ walks" → Over (1.5). 1 walk vs over 1.5 → loss; use 1.0 to push.
+        p = make_pick(bet="Mookie Betts Under 1 walks", line_num=1.0)
+        self._run([p],
+                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
+                  fetch_mlb_boxscore=make_boxscore())
+        self.assertEqual(p["result"], "push")  # 1 walk == 1.0
+
+    def test_nplus_form_still_resolves_as_over(self):
+        # "2+ runs" → Over (1.5). Betts scored 2 → win. Confirms N+ form intact.
+        p = make_pick(bet="Mookie Betts 2+ runs", line_num=None)
+        self._run([p],
+                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
+                  fetch_mlb_boxscore=make_boxscore())
+        self.assertEqual(p["result"], "win")
+        self.assertNotIn("game_margin", p)
+
+    def test_unmapped_stat_prop_left_open(self):
+        # "triples" is not in PROP_STAT_MAP → classify falls through to ml, the game
+        # path can't match a player-named bet to a team, so it is left OPEN, never scored.
+        p = make_pick(bet="Mookie Betts Over 0.5 triples", line_num=0.5)
+        exited = self._run([p],
+                           find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
+                           fetch_mlb_boxscore=make_boxscore(),
+                           fetch_mlb_result=None)
+        self.assertIsNone(p["result"])  # never scored
+        self.assertTrue(exited)
+
+    def test_unmapped_stat_for_colliding_surname_left_open(self):
+        # Regression: a triples prop (unmapped) for a player whose surname contains
+        # a stat keyword (Walker → "walk") must be left OPEN, never silently scored
+        # as a walks prop. Boxscore is available, so only correct classification
+        # keeps this open.
+        p = make_pick(bet="Christian Walker Over 0.5 triples", line_num=0.5)
+        exited = self._run([p],
+                           find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
+                           fetch_mlb_boxscore=make_boxscore(),
+                           fetch_mlb_result=None)
+        self.assertIsNone(p["result"])      # never scored
+        self.assertNotIn("prop_result", p)  # not resolved as any prop
         self.assertTrue(exited)
 
 

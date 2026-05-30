@@ -486,12 +486,38 @@ def fetch_mlb_boxscore(game_pk) -> Optional[dict]:
 # stat keyword → (boxscore stat group, statKey). Pitcher strikeouts come from the
 # pitching group, NOT batting.strikeOuts. Add new prop types here only.
 PROP_STAT_MAP = {
+    # Both singular and plural forms are listed because matching is whole-word
+    # (\bstrikeout\b does NOT match "strikeouts"), see _stat_keyword_in.
+    "strikeouts": ("pitching", "strikeOuts"),
     "strikeout": ("pitching", "strikeOuts"),
     "total bases": ("batting", "totalBases"),
     "rbi": ("batting", "rbi"),
     "hits": ("batting", "hits"),
     "hit": ("batting", "hits"),
+    # Walks map to the BATTING group: retail "walks" props are almost always batter
+    # walks (e.g. "Mookie Betts Over 0.5 walks"). Pitcher-walk props are rare; if added
+    # they need a distinct keyword mapping to ("pitching", "baseOnBalls").
+    "walks": ("batting", "baseOnBalls"),
+    "walk": ("batting", "baseOnBalls"),
+    "stolen bases": ("batting", "stolenBases"),
+    "stolen base": ("batting", "stolenBases"),
+    "home runs": ("batting", "homeRuns"),
+    "home run": ("batting", "homeRuns"),
+    "doubles": ("batting", "doubles"),
+    "double": ("batting", "doubles"),
+    "runs": ("batting", "runs"),
+    "run": ("batting", "runs"),
 }
+
+
+def _stat_keyword_in(kw: str, text: str) -> bool:
+    """
+    Whole-word match for a stat keyword. Plain substring matching collides with
+    player surnames — `walk` ⊂ "Walker", `run` ⊂ "Bruno", `hit` ⊂ "White" — which
+    would silently resolve an UNMAPPED-stat prop (e.g. triples) against the wrong
+    stat. Word boundaries make `\\bwalk\\b` not match "walker", etc.
+    """
+    return re.search(rf'\b{re.escape(kw)}\b', text) is not None
 
 
 def classify_bet(pick: dict) -> str:
@@ -507,7 +533,7 @@ def classify_bet(pick: dict) -> str:
     if re.match(r'^\s*(over|under)\b', low):
         return "total"
     # Player prop: a mapped stat keyword + a side (Over/Under or N+).
-    if any(k in low for k in PROP_STAT_MAP) and re.search(r'\b(over|under)\b|\d+\+', low):
+    if any(_stat_keyword_in(k, low) for k in PROP_STAT_MAP) and re.search(r'\b(over|under)\b|\d+\+', low):
         return "prop"
     return "ml"
 
@@ -563,7 +589,7 @@ def extract_prop(bet: str, line_num) -> Optional[dict]:
     # Stat: first mapped keyword present (check multiword keys before single).
     stat_group = stat_key = None
     for kw in sorted(PROP_STAT_MAP, key=len, reverse=True):
-        if kw in low:
+        if _stat_keyword_in(kw, low):
             stat_group, stat_key = PROP_STAT_MAP[kw]
             break
     if not stat_key:
