@@ -278,6 +278,13 @@ RESULT_ICON = {"win": "✅ Win", "loss": "❌ Loss", "push": "➡️ Push", "voi
 
 # ── Context line (two-line Recent Picks format) ───────────────────────────────
 
+def fmt_margin(m) -> str:
+    """Render a prop margin for display: integer when whole (2, not 2.0),
+    else its decimal (0.5). prop_margin is stored as int-or-1-decimal (see
+    prop_margin()), so this just drops the trailing .0 on whole values."""
+    return str(int(m)) if float(m).is_integer() else str(m)
+
+
 def build_context(pick: dict) -> str:
     result = pick.get("result")
     final_score = pick.get("final_score") or ""
@@ -298,11 +305,11 @@ def build_context(pick: dict) -> str:
     if prop_result:
         m = prop_margin if prop_margin is not None else 0
         if result == "win":
-            barely = " (barely!)" if m == 1 else ""
-            return f"Went {prop_result} — hit with {int(m)} to spare ✅{barely}"
+            barely = " (barely!)" if abs(m) <= 1 else ""  # sub-1 incl. 0.5 = close call
+            return f"Went {prop_result} — hit with {fmt_margin(m)} to spare ✅{barely}"
         else:
             near = " 🔥 Near miss!" if abs(m) <= 1 else ""
-            return f"Went {prop_result} — {int(abs(m))} short{near}"
+            return f"Went {prop_result} — {fmt_margin(abs(m))} short{near}"
 
     # ── Spread / Run Line ──
     is_spread = line_num is not None and abs(line_num) != 0 and "ml" not in bet
