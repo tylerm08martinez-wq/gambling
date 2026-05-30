@@ -512,6 +512,24 @@ def classify_bet(pick: dict) -> str:
     return "ml"
 
 
+def clean_player_name(s: str) -> str:
+    """
+    Strip structural annotations from a raw prop player segment, BEFORE
+    normalization. Pure: no I/O, no team-name list (those go stale seasonally).
+
+    Removes:
+      - parenthetical/bracketed segments: ``(...)`` and ``[...]``
+      - sportsbook suffixes: everything from an ``@`` onward (e.g. ``@ FanDuel``)
+
+    Whatever leading name tokens remain are returned (still un-normalized);
+    callers pass the result through ``_normalize_name`` for matching.
+    """
+    s = re.sub(r'\([^)]*\)', ' ', s)   # parenthetical segments
+    s = re.sub(r'\[[^\]]*\]', ' ', s)  # bracketed segments
+    s = s.split('@')[0]                # drop sportsbook suffix and anything after
+    return re.sub(r'\s+', ' ', s).strip()
+
+
 def _normalize_name(s: str) -> str:
     """Lowercase, strip accents and punctuation for name matching."""
     s = unicodedata.normalize("NFKD", s)
@@ -550,7 +568,9 @@ def extract_prop(bet: str, line_num) -> Optional[dict]:
             break
     if not stat_key:
         return None
-    player = _normalize_name(player_cut)
+    # Strip structural annotations (parentheticals/brackets, @sportsbook suffix)
+    # BEFORE accent/punctuation normalization so annotated props still match.
+    player = _normalize_name(clean_player_name(player_cut))
     if not player:
         return None
     return {"player": player, "stat_group": stat_group, "stat_key": stat_key,

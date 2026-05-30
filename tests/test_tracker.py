@@ -356,6 +356,34 @@ class TestNormalizeName(unittest.TestCase):
         self.assertEqual(tracker._normalize_name("Jr., Ronald Acuña!"), "jr ronald acuna")
 
 
+# ── #21: pure player-name cleaner (annotation stripping before normalization) ────
+
+class TestCleanPlayerName(unittest.TestCase):
+    def test_strips_parenthetical_team(self):
+        self.assertEqual(tracker.clean_player_name("Corbin Burnes (Diamondbacks)"),
+                         "Corbin Burnes")
+
+    def test_strips_bracketed_annotation(self):
+        self.assertEqual(tracker.clean_player_name("Corbin Burnes [ARI]"),
+                         "Corbin Burnes")
+
+    def test_strips_sportsbook_suffix(self):
+        self.assertEqual(tracker.clean_player_name("Corbin Burnes @ FanDuel"),
+                         "Corbin Burnes")
+
+    def test_strips_both_annotations(self):
+        self.assertEqual(tracker.clean_player_name("Corbin Burnes (Diamondbacks) @ DraftKings"),
+                         "Corbin Burnes")
+
+    def test_plain_name_untouched(self):
+        self.assertEqual(tracker.clean_player_name("Mookie Betts"), "Mookie Betts")
+
+    def test_accents_and_jr_survive_through_normalization(self):
+        # Cleaner only strips structure; accents/Jr. survive to _normalize_name.
+        cleaned = tracker.clean_player_name("José Ramírez Jr. (Guardians)")
+        self.assertEqual(tracker._normalize_name(cleaned), "jose ramirez jr")
+
+
 # ── #18: MLB API client (mock-based) ────────────────────────────────────────────
 
 class TestHttpGetJson(unittest.TestCase):
@@ -448,12 +476,35 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         self.assertIn("prop_result", p)
         self.assertNotIn("game_margin", p)  # regression: NOT scored as moneyline
 
-    def test_prop_naming_a_team_is_not_scored_as_ml(self):
-        # Regression: a prop that mentions a team must classify as a prop and never
-        # be scored on the game margin. Here the parenthetical team breaks name
-        # matching, so the resolver correctly SKIPS (leaves open) rather than
-        # silently resolving it as a moneyline.
+    def test_annotated_prop_with_team_resolves(self):
+        # #21: a prop carrying a parenthetical team annotation now RESOLVES from
+        # the boxscore (clean_player_name strips "(Diamondbacks)" before name
+        # matching). It must still classify as a prop and never be scored on the
+        # game margin.
         p = make_pick(bet="Corbin Burnes (Diamondbacks) Over 6.5 strikeouts", line_num=6.5)
+        self._run([p],
+                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
+                  fetch_mlb_boxscore=make_boxscore())
+        self.assertEqual(tracker.classify_bet(p), "prop")
+        self.assertEqual(p["result"], "win")  # 8 K vs over 6.5
+        self.assertIn("prop_result", p)
+        self.assertNotIn("game_margin", p)    # regression: never scored as moneyline
+
+    def test_prop_with_sportsbook_suffix_resolves(self):
+        # #21: a copy-pasted line with a trailing "@ FanDuel" suffix resolves.
+        p = make_pick(bet="Corbin Burnes Over 6.5 strikeouts @ FanDuel", line_num=6.5)
+        self._run([p],
+                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
+                  fetch_mlb_boxscore=make_boxscore())
+        self.assertEqual(p["result"], "win")
+        self.assertNotIn("game_margin", p)
+
+    def test_annotated_prop_unmatchable_player_still_left_open(self):
+        # #21 / ADR 0004: stripping annotations must not relax the hard guarantee.
+        # An unknown player (even after cleaning) is still left OPEN, never
+        # mis-scored as a game-line bet.
+        p = make_pick(bet="Unknown Player (Diamondbacks) Over 6.5 strikeouts @ DraftKings",
+                      line_num=6.5)
         exited = self._run([p],
                            find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
                            fetch_mlb_boxscore=make_boxscore())
