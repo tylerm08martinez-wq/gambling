@@ -994,5 +994,36 @@ class TestAdaptEspnNbaBoxscore(unittest.TestCase):
         self.assertIsNotNone(reason)
 
 
+class TestBuildContextPropMargin(unittest.TestCase):
+    """Display layer (#32): the CLI prop-context line must show fractional margins."""
+
+    def _ctx(self, result, prop_margin):
+        return tracker.build_context({
+            "result": result, "prop_result": "28 points",
+            "prop_margin": prop_margin, "bet": "Player Over 27.5 points",
+        })
+
+    def test_fractional_win_margin_shown(self):
+        ctx = self._ctx("win", 0.5)
+        self.assertIn("0.5 to spare", ctx)   # not "0 to spare"
+        self.assertIn("(barely!)", ctx)      # sub-1 = close call
+
+    def test_fractional_loss_margin_shown(self):
+        ctx = self._ctx("loss", -0.5)
+        self.assertIn("0.5 short", ctx)      # not "0 short"
+        self.assertIn("Near miss!", ctx)
+
+    def test_whole_margin_renders_as_integer(self):
+        ctx = self._ctx("win", 2)
+        self.assertIn("hit with 2 to spare", ctx)
+        self.assertNotIn("2.0", ctx)
+        self.assertNotIn("(barely!)", ctx)   # 2 is not a close call
+
+    def test_fmt_margin_helper(self):
+        self.assertEqual(tracker.fmt_margin(2), "2")
+        self.assertEqual(tracker.fmt_margin(2.0), "2")
+        self.assertEqual(tracker.fmt_margin(0.5), "0.5")
+
+
 if __name__ == "__main__":
     unittest.main()
