@@ -711,6 +711,21 @@ def prop_outcome(actual, side: str, threshold: float) -> str:
     return "win" if actual < threshold else "loss"
 
 
+def prop_margin(value, threshold):
+    """Signed margin (value - threshold) for a resolved prop.
+
+    Returns an int when the difference is a whole number (e.g. 8 vs 6.0 -> 2),
+    otherwise the difference rounded to one decimal (e.g. 28 vs 27.5 -> 0.5).
+    The bug this replaces gated integer formatting on whether `value` was whole
+    rather than whether the *difference* was whole, truncating a real 0.5 margin
+    (28 vs 27.5) to 0.
+    """
+    diff = value - threshold
+    if float(diff).is_integer():
+        return int(diff)
+    return round(diff, 1)
+
+
 def find_mlb_game_for_bet(date: str, bet: str) -> Optional[dict]:
     """Find the final game on `date` whose home/away team name appears in `bet`. None if none/not final."""
     low = bet.lower()
@@ -1217,7 +1232,7 @@ def cmd_auto_resolve(_args):
             p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
             p["final_score"] = game["final_score"]
             p["prop_result"] = f"{value} {stat_label}"
-            p["prop_margin"] = int(value - spec["threshold"]) if float(value).is_integer() else round(value - spec["threshold"], 1)
+            p["prop_margin"] = prop_margin(value, spec["threshold"])
             sign = "+" if p["units_won_lost"] >= 0 else ""
             print(f"✅ {p['id']}: {outcome.upper()} — {value} {stat_label} vs {spec['side']} {spec['threshold']} → {sign}{p['units_won_lost']}u")
             resolved.append(p["id"])
@@ -1252,7 +1267,7 @@ def cmd_auto_resolve(_args):
             p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
             p["final_score"] = game["final_score"]
             p["prop_result"] = f"{value} {spec['stat_key']}"
-            p["prop_margin"] = int(value - spec["threshold"]) if float(value).is_integer() else round(value - spec["threshold"], 1)
+            p["prop_margin"] = prop_margin(value, spec["threshold"])
             sign = "+" if p["units_won_lost"] >= 0 else ""
             print(f"✅ {p['id']}: {outcome.upper()} — {value} {spec['stat_key']} vs {spec['side']} {spec['threshold']} → {sign}{p['units_won_lost']}u")
             resolved.append(p["id"])
