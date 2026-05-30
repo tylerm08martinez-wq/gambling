@@ -486,6 +486,9 @@ def fetch_mlb_boxscore(game_pk) -> Optional[dict]:
 # stat keyword → (boxscore stat group, statKey). Pitcher strikeouts come from the
 # pitching group, NOT batting.strikeOuts. Add new prop types here only.
 PROP_STAT_MAP = {
+    # Both singular and plural forms are listed because matching is whole-word
+    # (\bstrikeout\b does NOT match "strikeouts"), see _stat_keyword_in.
+    "strikeouts": ("pitching", "strikeOuts"),
     "strikeout": ("pitching", "strikeOuts"),
     "total bases": ("batting", "totalBases"),
     "rbi": ("batting", "rbi"),
@@ -507,6 +510,16 @@ PROP_STAT_MAP = {
 }
 
 
+def _stat_keyword_in(kw: str, text: str) -> bool:
+    """
+    Whole-word match for a stat keyword. Plain substring matching collides with
+    player surnames — `walk` ⊂ "Walker", `run` ⊂ "Bruno", `hit` ⊂ "White" — which
+    would silently resolve an UNMAPPED-stat prop (e.g. triples) against the wrong
+    stat. Word boundaries make `\\bwalk\\b` not match "walker", etc.
+    """
+    return re.search(rf'\b{re.escape(kw)}\b', text) is not None
+
+
 def classify_bet(pick: dict) -> str:
     """Return 'prop', 'total', 'rl', or 'ml'. Uses bet_type when present, else infers."""
     bt = (pick.get("bet_type") or "").lower()
@@ -520,7 +533,7 @@ def classify_bet(pick: dict) -> str:
     if re.match(r'^\s*(over|under)\b', low):
         return "total"
     # Player prop: a mapped stat keyword + a side (Over/Under or N+).
-    if any(k in low for k in PROP_STAT_MAP) and re.search(r'\b(over|under)\b|\d+\+', low):
+    if any(_stat_keyword_in(k, low) for k in PROP_STAT_MAP) and re.search(r'\b(over|under)\b|\d+\+', low):
         return "prop"
     return "ml"
 
@@ -558,7 +571,7 @@ def extract_prop(bet: str, line_num) -> Optional[dict]:
     # Stat: first mapped keyword present (check multiword keys before single).
     stat_group = stat_key = None
     for kw in sorted(PROP_STAT_MAP, key=len, reverse=True):
-        if kw in low:
+        if _stat_keyword_in(kw, low):
             stat_group, stat_key = PROP_STAT_MAP[kw]
             break
     if not stat_key:

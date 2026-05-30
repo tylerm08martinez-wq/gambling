@@ -290,6 +290,22 @@ class TestExtractProp(unittest.TestCase):
         # "triples" is intentionally NOT in PROP_STAT_MAP → must not be scored.
         self.assertIsNone(tracker.extract_prop("Mike Trout Over 1.5 triples", 1.5))
 
+    def test_surname_containing_keyword_does_not_false_match(self):
+        # Whole-word matching: short stat keys must NOT match inside surnames.
+        # Each bet is for the UNMAPPED stat "triples" → must return None, never
+        # silently resolve as walks/runs/hits from the surname (walk⊂Walker,
+        # run⊂Bruno, hit⊂White).
+        for bet in ("Christian Walker Over 0.5 triples",
+                    "Bruno Over 0.5 triples",
+                    "Tyler White Over 0.5 triples"):
+            self.assertIsNone(tracker.extract_prop(bet, 0.5), bet)
+
+    def test_mapped_stat_still_matches_for_colliding_surname(self):
+        # The fix must not over-correct: a real walks prop for Walker still resolves.
+        spec = tracker.extract_prop("Christian Walker Over 0.5 walks", 0.5)
+        self.assertEqual(spec["stat_key"], "baseOnBalls")
+        self.assertEqual(spec["player"], "christian walker")
+
     def test_walks_maps_to_batting_base_on_balls(self):
         spec = tracker.extract_prop("Mookie Betts Over 0.5 walks", 0.5)
         self.assertEqual(spec["stat_group"], "batting")
@@ -562,6 +578,20 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
                            fetch_mlb_boxscore=make_boxscore(),
                            fetch_mlb_result=None)
         self.assertIsNone(p["result"])  # never scored
+        self.assertTrue(exited)
+
+    def test_unmapped_stat_for_colliding_surname_left_open(self):
+        # Regression: a triples prop (unmapped) for a player whose surname contains
+        # a stat keyword (Walker → "walk") must be left OPEN, never silently scored
+        # as a walks prop. Boxscore is available, so only correct classification
+        # keeps this open.
+        p = make_pick(bet="Christian Walker Over 0.5 triples", line_num=0.5)
+        exited = self._run([p],
+                           find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
+                           fetch_mlb_boxscore=make_boxscore(),
+                           fetch_mlb_result=None)
+        self.assertIsNone(p["result"])      # never scored
+        self.assertNotIn("prop_result", p)  # not resolved as any prop
         self.assertTrue(exited)
 
 
