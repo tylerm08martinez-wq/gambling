@@ -13,6 +13,8 @@ import sys
 import re
 import argparse
 import math
+import time
+import unicodedata
 import urllib.request
 from datetime import datetime
 from pathlib import Path
@@ -400,45 +402,210 @@ def extract_bet_team(bet: str) -> str:
     return team
 
 
+# statsapi.mlb.com is a structured JSON source and is the durable resolution
+# source (ADR 0004). Python-urllib's default User-Agent can be WAF-blocked (403)
+# from datacenter egress IPs, so we always send a browser UA and retry with
+# backoff. A persistent block returns None → the caller leaves the pick open.
+_MLB_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+
+
+def _http_get_json(url: str, retries: int = 3) -> Optional[dict]:
+    """GET JSON with a browser User-Agent and exponential backoff. None on failure."""
+    last_err = None
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": _MLB_UA})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                return json.loads(r.read())
+        except Exception as e:
+            last_err = e
+            if attempt < retries - 1:
+                time.sleep(1.5 * (attempt + 1))  # 1.5s, 3.0s backoff
+    print(f"⚠️  MLB API error after {retries} attempts: {last_err}", file=sys.stderr)
+    return None
+
+
+def fetch_mlb_schedule(date: str) -> list:
+    """Return the list of MLB game dicts for `date` (empty list on failure)."""
+    url = f"https://statsapi.mlb.com/api/v1/schedule?sportId=1&date={date}&hydrate=linescore"
+    data = _http_get_json(url)
+    if not data:
+        return []
+    games = []
+    for date_entry in data.get("dates", []):
+        games.extend(date_entry.get("games", []))
+    return games
+
+
+def _game_result_dict(game: dict, team_lower: str) -> dict:
+    """Build the standard result dict for a final game, oriented to `team_lower`."""
+    home = game["teams"]["home"]["team"]["name"]
+    away = game["teams"]["away"]["team"]["name"]
+    home_score = game["teams"]["home"].get("score", 0)
+    away_score = game["teams"]["away"].get("score", 0)
+    our_is_home = team_lower in home.lower()
+    our_score = home_score if our_is_home else away_score
+    opp_score = away_score if our_is_home else home_score
+    away_abbr = game["teams"]["away"]["team"].get("abbreviation", away[:3].upper())
+    home_abbr = game["teams"]["home"]["team"].get("abbreviation", home[:3].upper())
+    return {
+        "home": home, "away": away,
+        "our_score": our_score, "opp_score": opp_score,
+        "margin": our_score - opp_score,
+        "total_runs": home_score + away_score,
+        "final_score": f"{away_abbr} {away_score}, {home_abbr} {home_score}",
+        "status": game.get("status", {}).get("detailedState", ""),
+        "game_pk": game.get("gamePk"),
+    }
+
+
 def fetch_mlb_result(date: str, team_name: str) -> Optional[dict]:
     """
     Query MLB Stats API for a final game result on `date` involving `team_name`.
-    Returns a result dict or None if game not found / not yet final.
+    Returns a result dict (incl. game_pk and total_runs) or None if not found / not final.
     """
-    url = f"https://statsapi.mlb.com/api/v1/schedule?sportId=1&date={date}&hydrate=linescore"
-    try:
-        with urllib.request.urlopen(url, timeout=10) as r:
-            data = json.loads(r.read())
-    except Exception as e:
-        print(f"⚠️  MLB API error: {e}", file=sys.stderr)
-        return None
-
     team_lower = team_name.lower()
-    for date_entry in data.get("dates", []):
-        for game in date_entry.get("games", []):
-            home = game["teams"]["home"]["team"]["name"]
-            away = game["teams"]["away"]["team"]["name"]
-            if team_lower not in home.lower() and team_lower not in away.lower():
-                continue
-            status = game.get("status", {}).get("detailedState", "")
-            if "Final" not in status:
-                return None  # game not yet final
-            home_score = game["teams"]["home"].get("score", 0)
-            away_score = game["teams"]["away"].get("score", 0)
-            our_is_home = team_lower in home.lower()
-            our_score = home_score if our_is_home else away_score
-            opp_score = away_score if our_is_home else home_score
-            margin = our_score - opp_score
-            away_abbr = game["teams"]["away"]["team"].get("abbreviation", away[:3].upper())
-            home_abbr = game["teams"]["home"]["team"].get("abbreviation", home[:3].upper())
-            final_score = f"{away_abbr} {away_score}, {home_abbr} {home_score}"
-            return {
-                "home": home, "away": away,
-                "our_score": our_score, "opp_score": opp_score,
-                "margin": margin,
-                "final_score": final_score,
-                "status": status,
-            }
+    for game in fetch_mlb_schedule(date):
+        home = game["teams"]["home"]["team"]["name"]
+        away = game["teams"]["away"]["team"]["name"]
+        if team_lower not in home.lower() and team_lower not in away.lower():
+            continue
+        if "Final" not in game.get("status", {}).get("detailedState", ""):
+            return None  # game not yet final
+        return _game_result_dict(game, team_lower)
+    return None
+
+
+def fetch_mlb_boxscore(game_pk) -> Optional[dict]:
+    """Fetch the boxscore JSON for a gamePk. None on failure."""
+    return _http_get_json(f"https://statsapi.mlb.com/api/v1/game/{game_pk}/boxscore")
+
+
+# ── Bet classification & prop resolution (ADR 0004) ─────────────────────────────
+
+# stat keyword → (boxscore stat group, statKey). Pitcher strikeouts come from the
+# pitching group, NOT batting.strikeOuts. Add new prop types here only.
+PROP_STAT_MAP = {
+    "strikeout": ("pitching", "strikeOuts"),
+    "total bases": ("batting", "totalBases"),
+    "rbi": ("batting", "rbi"),
+    "hits": ("batting", "hits"),
+    "hit": ("batting", "hits"),
+}
+
+
+def classify_bet(pick: dict) -> str:
+    """Return 'prop', 'total', 'rl', or 'ml'. Uses bet_type when present, else infers."""
+    bt = (pick.get("bet_type") or "").lower()
+    if bt in ("prop", "total", "rl", "ml"):
+        return bt
+    bet = pick.get("bet", "")
+    low = bet.lower()
+    if "rl" in low.split() or "run line" in low:
+        return "rl"
+    # Game total: starts with Over/Under and has no player name before it.
+    if re.match(r'^\s*(over|under)\b', low):
+        return "total"
+    # Player prop: a mapped stat keyword + a side (Over/Under or N+).
+    if any(k in low for k in PROP_STAT_MAP) and re.search(r'\b(over|under)\b|\d+\+', low):
+        return "prop"
+    return "ml"
+
+
+def _normalize_name(s: str) -> str:
+    """Lowercase, strip accents and punctuation for name matching."""
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    return re.sub(r'[^a-z\s]', '', s.lower()).strip()
+
+
+def extract_prop(bet: str, line_num) -> Optional[dict]:
+    """
+    Parse a player prop. Returns {player, stat_group, stat_key, side, threshold}
+    or None if any component can't be resolved (caller then skips — never guesses).
+    """
+    low = bet.lower()
+    # Side + threshold. "N+" means at least N → Over (N-0.5). Else Over/Under + line_num.
+    nplus = re.search(r'(\d+(?:\.\d+)?)\+', bet)
+    if nplus:
+        side, threshold = "over", float(nplus.group(1)) - 0.5
+        player_cut = bet[:nplus.start()]
+    elif re.search(r'\bover\b', low):
+        side = "over"
+        player_cut = re.split(r'\bover\b', bet, flags=re.IGNORECASE)[0]
+        threshold = float(line_num) if line_num is not None else None
+    elif re.search(r'\bunder\b', low):
+        side = "under"
+        player_cut = re.split(r'\bunder\b', bet, flags=re.IGNORECASE)[0]
+        threshold = float(line_num) if line_num is not None else None
+    else:
+        return None
+    if threshold is None:
+        return None
+    # Stat: first mapped keyword present (check multiword keys before single).
+    stat_group = stat_key = None
+    for kw in sorted(PROP_STAT_MAP, key=len, reverse=True):
+        if kw in low:
+            stat_group, stat_key = PROP_STAT_MAP[kw]
+            break
+    if not stat_key:
+        return None
+    player = _normalize_name(player_cut)
+    if not player:
+        return None
+    return {"player": player, "stat_group": stat_group, "stat_key": stat_key,
+            "side": side, "threshold": threshold}
+
+
+def resolve_prop_value(box: dict, player_norm: str, stat_group: str, stat_key: str):
+    """
+    Find `player_norm` (matched on last name) across both teams in the boxscore and
+    return their stat value. Returns (value, None) on success, or (None, reason) on
+    failure — including a same-last-name collision, which is skipped not guessed.
+    """
+    target_last = player_norm.split()[-1]
+    matches = []
+    for side in ("away", "home"):
+        for pdata in box.get("teams", {}).get(side, {}).get("players", {}).values():
+            full = _normalize_name(pdata.get("person", {}).get("fullName", ""))
+            if full and full.split()[-1] == target_last:
+                matches.append((full, pdata))
+    if not matches:
+        return None, f"player '{player_norm}' not found in boxscore"
+    if len(matches) > 1:
+        # Disambiguate by full normalized name if exactly one is an exact match.
+        exact = [m for m in matches if m[0] == player_norm]
+        if len(exact) == 1:
+            matches = exact
+        else:
+            return None, f"ambiguous last name '{target_last}' ({len(matches)} players)"
+    pdata = matches[0][1]
+    stats = pdata.get("stats", {}).get(stat_group, {})
+    if not stats or stat_key not in stats:
+        return None, f"no {stat_group}.{stat_key} stat for player (did not play that role?)"
+    return stats[stat_key], None
+
+
+def prop_outcome(actual, side: str, threshold: float) -> str:
+    """win/loss/push for an Over/Under prop given the actual stat value."""
+    if actual == threshold:
+        return "push"
+    if side == "over":
+        return "win" if actual > threshold else "loss"
+    return "win" if actual < threshold else "loss"
+
+
+def find_mlb_game_for_bet(date: str, bet: str) -> Optional[dict]:
+    """Find the final game on `date` whose home/away team name appears in `bet`. None if none/not final."""
+    low = bet.lower()
+    for game in fetch_mlb_schedule(date):
+        home = game["teams"]["home"]["team"]["name"]
+        away = game["teams"]["away"]["team"]["name"]
+        # Match on the distinctive last word of each team name (e.g. "pirates", "twins").
+        if home.split()[-1].lower() in low or away.split()[-1].lower() in low:
+            if "Final" not in game.get("status", {}).get("detailedState", ""):
+                return None
+            return _game_result_dict(game, home.lower())
     return None
 
 
@@ -748,26 +915,72 @@ def cmd_auto_resolve(_args):
         sport = p.get("sport", "").upper()
         bet = p.get("bet", "")
         date = p.get("date", datetime.now().strftime("%Y-%m-%d"))
+        line_num = p.get("line_num")
 
         if sport != "MLB":
-            skipped.append((p["id"], f"sport={sport} — only MLB supported"))
+            skipped.append((p["id"], f"sport={sport} — only MLB auto-resolves (resolve manually)"))
             continue
 
+        kind = classify_bet(p)
+
+        # ── Player Prop: resolve from the boxscore. Hard guard — never fall through. ──
+        if kind == "prop":
+            spec = extract_prop(bet, line_num)
+            if spec is None:
+                skipped.append((p["id"], "prop: could not parse player/stat/side/threshold — resolve manually"))
+                continue
+            game = find_mlb_game_for_bet(date, bet)
+            if game is None:
+                skipped.append((p["id"], f"prop: game not found or not final on {date}"))
+                continue
+            box = fetch_mlb_boxscore(game["game_pk"])
+            if box is None:
+                skipped.append((p["id"], "prop: boxscore fetch failed (API blocked?) — left open"))
+                continue
+            value, reason = resolve_prop_value(box, spec["player"], spec["stat_group"], spec["stat_key"])
+            if reason:
+                skipped.append((p["id"], f"prop: {reason}"))
+                continue
+            outcome = prop_outcome(value, spec["side"], spec["threshold"])
+            p["result"] = outcome
+            p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
+            p["final_score"] = game["final_score"]
+            p["prop_result"] = f"{value} {spec['stat_key']}"
+            p["prop_margin"] = int(value - spec["threshold"]) if float(value).is_integer() else round(value - spec["threshold"], 1)
+            sign = "+" if p["units_won_lost"] >= 0 else ""
+            print(f"✅ {p['id']}: {outcome.upper()} — {value} {spec['stat_key']} vs {spec['side']} {spec['threshold']} → {sign}{p['units_won_lost']}u")
+            resolved.append(p["id"])
+            continue
+
+        # ── Game total: orientation is symmetric, match game by either team name. ──
+        if kind == "total":
+            result_data = find_mlb_game_for_bet(date, bet)
+            if result_data is None:
+                skipped.append((p["id"], f"total: game not found or not final on {date}"))
+                continue
+            if line_num is None:
+                skipped.append((p["id"], "total missing line_num — resolve manually"))
+                continue
+            total = result_data["total_runs"]
+            side = "over" if re.match(r'^\s*over\b', bet.lower()) else "under"
+            outcome = prop_outcome(total, side, float(line_num))
+            p["result"] = outcome
+            p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
+            p["final_score"] = result_data["final_score"]
+            p["prop_result"] = f"{total} total runs"
+            sign = "+" if p["units_won_lost"] >= 0 else ""
+            print(f"✅ {p['id']}: {outcome.upper()} — {total} runs vs {side} {line_num} → {sign}{p['units_won_lost']}u")
+            resolved.append(p["id"])
+            continue
+
+        # ── Moneyline / run line: margin must be oriented to the team we bet on. ──
         team = extract_bet_team(bet)
-        if not team:
-            skipped.append((p["id"], "could not extract team name from bet"))
-            continue
-
-        result_data = fetch_mlb_result(date, team)
+        result_data = fetch_mlb_result(date, team) if team else None
         if result_data is None:
             skipped.append((p["id"], f"game not found or not final for '{team}' on {date}"))
             continue
-
         margin = result_data["margin"]
-        line_num = p.get("line_num")
-        bet_lower = bet.lower()
-
-        if "rl" in bet_lower or "run line" in bet_lower:
+        if kind == "rl":
             if line_num is None:
                 skipped.append((p["id"], "RL pick missing line_num — resolve manually"))
                 continue

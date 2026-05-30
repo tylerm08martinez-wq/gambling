@@ -102,9 +102,13 @@ Then run `tracker.py stats` and show the output.
 
 ### Step 1: Auto-resolve open picks
 
-Run `tracker.py open` to get a JSON list of open picks.
+**MLB first — always run the structured resolver before any web search:**
+```bash
+python3 ".agents/skills/bet-tracker/tracker.py" auto-resolve
+```
+This classifies each open MLB pick (moneyline, run line, game total, or player prop) and resolves it directly from the MLB Stats API — including **player props** (pitcher strikeouts, hits, total bases, RBI) from the boxscore. It sends a browser User-Agent and retries, so transient 403s self-heal. Anything it can't resolve confidently (player/stat/side unparseable, missing boxscore stat, game not final, API blocked) is **left open with a reason — never guessed**. Do NOT web-scrape box-score sites (ESPN, MLB.com, Baseball-Reference); they 403 from cloud IPs and the API is authoritative. See [docs/adr/0004-auto-resolve-bet-classification.md](../../../docs/adr/0004-auto-resolve-bet-classification.md).
 
-For each open pick where `date <= today`, web search for the result in parallel:
+**Then** run `tracker.py open` to get any still-open picks. For non-MLB picks (e.g. NBA props) or MLB picks `auto-resolve` left open where a verifiable result exists, web search:
 - Team bets: `"[teams] final score [date]"`
 - Player props: `"[player name] [stat] [date] [opponent]"`
 

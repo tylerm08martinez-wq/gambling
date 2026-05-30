@@ -975,15 +975,15 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "3:45 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "win",
+    "units_won_lost": 0.847,
     "closing_line": null,
     "clv": null,
-    "final_score": null,
+    "final_score": "MIN 5, PIT 6",
     "game_margin": null,
     "line_num": 5.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "6 strikeOuts",
+    "prop_margin": 0
   },
   {
     "id": "20260530-mlb-v1-bailey-total",
