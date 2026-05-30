@@ -984,5 +984,63 @@
     "line_num": 5.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260530-mlb-v1-bailey-total",
+    "date": "2026-05-30",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Bailey Ober Over 3.5 Strikeouts vs Pittsburgh Pirates",
+    "line": "-148 @ FanDuel",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Prop-trend line value: Dimers projects 69.2% / +9.5% edge at FanDuel, while VSiN OptaAI projects 5.95 Ks and shows value through the higher 4.5-K alternate.",
+    "primary_edge_type": "prop_trend",
+    "source_evidence": [
+      {
+        "status": "usable",
+        "source": "Dimers MLB player props",
+        "freshness": "2026-05-30 current slate, updated 1:03 AM ET",
+        "category": "projection_odds",
+        "url": "https://www.dimers.com/news/mlb-player-props-saturday-05-30-2026-ac",
+        "market": "Bailey Ober over 3.5 strikeouts",
+        "line": "-148",
+        "book": "FanDuel",
+        "details": "Dimers probability 69.2%, edge 9.5% for Twins vs Pirates at 4:05 PM ET."
+      },
+      {
+        "status": "usable",
+        "source": "VSiN OptaAI MLB player props",
+        "freshness": "2026-05-30 current slate",
+        "category": "projection_confirmation",
+        "url": "https://vsin.com/mlb/mlb-player-prop-picks-today-top-prop-bets-for-saturday-may-30/",
+        "market": "Bailey Ober over strikeouts",
+        "line": "Over 4.5 +139",
+        "book": "VSiN-listed market",
+        "details": "OptaAI projection 5.95 strikeouts; article says fair odds -242 and +29.0% edge to the over."
+      },
+      {
+        "status": "usable",
+        "source": "MLB Stats API schedule",
+        "freshness": "2026-05-30 official schedule",
+        "category": "official_start_time",
+        "url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-05-30&hydrate=probablePitcher,team,venue",
+        "market": "Twins at Pirates",
+        "observed_at": "2026-05-30T17:00:00Z",
+        "details": "Game 823375 official start 2026-05-30T20:05:00Z; Bailey Ober listed probable for Minnesota."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:05 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 3.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
