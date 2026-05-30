@@ -509,15 +509,47 @@ PROP_STAT_MAP = {
     "run": ("batting", "runs"),
 }
 
-# NBA stat keyword → (boxscore stat group, statKey). POINTS ONLY for now (issue #24);
-# rebounds/assists/threes/steals/blocks/combo are issue #25 — do NOT add them here.
-# The group/key below are SYNTHETIC: the ESPN adapter (adapt_espn_nba_boxscore)
-# produces the sport-agnostic shape stats["scoring"]["points"], so resolve_prop_value
-# works unchanged. (ESPN's own statistics[].name is null; see adapter comment.)
+# NBA stat keyword → (boxscore stat group, statKey). Issues #24 (points) + #25
+# (rebounds, assists, three-pointers made, steals, blocks, and the PRA combo).
+# All group/key values are SYNTHETIC: the ESPN adapter (adapt_espn_nba_boxscore)
+# produces the sport-agnostic shape stats["scoring"][<key>] from the parallel
+# labels/stats arrays, so resolve_prop_value works unchanged. (ESPN's own
+# statistics[].name is null; see adapter comment.) Everything is emitted under the
+# single synthetic "scoring" group for simplicity — the key disambiguates the stat.
+#
+# COMBO (PRA): the stat_key is a TUPLE of component keys. resolve_prop_value sums
+# the components (issue #25). It is NOT a separate boxscore key — there is no "PRA"
+# column in ESPN's boxscore; PRA is defined as points+rebounds+assists summed.
+# If ANY component is missing, resolve_prop_value returns a reason → pick left OPEN.
 NBA_PROP_STAT_MAP = {
     "points": ("scoring", "points"),
     "point": ("scoring", "points"),
     "pts": ("scoring", "points"),
+    "rebounds": ("scoring", "rebounds"),
+    "rebound": ("scoring", "rebounds"),
+    "reb": ("scoring", "rebounds"),
+    "assists": ("scoring", "assists"),
+    "assist": ("scoring", "assists"),
+    "ast": ("scoring", "assists"),
+    # Three-pointers made. ESPN's 3PT column is "made-attempted" (e.g. "7-12"); the
+    # adapter parses the MADE integer (before the dash) and stores it here.
+    "three pointers made": ("scoring", "threes"),
+    "three pointers": ("scoring", "threes"),
+    "three-pointers made": ("scoring", "threes"),
+    "threes made": ("scoring", "threes"),
+    "threes": ("scoring", "threes"),
+    "3pm": ("scoring", "threes"),
+    "3pt": ("scoring", "threes"),
+    "steals": ("scoring", "steals"),
+    "steal": ("scoring", "steals"),
+    "stl": ("scoring", "steals"),
+    "blocks": ("scoring", "blocks"),
+    "block": ("scoring", "blocks"),
+    "blk": ("scoring", "blocks"),
+    # PRA combo — resolved by SUMMING the component keys (see resolve_prop_value).
+    "points+rebounds+assists": ("scoring", ("points", "rebounds", "assists")),
+    "pts+reb+ast": ("scoring", ("points", "rebounds", "assists")),
+    "pra": ("scoring", ("points", "rebounds", "assists")),
 }
 
 
@@ -626,11 +658,16 @@ def extract_prop(bet: str, line_num, sport: str = "MLB") -> Optional[dict]:
             "side": side, "threshold": threshold}
 
 
-def resolve_prop_value(box: dict, player_norm: str, stat_group: str, stat_key: str):
+def resolve_prop_value(box: dict, player_norm: str, stat_group: str, stat_key):
     """
     Find `player_norm` (matched on last name) across both teams in the boxscore and
     return their stat value. Returns (value, None) on success, or (None, reason) on
     failure — including a same-last-name collision, which is skipped not guessed.
+
+    `stat_key` may be a single key (str) OR a tuple/list of component keys for a
+    COMBO prop (e.g. NBA PRA = points+rebounds+assists). For a combo we SUM the
+    component values; if ANY component is missing the pick is left OPEN (returns a
+    reason), never partial-guessed. This keeps prop_outcome generic and unchanged.
     """
     target_last = player_norm.split()[-1]
     matches = []
@@ -650,7 +687,17 @@ def resolve_prop_value(box: dict, player_norm: str, stat_group: str, stat_key: s
             return None, f"ambiguous last name '{target_last}' ({len(matches)} players)"
     pdata = matches[0][1]
     stats = pdata.get("stats", {}).get(stat_group, {})
-    if not stats or stat_key not in stats:
+    if not stats:
+        return None, f"no {stat_group} stats for player (did not play that role?)"
+    # Combo prop: sum the component keys, leaving the pick OPEN if any are missing.
+    if isinstance(stat_key, (tuple, list)):
+        total = 0
+        for key in stat_key:
+            if key not in stats:
+                return None, f"combo component {stat_group}.{key} missing (left open, not guessed)"
+            total += stats[key]
+        return total, None
+    if stat_key not in stats:
         return None, f"no {stat_group}.{stat_key} stat for player (did not play that role?)"
     return stats[stat_key], None
 
@@ -744,17 +791,32 @@ def adapt_espn_nba_boxscore(summary: dict) -> dict:
 
     ESPN shape (self-annealed against the live endpoint 2026-05-30):
       summary["boxscore"]["players"]  → list of TWO team blocks
-        block["statistics"][0]["labels"] → parallel label array, e.g. ["MIN","PTS",...]
+        block["statistics"][0]["labels"] → parallel label array, e.g.
+          ["MIN","PTS","FG","3PT","FT","REB","AST","STL","BLK", ...]
         block["statistics"][0]["athletes"][i]["athlete"]["displayName"]
         block["statistics"][0]["athletes"][i]["stats"]  → parallel value array
       NOTE: ESPN's statistics[].name is null (NOT a real group name like "scoring"),
-      so we do NOT key off it. We index the value array by the "PTS" label position
-      and emit it under the SYNTHETIC group/key ("scoring","points") that
-      NBA_PROP_STAT_MAP points at. DNP players have stats == [] and are skipped
-      (empty stats group → resolve_prop_value returns a reason, never guesses).
+      so we do NOT key off it. We index the value array by each label's POSITION and
+      emit values under the SYNTHETIC group "scoring" with keys NBA_PROP_STAT_MAP
+      points at. DNP players have stats == [] and are skipped (empty stats group →
+      resolve_prop_value returns a reason, never guesses).
 
-    POINTS ONLY (issue #24). Other stats (REB/AST/3PT/STL/BLK) are issue #25.
+    Label → synthetic key mapping (issues #24 + #25):
+      PTS → points, REB → rebounds, AST → assists, STL → steals, BLK → blocks.
+      3PT → threes: this column is "made-attempted" (e.g. "7-12"), NOT a bare int —
+      we parse the MADE value (the integer before the dash). All others are bare ints.
+      A label absent from a given boxscore simply omits that key for those players,
+      so a prop on a missing stat is left OPEN by resolve_prop_value (never guessed).
     """
+    # label → (synthetic key, is the value a "made-attempted" string?)
+    LABEL_MAP = {
+        "PTS": ("points", False),
+        "REB": ("rebounds", False),
+        "AST": ("assists", False),
+        "STL": ("steals", False),
+        "BLK": ("blocks", False),
+        "3PT": ("threes", True),  # "made-attempted", parse the made integer
+    }
     box = summary.get("boxscore", {})
     team_blocks = box.get("players", [])
     teams = {"away": {"players": {}}, "home": {"players": {}}}
@@ -767,22 +829,37 @@ def adapt_espn_nba_boxscore(summary: dict) -> dict:
             continue
         stat_set = stat_sets[0]
         labels = stat_set.get("labels", [])
-        try:
-            pts_idx = labels.index("PTS")
-        except ValueError:
-            continue  # no points column → cannot resolve points from this block
+        # Resolve the column index of each label we care about that is present.
+        col_idx = {}
+        for label, (key, _made_att) in LABEL_MAP.items():
+            try:
+                col_idx[label] = labels.index(label)
+            except ValueError:
+                pass  # label absent → that stat omitted; prop on it left OPEN
         for i, ath in enumerate(stat_set.get("athletes", [])):
             full = ath.get("athlete", {}).get("displayName", "")
             vals = ath.get("stats", [])
-            if not full or not vals or pts_idx >= len(vals):
+            if not full or not vals:
                 continue  # DNP / missing → leave out; resolver leaves pick open
-            try:
-                points = int(vals[pts_idx])
-            except (ValueError, TypeError):
+            scoring = {}
+            for label, pos in col_idx.items():
+                if pos >= len(vals):
+                    continue
+                key, made_att = LABEL_MAP[label]
+                raw = vals[pos]
+                try:
+                    if made_att:
+                        # "7-12" → 7 (made). Take the integer before the dash.
+                        scoring[key] = int(str(raw).split("-")[0])
+                    else:
+                        scoring[key] = int(raw)
+                except (ValueError, TypeError):
+                    continue  # unparseable cell → omit that key, never guess
+            if not scoring:
                 continue
             teams[side]["players"][f"{side}-{i}"] = {
                 "person": {"fullName": full},
-                "stats": {"scoring": {"points": points}},
+                "stats": {"scoring": scoring},
             }
     return {"teams": teams}
 
@@ -1133,13 +1210,16 @@ def cmd_auto_resolve(_args):
                 skipped.append((p["id"], f"NBA prop: {reason}"))
                 continue
             outcome = prop_outcome(value, spec["side"], spec["threshold"])
+            # Combo stat_key is a tuple of component keys (PRA) — render readably.
+            sk = spec["stat_key"]
+            stat_label = "+".join(sk) if isinstance(sk, (tuple, list)) else sk
             p["result"] = outcome
             p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
             p["final_score"] = game["final_score"]
-            p["prop_result"] = f"{value} {spec['stat_key']}"
+            p["prop_result"] = f"{value} {stat_label}"
             p["prop_margin"] = int(value - spec["threshold"]) if float(value).is_integer() else round(value - spec["threshold"], 1)
             sign = "+" if p["units_won_lost"] >= 0 else ""
-            print(f"✅ {p['id']}: {outcome.upper()} — {value} {spec['stat_key']} vs {spec['side']} {spec['threshold']} → {sign}{p['units_won_lost']}u")
+            print(f"✅ {p['id']}: {outcome.upper()} — {value} {stat_label} vs {spec['side']} {spec['threshold']} → {sign}{p['units_won_lost']}u")
             resolved.append(p["id"])
             continue
 

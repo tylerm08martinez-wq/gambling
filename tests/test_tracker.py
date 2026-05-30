@@ -744,6 +744,118 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         self.assertIsNone(p["result"])
         self.assertTrue(exited)
 
+    # ── #25: NBA rebounds/assists/threes/steals/blocks + PRA combo ────────────────
+    # Fixture (make_nba_boxscore defaults): Booker 30 pts, 4 reb, 6 ast, 1 stl,
+    # 0 blk, 3 threes ("3-7"); Durant 20 pts, 7 reb, 3 ast, 0 stl, 1 blk, 2 threes.
+
+    def _resolve_nba_prop(self, bet, line_num):
+        p = make_pick(sport="NBA", bet=bet, line_num=line_num)
+        self._run([p],
+                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
+                  fetch_nba_boxscore=make_nba_boxscore())
+        return p
+
+    def test_nba_rebounds_prop_resolves_win(self):
+        p = self._resolve_nba_prop("Kevin Durant Over 5.5 rebounds", 5.5)
+        self.assertEqual(p["result"], "win")   # 7 reb vs over 5.5
+        self.assertNotIn("game_margin", p)
+
+    def test_nba_rebounds_prop_resolves_loss(self):
+        p = self._resolve_nba_prop("Devin Booker Over 6.5 rebounds", 6.5)
+        self.assertEqual(p["result"], "loss")  # 4 reb vs over 6.5
+
+    def test_nba_assists_prop_resolves_win(self):
+        p = self._resolve_nba_prop("Devin Booker Over 4.5 assists", 4.5)
+        self.assertEqual(p["result"], "win")   # 6 ast vs over 4.5
+
+    def test_nba_assists_prop_resolves_push(self):
+        p = self._resolve_nba_prop("Kevin Durant Under 3 assists", 3.0)
+        self.assertEqual(p["result"], "push")  # 3 ast == 3.0
+
+    def test_nba_threes_made_prop_resolves_win(self):
+        # Exercises the "3-7" → 3 made parsing in the adapter.
+        p = self._resolve_nba_prop("Devin Booker Over 2.5 threes made", 2.5)
+        self.assertEqual(p["result"], "win")   # 3 threes made vs over 2.5
+        self.assertEqual(p["prop_result"], "3 threes")
+
+    def test_nba_threes_made_prop_resolves_loss(self):
+        # Durant "2-5" → 2 made.
+        p = self._resolve_nba_prop("Kevin Durant Over 2.5 threes", 2.5)
+        self.assertEqual(p["result"], "loss")  # 2 made vs over 2.5
+
+    def test_nba_steals_prop_resolves_win(self):
+        p = self._resolve_nba_prop("Devin Booker Over 0.5 steals", 0.5)
+        self.assertEqual(p["result"], "win")   # 1 stl vs over 0.5
+
+    def test_nba_steals_prop_resolves_loss(self):
+        p = self._resolve_nba_prop("Kevin Durant Over 0.5 steals", 0.5)
+        self.assertEqual(p["result"], "loss")  # 0 stl vs over 0.5
+
+    def test_nba_blocks_prop_resolves_win(self):
+        p = self._resolve_nba_prop("Kevin Durant Over 0.5 blocks", 0.5)
+        self.assertEqual(p["result"], "win")   # 1 blk vs over 0.5
+
+    def test_nba_blocks_prop_resolves_loss(self):
+        p = self._resolve_nba_prop("Devin Booker Over 0.5 blocks", 0.5)
+        self.assertEqual(p["result"], "loss")  # 0 blk vs over 0.5
+
+    def test_nba_pra_combo_resolves_win_by_summing(self):
+        # Booker PRA = 30 + 4 + 6 = 40. Over 39.5 → win. Resolved by SUMMING
+        # components, NOT a separate combo boxscore key.
+        p = self._resolve_nba_prop("Devin Booker Over 39.5 points+rebounds+assists", 39.5)
+        self.assertEqual(p["result"], "win")
+        self.assertEqual(p["prop_result"], "40 points+rebounds+assists")
+        self.assertNotIn("game_margin", p)
+
+    def test_nba_pra_combo_resolves_loss(self):
+        # Booker PRA = 40. Over 40.5 → loss.
+        p = self._resolve_nba_prop("Devin Booker Over 40.5 PRA", 40.5)
+        self.assertEqual(p["result"], "loss")
+
+    def test_nba_pra_combo_alias_pts_reb_ast(self):
+        # Durant PRA = 20 + 7 + 3 = 30. Under 30.5 → win. Confirms "Pts+Reb+Ast" alias.
+        p = self._resolve_nba_prop("Kevin Durant Under 30.5 Pts+Reb+Ast", 30.5)
+        self.assertEqual(p["result"], "win")
+
+    def test_nba_combo_missing_component_left_open(self):
+        # If a component column is absent from the boxscore, the combo is left OPEN,
+        # never partial-guessed. Build a summary with no REB column.
+        labels = ["MIN", "PTS", "AST"]  # rebounds column missing
+        summary = {"boxscore": {"players": [
+            {"team": {"displayName": "Phoenix Suns"},
+             "statistics": [{"name": None, "labels": labels, "athletes": [
+                 {"athlete": {"displayName": "Devin Booker"}, "stats": ["36", "30", "6"]},
+             ]}]},
+            {"team": {"displayName": "LA Lakers"}, "statistics": [{"name": None, "labels": labels, "athletes": []}]},
+        ]}}
+        box = tracker.adapt_espn_nba_boxscore(summary)
+        p = make_pick(sport="NBA", bet="Devin Booker Over 30.5 points+rebounds+assists", line_num=30.5)
+        exited = self._run([p],
+                           find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
+                           fetch_nba_boxscore=box)
+        self.assertIsNone(p["result"])      # left open, never guessed
+        self.assertNotIn("prop_result", p)
+        self.assertTrue(exited)
+
+    def test_nba_single_stat_missing_column_left_open(self):
+        # A single-stat prop whose stat column is absent is left OPEN. Build a
+        # summary with no BLK column and bet on blocks.
+        labels = ["MIN", "PTS", "REB", "AST"]  # no STL/BLK columns
+        summary = {"boxscore": {"players": [
+            {"team": {"displayName": "Phoenix Suns"},
+             "statistics": [{"name": None, "labels": labels, "athletes": [
+                 {"athlete": {"displayName": "Devin Booker"}, "stats": ["36", "30", "4", "6"]},
+             ]}]},
+            {"team": {"displayName": "LA Lakers"}, "statistics": [{"name": None, "labels": labels, "athletes": []}]},
+        ]}}
+        box = tracker.adapt_espn_nba_boxscore(summary)
+        p = make_pick(sport="NBA", bet="Devin Booker Over 0.5 blocks", line_num=0.5)
+        exited = self._run([p],
+                           find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
+                           fetch_nba_boxscore=box)
+        self.assertIsNone(p["result"])      # left open, never guessed
+        self.assertTrue(exited)
+
 
 class TestAdaptEspnNbaBoxscore(unittest.TestCase):
     """Focused unit test for the ESPN → sport-agnostic adapter (issue #24)."""
@@ -776,6 +888,58 @@ class TestAdaptEspnNbaBoxscore(unittest.TestCase):
         box = tracker.adapt_espn_nba_boxscore({})
         self.assertEqual(box["teams"]["home"]["players"], {})
         self.assertEqual(box["teams"]["away"]["players"], {})
+
+    # ── #25: adapter emits the new stats incl. 3PM "made-att" parsing ─────────────
+
+    def test_adapts_all_new_stats(self):
+        box = tracker.adapt_espn_nba_boxscore(make_espn_nba_summary())
+        players = {**box["teams"]["home"]["players"], **box["teams"]["away"]["players"]}
+        by_name = {pd["person"]["fullName"]: pd["stats"]["scoring"] for pd in players.values()}
+        # Booker fixture: PTS 30, 3PT "3-7", REB 4, AST 6, STL 1, BLK 0.
+        booker = by_name["Devin Booker"]
+        self.assertEqual(booker["rebounds"], 4)
+        self.assertEqual(booker["assists"], 6)
+        self.assertEqual(booker["steals"], 1)
+        self.assertEqual(booker["blocks"], 0)
+        self.assertEqual(booker["threes"], 3)  # "3-7" → 3 made (NOT 7, NOT "3-7")
+        # Durant fixture: 3PT "2-5" → 2 made, BLK 1.
+        durant = by_name["Kevin Durant"]
+        self.assertEqual(durant["threes"], 2)
+        self.assertEqual(durant["blocks"], 1)
+
+    def test_threes_made_attempted_parsing_isolated(self):
+        # The 3PT column is "made-attempted"; only the MADE integer is stored.
+        labels = ["MIN", "PTS", "3PT"]
+        summary = {"boxscore": {"players": [
+            {"team": {"displayName": "A"}, "statistics": [{"name": None, "labels": labels,
+             "athletes": [{"athlete": {"displayName": "Sharp Shooter"}, "stats": ["30", "21", "7-12"]}]}]},
+            {"team": {"displayName": "B"}, "statistics": [{"name": None, "labels": labels, "athletes": []}]},
+        ]}}
+        box = tracker.adapt_espn_nba_boxscore(summary)
+        val, reason = tracker.resolve_prop_value(box, "sharp shooter", "scoring", "threes")
+        self.assertIsNone(reason)
+        self.assertEqual(val, 7)  # "7-12" → 7
+
+    def test_combo_summing_logic(self):
+        # resolve_prop_value sums a tuple stat_key (PRA).
+        box = tracker.adapt_espn_nba_boxscore(make_espn_nba_summary())
+        val, reason = tracker.resolve_prop_value(
+            box, "devin booker", "scoring", ("points", "rebounds", "assists"))
+        self.assertIsNone(reason)
+        self.assertEqual(val, 40)  # 30 + 4 + 6
+
+    def test_combo_missing_component_returns_reason(self):
+        # If a component is missing, the combo resolver returns a reason (OPEN),
+        # never a partial sum.
+        box = tracker.adapt_espn_nba_boxscore(make_espn_nba_summary())
+        # Remove rebounds from Booker's stats to simulate a missing component.
+        for side in ("home", "away"):
+            for pd in box["teams"][side]["players"].values():
+                pd["stats"]["scoring"].pop("rebounds", None)
+        val, reason = tracker.resolve_prop_value(
+            box, "devin booker", "scoring", ("points", "rebounds", "assists"))
+        self.assertIsNone(val)
+        self.assertIsNotNone(reason)
 
 
 if __name__ == "__main__":
