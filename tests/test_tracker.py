@@ -220,6 +220,38 @@ def make_boxscore():
     }
 
 
+def make_espn_nba_summary(booker_pts=30, durant_pts=20):
+    """
+    ESPN NBA summary fixture in the live shape the adapter consumes:
+    boxscore.players[] team blocks, each statistics[0] with parallel labels/stats
+    arrays (NOT a keyed object). Includes a DNP player (empty stats) to exercise
+    the skip path. Two teams: Suns (home, idx 0), Lakers (away, idx 1).
+    """
+    labels = ["MIN", "PTS", "FG", "3PT", "FT", "REB", "AST", "STL", "BLK"]
+    def athlete(name, stats):
+        return {"athlete": {"displayName": name}, "didNotPlay": not stats, "stats": stats}
+    return {
+        "boxscore": {
+            "players": [
+                {"team": {"displayName": "Phoenix Suns"},
+                 "statistics": [{"name": None, "labels": labels, "athletes": [
+                     athlete("Devin Booker", ["36", str(booker_pts), "10-20", "3-7", "5-5", "4", "6", "1", "0"]),
+                     athlete("Bench Warmer", []),  # DNP → skipped
+                 ]}]},
+                {"team": {"displayName": "Los Angeles Lakers"},
+                 "statistics": [{"name": None, "labels": labels, "athletes": [
+                     athlete("Kevin Durant", ["38", str(durant_pts), "8-18", "2-5", "2-2", "7", "3", "0", "1"]),
+                 ]}]},
+            ]
+        }
+    }
+
+
+def make_nba_boxscore(booker_pts=30, durant_pts=20):
+    """Sport-agnostic NBA boxscore (post-adapter) for direct routing tests."""
+    return tracker.adapt_espn_nba_boxscore(make_espn_nba_summary(booker_pts, durant_pts))
+
+
 def make_pick(**over):
     base = {"id": "test-1", "sport": "MLB", "bet": "", "line": "-110",
             "units": 1.0, "line_num": None, "model": "v1-trends", "result": None}
@@ -644,6 +676,106 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         self.assertIsNone(p["result"])      # never scored
         self.assertNotIn("prop_result", p)  # not resolved as any prop
         self.assertTrue(exited)
+
+    # ── #24: NBA points Player Prop (ESPN path, end-to-end routing regression) ─────
+    # Fixture: Devin Booker 30 pts, Kevin Durant 20 pts (make_nba_boxscore defaults).
+
+    def test_nba_points_prop_resolves_win(self):
+        p = make_pick(sport="NBA", bet="Devin Booker Over 27.5 points", line_num=27.5)
+        self._run([p],
+                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
+                  fetch_nba_boxscore=make_nba_boxscore())
+        self.assertEqual(p["result"], "win")   # 30 pts vs over 27.5
+        self.assertEqual(tracker.classify_bet(p), "prop")
+        self.assertIn("prop_result", p)
+        self.assertNotIn("game_margin", p)     # regression: never scored as a Game-Line Bet
+
+    def test_nba_points_prop_resolves_loss(self):
+        p = make_pick(sport="NBA", bet="Devin Booker Over 32.5 points", line_num=32.5)
+        self._run([p],
+                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
+                  fetch_nba_boxscore=make_nba_boxscore())
+        self.assertEqual(p["result"], "loss")  # 30 pts vs over 32.5
+
+    def test_nba_points_prop_resolves_push(self):
+        p = make_pick(sport="NBA", bet="Devin Booker Under 30 points", line_num=30.0)
+        self._run([p],
+                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
+                  fetch_nba_boxscore=make_nba_boxscore())
+        self.assertEqual(p["result"], "push")  # 30 == 30.0
+
+    def test_nba_points_under_resolves_win(self):
+        p = make_pick(sport="NBA", bet="Kevin Durant Under 24.5 points", line_num=24.5)
+        self._run([p],
+                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
+                  fetch_nba_boxscore=make_nba_boxscore())
+        self.assertEqual(p["result"], "win")   # 20 pts vs under 24.5
+
+    def test_nba_nplus_points_resolves_as_over(self):
+        # "20+ points" → Over (19.5). Durant scored 20 → win. Confirms N+ form on NBA path.
+        p = make_pick(sport="NBA", bet="Kevin Durant 20+ points", line_num=None)
+        self._run([p],
+                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
+                  fetch_nba_boxscore=make_nba_boxscore())
+        self.assertEqual(p["result"], "win")   # 20 vs over 19.5
+        self.assertNotIn("game_margin", p)
+
+    def test_nba_unmatchable_player_left_open(self):
+        # ADR 0004/0005 guarantee preserved on the NBA path: an unknown player is
+        # left OPEN, never mis-scored.
+        p = make_pick(sport="NBA", bet="Nobody Atall Over 27.5 points", line_num=27.5)
+        exited = self._run([p],
+                           find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
+                           fetch_nba_boxscore=make_nba_boxscore())
+        self.assertIsNone(p["result"])         # skipped, not guessed
+        self.assertNotIn("game_margin", p)     # never scored as a Game-Line Bet
+        self.assertTrue(exited)                # nothing resolved → sys.exit(0)
+
+    def test_nba_game_not_final_left_open(self):
+        p = make_pick(sport="NBA", bet="Devin Booker Over 27.5 points", line_num=27.5)
+        exited = self._run([p], find_nba_game_for_bet=None)  # not found / not final
+        self.assertIsNone(p["result"])
+        self.assertTrue(exited)
+
+    def test_nba_non_prop_left_open(self):
+        # Only NBA Player Props auto-resolve in #24; a moneyline is left open.
+        p = make_pick(sport="NBA", bet="Suns ML")
+        exited = self._run([p])
+        self.assertIsNone(p["result"])
+        self.assertTrue(exited)
+
+
+class TestAdaptEspnNbaBoxscore(unittest.TestCase):
+    """Focused unit test for the ESPN → sport-agnostic adapter (issue #24)."""
+
+    def test_adapts_to_person_fullname_and_scoring_points(self):
+        box = tracker.adapt_espn_nba_boxscore(make_espn_nba_summary(booker_pts=33, durant_pts=21))
+        # Booker is on the home block (idx 0), Durant on away (idx 1).
+        players = {**box["teams"]["home"]["players"], **box["teams"]["away"]["players"]}
+        by_name = {pd["person"]["fullName"]: pd for pd in players.values()}
+        self.assertIn("Devin Booker", by_name)
+        self.assertIn("Kevin Durant", by_name)
+        self.assertEqual(by_name["Devin Booker"]["stats"]["scoring"]["points"], 33)
+        self.assertEqual(by_name["Kevin Durant"]["stats"]["scoring"]["points"], 21)
+
+    def test_dnp_player_skipped(self):
+        box = tracker.adapt_espn_nba_boxscore(make_espn_nba_summary())
+        names = [pd["person"]["fullName"]
+                 for side in ("home", "away")
+                 for pd in box["teams"][side]["players"].values()]
+        self.assertNotIn("Bench Warmer", names)  # DNP (empty stats) excluded
+
+    def test_adapter_output_resolves_via_shared_resolver(self):
+        # The adapted shape must feed the SAME resolve_prop_value used for MLB.
+        box = tracker.adapt_espn_nba_boxscore(make_espn_nba_summary(booker_pts=28))
+        value, reason = tracker.resolve_prop_value(box, "devin booker", "scoring", "points")
+        self.assertIsNone(reason)
+        self.assertEqual(value, 28)
+
+    def test_missing_boxscore_yields_empty_teams(self):
+        box = tracker.adapt_espn_nba_boxscore({})
+        self.assertEqual(box["teams"]["home"]["players"], {})
+        self.assertEqual(box["teams"]["away"]["players"], {})
 
 
 if __name__ == "__main__":

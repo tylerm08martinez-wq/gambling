@@ -509,6 +509,22 @@ PROP_STAT_MAP = {
     "run": ("batting", "runs"),
 }
 
+# NBA stat keyword → (boxscore stat group, statKey). POINTS ONLY for now (issue #24);
+# rebounds/assists/threes/steals/blocks/combo are issue #25 — do NOT add them here.
+# The group/key below are SYNTHETIC: the ESPN adapter (adapt_espn_nba_boxscore)
+# produces the sport-agnostic shape stats["scoring"]["points"], so resolve_prop_value
+# works unchanged. (ESPN's own statistics[].name is null; see adapter comment.)
+NBA_PROP_STAT_MAP = {
+    "points": ("scoring", "points"),
+    "point": ("scoring", "points"),
+    "pts": ("scoring", "points"),
+}
+
+
+def _prop_stat_map_for_sport(sport: str) -> dict:
+    """Return the stat-keyword map for a sport. NBA → points-only map; else MLB map."""
+    return NBA_PROP_STAT_MAP if (sport or "").upper() == "NBA" else PROP_STAT_MAP
+
 
 def _stat_keyword_in(kw: str, text: str) -> bool:
     """
@@ -532,8 +548,10 @@ def classify_bet(pick: dict) -> str:
     # Game total: starts with Over/Under and has no player name before it.
     if re.match(r'^\s*(over|under)\b', low):
         return "total"
-    # Player prop: a mapped stat keyword + a side (Over/Under or N+).
-    if any(_stat_keyword_in(k, low) for k in PROP_STAT_MAP) and re.search(r'\b(over|under)\b|\d+\+', low):
+    # Player prop: a mapped stat keyword + a side (Over/Under or N+). Use the
+    # sport-appropriate stat map so NBA points props classify as prop, not ml.
+    stat_map = _prop_stat_map_for_sport(pick.get("sport", ""))
+    if any(_stat_keyword_in(k, low) for k in stat_map) and re.search(r'\b(over|under)\b|\d+\+', low):
         return "prop"
     return "ml"
 
@@ -563,10 +581,14 @@ def _normalize_name(s: str) -> str:
     return re.sub(r'[^a-z\s]', '', s.lower()).strip()
 
 
-def extract_prop(bet: str, line_num) -> Optional[dict]:
+def extract_prop(bet: str, line_num, sport: str = "MLB") -> Optional[dict]:
     """
     Parse a player prop. Returns {player, stat_group, stat_key, side, threshold}
     or None if any component can't be resolved (caller then skips — never guesses).
+
+    `sport` selects the stat-keyword map (NBA → points-only NBA_PROP_STAT_MAP,
+    else MLB PROP_STAT_MAP). Return shape is unchanged so downstream callers are
+    untouched.
     """
     low = bet.lower()
     # Side + threshold. "N+" means at least N → Over (N-0.5). Else Over/Under + line_num.
@@ -587,10 +609,11 @@ def extract_prop(bet: str, line_num) -> Optional[dict]:
     if threshold is None:
         return None
     # Stat: first mapped keyword present (check multiword keys before single).
+    stat_map = _prop_stat_map_for_sport(sport)
     stat_group = stat_key = None
-    for kw in sorted(PROP_STAT_MAP, key=len, reverse=True):
+    for kw in sorted(stat_map, key=len, reverse=True):
         if _stat_keyword_in(kw, low):
-            stat_group, stat_key = PROP_STAT_MAP[kw]
+            stat_group, stat_key = stat_map[kw]
             break
     if not stat_key:
         return None
@@ -653,6 +676,128 @@ def find_mlb_game_for_bet(date: str, bet: str) -> Optional[dict]:
                 return None
             return _game_result_dict(game, home.lower())
     return None
+
+
+# ── NBA Player Prop resolution (ADR 0005, ESPN hidden API) ──────────────────────
+# Source: ESPN hidden API (site.api.espn.com) — no key, no special headers, reuses
+# the shared _http_get_json client (browser UA + retry/backoff). A persistent block
+# returns None → the caller leaves the pick OPEN (never guesses), identical to MLB.
+
+def _espn_nba_scoreboard(date: str) -> list:
+    """
+    Return the list of ESPN NBA event dicts for `date` (YYYY-MM-DD).
+    ESPN scoreboard expects YYYYMMDD (no dashes) — we convert. Empty list on failure.
+    """
+    espn_date = date.replace("-", "")
+    url = (f"https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard"
+           f"?dates={espn_date}")
+    data = _http_get_json(url)
+    if not data:
+        return []
+    return data.get("events", [])
+
+
+def find_nba_game_for_bet(date: str, bet: str) -> Optional[dict]:
+    """
+    Find the final NBA game on `date` whose home/away team name appears in `bet`.
+    Returns a result dict with `game_id` and `final_score`, or None if none found /
+    not final. Analogous to find_mlb_game_for_bet.
+    """
+    low = bet.lower()
+    for event in _espn_nba_scoreboard(date):
+        comps = event.get("competitions", [])
+        if not comps:
+            continue
+        competitors = comps[0].get("competitors", [])
+        by_side = {}
+        for c in competitors:
+            team = c.get("team", {})
+            by_side[c.get("homeAway")] = {
+                "name": team.get("displayName", ""),
+                "abbr": team.get("abbreviation", ""),
+                "score": c.get("score", "0"),
+            }
+        home, away = by_side.get("home"), by_side.get("away")
+        if not home or not away:
+            continue
+        # Match on the distinctive last word of each team name (e.g. "celtics").
+        home_hit = home["name"] and home["name"].split()[-1].lower() in low
+        away_hit = away["name"] and away["name"].split()[-1].lower() in low
+        if not (home_hit or away_hit):
+            continue
+        status = event.get("status", {}).get("type", {}).get("name", "")
+        if status != "STATUS_FINAL":
+            return None  # game not yet final
+        return {
+            "game_id": event.get("id"),
+            "final_score": f"{away['abbr']} {away['score']}, {home['abbr']} {home['score']}",
+        }
+    return None
+
+
+def adapt_espn_nba_boxscore(summary: dict) -> dict:
+    """
+    Adapt an ESPN NBA summary response into the SAME sport-agnostic per-player shape
+    the MLB resolver consumes — a `teams.<side>.players` map of records, each with
+    `person.fullName` and `stats.<group>.<key>` — so resolve_prop_value / prop_outcome
+    stay source-agnostic and shared across both sports.
+
+    ESPN shape (self-annealed against the live endpoint 2026-05-30):
+      summary["boxscore"]["players"]  → list of TWO team blocks
+        block["statistics"][0]["labels"] → parallel label array, e.g. ["MIN","PTS",...]
+        block["statistics"][0]["athletes"][i]["athlete"]["displayName"]
+        block["statistics"][0]["athletes"][i]["stats"]  → parallel value array
+      NOTE: ESPN's statistics[].name is null (NOT a real group name like "scoring"),
+      so we do NOT key off it. We index the value array by the "PTS" label position
+      and emit it under the SYNTHETIC group/key ("scoring","points") that
+      NBA_PROP_STAT_MAP points at. DNP players have stats == [] and are skipped
+      (empty stats group → resolve_prop_value returns a reason, never guesses).
+
+    POINTS ONLY (issue #24). Other stats (REB/AST/3PT/STL/BLK) are issue #25.
+    """
+    box = summary.get("boxscore", {})
+    team_blocks = box.get("players", [])
+    teams = {"away": {"players": {}}, "home": {"players": {}}}
+    # ESPN lists home team first in boxscore.players; map index→side accordingly.
+    # (Orientation does not affect resolution — resolve_prop_value scans both sides.)
+    for idx, block in enumerate(team_blocks):
+        side = "home" if idx == 0 else "away"
+        stat_sets = block.get("statistics", [])
+        if not stat_sets:
+            continue
+        stat_set = stat_sets[0]
+        labels = stat_set.get("labels", [])
+        try:
+            pts_idx = labels.index("PTS")
+        except ValueError:
+            continue  # no points column → cannot resolve points from this block
+        for i, ath in enumerate(stat_set.get("athletes", [])):
+            full = ath.get("athlete", {}).get("displayName", "")
+            vals = ath.get("stats", [])
+            if not full or not vals or pts_idx >= len(vals):
+                continue  # DNP / missing → leave out; resolver leaves pick open
+            try:
+                points = int(vals[pts_idx])
+            except (ValueError, TypeError):
+                continue
+            teams[side]["players"][f"{side}-{i}"] = {
+                "person": {"fullName": full},
+                "stats": {"scoring": {"points": points}},
+            }
+    return {"teams": teams}
+
+
+def fetch_nba_boxscore(game_id) -> Optional[dict]:
+    """
+    Fetch the ESPN NBA summary for `game_id` and adapt it into the sport-agnostic
+    boxscore shape. None on failure (caller leaves the pick open).
+    """
+    url = (f"https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary"
+           f"?event={game_id}")
+    summary = _http_get_json(url)
+    if summary is None:
+        return None
+    return adapt_espn_nba_boxscore(summary)
 
 
 # ── Commands ──────────────────────────────────────────────────────────────────
@@ -963,8 +1108,43 @@ def cmd_auto_resolve(_args):
         date = p.get("date", datetime.now().strftime("%Y-%m-%d"))
         line_num = p.get("line_num")
 
+        # ── NBA Player Prop (points only, issue #24): route through the ESPN path. ──
+        # Classify-before-resolve, then the same never-fall-through hard guard as MLB
+        # (ADR 0004/0005): if game/player/stat/side can't be confidently resolved,
+        # leave the pick OPEN — never guess, never score as a Game-Line Bet.
+        if sport == "NBA":
+            if classify_bet(p) != "prop":
+                skipped.append((p["id"], "NBA: only Player Props auto-resolve (resolve manually)"))
+                continue
+            spec = extract_prop(bet, line_num, sport="NBA")
+            if spec is None:
+                skipped.append((p["id"], "NBA prop: could not parse player/stat/side/threshold — resolve manually"))
+                continue
+            game = find_nba_game_for_bet(date, bet)
+            if game is None:
+                skipped.append((p["id"], f"NBA prop: game not found or not final on {date}"))
+                continue
+            box = fetch_nba_boxscore(game["game_id"])
+            if box is None:
+                skipped.append((p["id"], "NBA prop: boxscore fetch failed (API blocked?) — left open"))
+                continue
+            value, reason = resolve_prop_value(box, spec["player"], spec["stat_group"], spec["stat_key"])
+            if reason:
+                skipped.append((p["id"], f"NBA prop: {reason}"))
+                continue
+            outcome = prop_outcome(value, spec["side"], spec["threshold"])
+            p["result"] = outcome
+            p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
+            p["final_score"] = game["final_score"]
+            p["prop_result"] = f"{value} {spec['stat_key']}"
+            p["prop_margin"] = int(value - spec["threshold"]) if float(value).is_integer() else round(value - spec["threshold"], 1)
+            sign = "+" if p["units_won_lost"] >= 0 else ""
+            print(f"✅ {p['id']}: {outcome.upper()} — {value} {spec['stat_key']} vs {spec['side']} {spec['threshold']} → {sign}{p['units_won_lost']}u")
+            resolved.append(p["id"])
+            continue
+
         if sport != "MLB":
-            skipped.append((p["id"], f"sport={sport} — only MLB auto-resolves (resolve manually)"))
+            skipped.append((p["id"], f"sport={sport} — only MLB/NBA auto-resolve (resolve manually)"))
             continue
 
         kind = classify_bet(p)
