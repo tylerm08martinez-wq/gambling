@@ -41,6 +41,40 @@ Help Tyler identify +EV (positive expected value) betting opportunities across s
 | `/sports-betting-sharp` | V2-Sharp: props + cross-book gaps first; RLM (70%+) and steam (3+ books) for game lines — high selectivity |
 | `/bet-tracker` | Log picks, record results, and compare ROI between V1 and V2 models |
 
+## Development Workflow (engineering changes)
+
+This is a **money-scoring system** — the worst bug class is silent mis-resolution (a lost bet scored as a win, or CLV computed against the wrong line). A green test suite and a clean diff can both pass while a bet is quietly scored wrong. Workflow exists to catch that.
+
+**Tier the work — don't pay full freight on everything:**
+
+- **Trivial change, you're at the keyboard** (typo, one-line tweak, obvious fix): just commit. No PRD, no issue.
+- **Logic-touching OR delegated to an AFK agent**: run the full chain below. The PRD/issue is the agent's prompt — the verbosity is the price of unattended execution, and it's worth it.
+
+**The full chain:**
+
+```
+/grill-with-docs   → only if the data source or domain model isn't already nailed down in an ADR.
+                     Forces decisions up front instead of surfacing mid-build as a ready-for-human blocker.
+/to-prd            → spec the work, publish to the issue tracker
+/to-issues         → slice into tracer-bullet vertical issues (prove the path end-to-end on one case, then widen)
+[implement]        → /tdd for new logic; one issue → one branch → one PR
+/review            → reviews the diff (reasons about code, not behavior)
+/verify            → REQUIRED for anything touching resolution, determine_outcome, scoring, or CLV.
+                     /review and /code-review inspect the diff; /verify runs the resolver against a real
+                     finished game and watches the actual outcome. Tests cover cases you thought of —
+                     /verify catches the ones you didn't.
+```
+
+**Non-negotiable:** any change touching resolution / scoring / CLV ends with `/verify`, not just `/review`.
+
+**Support tools (not part of the chain):**
+
+- `/zoom-out` — run *before* `/to-prd` when about to work in unfamiliar code, so the PRD is grounded.
+- `/improve-codebase-architecture` — periodic codebase health audit (outputs an HTML report). Its recommendations *feed* `/to-prd`; run it between feature cycles, not during one.
+- `/write-a-skill` → `/skill-optimizer` — for building new skills, not code features.
+
+**Hygiene:** close or delete abandoned branches/draft PRs — the chain creates clean flow but doesn't sweep rot.
+
 ## File Paths — Critical
 
 **Active skill path:** `.agents/skills/bet-tracker/`
