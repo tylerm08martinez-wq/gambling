@@ -405,6 +405,37 @@ class TestPropOutcome(unittest.TestCase):
         self.assertEqual(tracker.prop_outcome(2, "under", 2), "push")
 
 
+# ── #30: pure signed-margin helper (regression: whole stat vs .5 line) ───────────
+
+class TestPropMargin(unittest.TestCase):
+    def test_whole_stat_vs_half_line_beats_by_half(self):
+        # The regression: 28 points vs a 27.5 line must report +0.5, not 0.
+        self.assertEqual(tracker.prop_margin(28, 27.5), 0.5)
+
+    def test_combo_pra_whole_stat_vs_half_line(self):
+        # PRA 40 vs 39.5 — combo props get the same accurate margin.
+        self.assertEqual(tracker.prop_margin(40, 39.5), 0.5)
+
+    def test_negative_margin_preserves_sign(self):
+        # A near-miss: 27 vs 27.5 reads -0.5, not 0.
+        self.assertEqual(tracker.prop_margin(27, 27.5), -0.5)
+
+    def test_exact_landing_on_whole_line_is_zero(self):
+        self.assertEqual(tracker.prop_margin(6, 6.0), 0)
+
+    def test_whole_number_margin_returns_int(self):
+        m = tracker.prop_margin(8, 6.0)
+        self.assertEqual(m, 2)
+        self.assertIsInstance(m, int)
+
+    def test_whole_stat_vs_half_line_fractional_margin(self):
+        # 8 strikeouts vs 5.5 line -> 2.5 (fractional, one decimal)
+        self.assertEqual(tracker.prop_margin(8, 5.5), 2.5)
+
+    def test_fractional_stat_rounds_to_one_decimal(self):
+        self.assertEqual(tracker.prop_margin(7.25, 6.0), 1.2)
+
+
 class TestNormalizeName(unittest.TestCase):
     def test_lowercases(self):
         self.assertEqual(tracker._normalize_name("Mookie Betts"), "mookie betts")
@@ -736,6 +767,27 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         exited = self._run([p], find_nba_game_for_bet=None)  # not found / not final
         self.assertIsNone(p["result"])
         self.assertTrue(exited)
+
+    # ── #30: persisted prop_margin must reflect true ±.5 on .5 lines (not 0) ──────
+
+    def test_mlb_prop_margin_persists_true_half_point(self):
+        # Burnes 8 K vs Over 7.5 — whole stat against a .5 line. The old bug gated
+        # on whether the stat was whole and truncated int(0.5) -> 0.
+        p = make_pick(bet="Corbin Burnes Over 7.5 strikeouts", line_num=7.5)
+        self._run([p],
+                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
+                  fetch_mlb_boxscore=make_boxscore())
+        self.assertEqual(p["result"], "win")        # 8 K vs over 7.5
+        self.assertEqual(p["prop_margin"], 0.5)     # regression: NOT 0
+
+    def test_nba_prop_margin_persists_true_half_point(self):
+        # Booker 28 pts vs Over 27.5 — the live case from PRD #20 that recorded 0.
+        p = make_pick(sport="NBA", bet="Devin Booker Over 27.5 points", line_num=27.5)
+        self._run([p],
+                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
+                  fetch_nba_boxscore=make_nba_boxscore(booker_pts=28))
+        self.assertEqual(p["result"], "win")        # 28 pts vs over 27.5
+        self.assertEqual(p["prop_margin"], 0.5)     # regression: NOT 0
 
     def test_nba_non_prop_left_open(self):
         # Only NBA Player Props auto-resolve in #24; a moneyline is left open.
