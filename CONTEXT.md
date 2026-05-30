@@ -60,6 +60,12 @@ The maximum number of picks a Scheduled Run may log for one date: 5 total, no mo
 ## Rejected Candidate
 A proposed bet that was not logged because its Primary Edge failed its Signal Requirement.
 
+## Game-Line Bet
+A bet whose outcome is determined entirely by the final game score: moneyline, run line / spread, and game total (Over/Under combined runs). Resolvable from the game's final score alone, with no per-player data. Contrast with [[Player Prop]].
+
+## Player Prop
+A bet on an individual player's statistical line (e.g. pitcher strikeouts, batter hits, total bases). Resolvable only from that player's boxscore stat line, never from the final score. The documented Primary Edge for this project. A Player Prop carries a stat type, a side (Over/Under, where an `N+` line means "at least N" = Over N−0.5), and a threshold. Auto-resolution must classify a pick as Game-Line Bet vs Player Prop *before* choosing how to resolve it — resolving a Player Prop as if it were a Game-Line Bet produces a silently wrong result.
+
 ## Public Ticket Data
 The percentage of bets on each side of a market, used to identify the public side for RLM.
 
