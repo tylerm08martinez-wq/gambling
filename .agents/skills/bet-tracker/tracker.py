@@ -491,6 +491,19 @@ PROP_STAT_MAP = {
     "rbi": ("batting", "rbi"),
     "hits": ("batting", "hits"),
     "hit": ("batting", "hits"),
+    # Walks map to the BATTING group: retail "walks" props are almost always batter
+    # walks (e.g. "Mookie Betts Over 0.5 walks"). Pitcher-walk props are rare; if added
+    # they need a distinct keyword mapping to ("pitching", "baseOnBalls").
+    "walks": ("batting", "baseOnBalls"),
+    "walk": ("batting", "baseOnBalls"),
+    "stolen bases": ("batting", "stolenBases"),
+    "stolen base": ("batting", "stolenBases"),
+    "home runs": ("batting", "homeRuns"),
+    "home run": ("batting", "homeRuns"),
+    "doubles": ("batting", "doubles"),
+    "double": ("batting", "doubles"),
+    "runs": ("batting", "runs"),
+    "run": ("batting", "runs"),
 }
 
 
