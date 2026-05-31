@@ -66,6 +66,9 @@ A bet whose outcome is determined entirely by the final game score: moneyline, r
 ## Player Prop
 A bet on an individual player's statistical line (e.g. pitcher strikeouts, batter hits, total bases). Resolvable only from that player's boxscore stat line, never from the final score. The documented Primary Edge for this project. A Player Prop carries a stat type, a side (Over/Under, where an `N+` line means "at least N" = Over N−0.5), and a threshold. Auto-resolution must classify a pick as Game-Line Bet vs Player Prop *before* choosing how to resolve it — resolving a Player Prop as if it were a Game-Line Bet produces a silently wrong result.
 
+## Player Prop Source
+The per-sport adapter that supplies everything auto-resolution needs to settle a [[Player Prop]] from a finished game, behind one small interface: `find_game` (locate the final game for the bet's date/teams, returning an opaque game handle plus the final score), `fetch_boxscore` (turn that handle into the sport-agnostic per-player boxscore shape the resolver consumes — `teams.<side>.players[*].{person.fullName, stats.<group>.<key>}`), and the sport's `stat_map` (stat-keyword → boxscore group/key). MLB and NBA are the two adapters today: MLB's `fetch_boxscore` is effectively identity (the MLB Stats API already returns the shared shape), NBA's runs the ESPN boxscore adaptation (ADR 0005). The game handle is **opaque** — the resolver never inspects it; whatever a source's `find_game` produces is handed straight back to that same source's `fetch_boxscore`, so the `game_pk`-vs-`game_id` difference never reaches shared code. Adding a sport is registering one more Player Prop Source, not adding a branch to the resolver. The resolver is given its source registry as an argument, so a fake Player Prop Source is the test surface for the whole resolution loop.
+
 ## Public Ticket Data
 The percentage of bets on each side of a market, used to identify the public side for RLM.
 
