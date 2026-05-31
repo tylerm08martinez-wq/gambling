@@ -18,7 +18,7 @@ import unicodedata
 import urllib.request
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, NamedTuple
 
 # Force UTF-8 output on Windows
 if hasattr(sys.stdout, "reconfigure"):
@@ -560,8 +560,39 @@ NBA_PROP_STAT_MAP = {
 }
 
 
+# ── Player Prop Source seam (CONTEXT.md: "Player Prop Source") ───────────────────
+# A per-sport adapter that supplies everything needed to settle a Player Prop from a
+# finished game, behind one small interface. The resolver looks the source up by sport
+# and runs ONE shared path regardless of sport — so adding a sport is registering a
+# source, not adding a branch. ADR 0004/0005 (classify-before-resolve, never-guess,
+# ESPN boxscore adaptation) all live BEHIND this seam, unchanged.
+class ResolvedGame(NamedTuple):
+    """A located final game for a bet. `ref` is an OPAQUE handle (MLB gamePk, NBA
+    event id) — the resolver never inspects it; it hands `ref` straight back to the
+    SAME source's fetch_boxscore. This is why the gamePk-vs-game_id difference never
+    reaches shared code."""
+    ref: object
+    final_score: str
+
+
+class PlayerPropSource(NamedTuple):
+    """Per-sport Player Prop adapter.
+      find_game(date, bet) -> ResolvedGame | None   (locate the final game)
+      fetch_boxscore(ref)  -> boxscore | None        (sport-agnostic per-player shape:
+                                  teams.<side>.players[*].{person.fullName, stats.<group>.<key>})
+      stat_map: stat-keyword -> (group, key) for this sport
+    On any failure the callables return None and the resolver leaves the pick OPEN."""
+    find_game: object
+    fetch_boxscore: object
+    stat_map: dict
+
+
 def _prop_stat_map_for_sport(sport: str) -> dict:
-    """Return the stat-keyword map for a sport. NBA → points-only map; else MLB map."""
+    """Return the stat-keyword map for a sport. NBA → points-only map; else MLB map.
+
+    Legacy per-sport dispatch retained as the fallback for sports not yet registered
+    in PROP_SOURCES during the migration (NBA in slice 1). Removed once every sport
+    has a Player Prop Source (issue #38)."""
     return NBA_PROP_STAT_MAP if (sport or "").upper() == "NBA" else PROP_STAT_MAP
 
 
@@ -589,7 +620,11 @@ def classify_bet(pick: dict) -> str:
         return "total"
     # Player prop: a mapped stat keyword + a side (Over/Under or N+). Use the
     # sport-appropriate stat map so NBA points props classify as prop, not ml.
-    stat_map = _prop_stat_map_for_sport(pick.get("sport", ""))
+    # NOTE: classification reads the GLOBAL PROP_SOURCES (via _stat_map_for_sport),
+    # not any `sources` registry injected into cmd_auto_resolve. In production these
+    # are the same object, so there is no divergence; an injected source with a
+    # non-standard stat_map would be honored for resolution but not classification.
+    stat_map = _stat_map_for_sport(pick.get("sport", ""))
     if any(_stat_keyword_in(k, low) for k in stat_map) and re.search(r'\b(over|under)\b|\d+\+', low):
         return "prop"
     return "ml"
@@ -620,14 +655,15 @@ def _normalize_name(s: str) -> str:
     return re.sub(r'[^a-z\s]', '', s.lower()).strip()
 
 
-def extract_prop(bet: str, line_num, sport: str = "MLB") -> Optional[dict]:
+def extract_prop(bet: str, line_num, stat_map: dict = PROP_STAT_MAP) -> Optional[dict]:
     """
     Parse a player prop. Returns {player, stat_group, stat_key, side, threshold}
     or None if any component can't be resolved (caller then skips — never guesses).
 
-    `sport` selects the stat-keyword map (NBA → points-only NBA_PROP_STAT_MAP,
-    else MLB PROP_STAT_MAP). Return shape is unchanged so downstream callers are
-    untouched.
+    `stat_map` is the sport's stat-keyword → (group, key) map, supplied by the pick's
+    Player Prop Source (the resolver passes src.stat_map). Defaults to the MLB map for
+    direct/unit-test callers; the resolution path always passes an explicit map.
+    Return shape is unchanged so downstream callers are untouched.
     """
     low = bet.lower()
     # Side + threshold. "N+" means at least N → Over (N-0.5). Else Over/Under + line_num.
@@ -648,7 +684,6 @@ def extract_prop(bet: str, line_num, sport: str = "MLB") -> Optional[dict]:
     if threshold is None:
         return None
     # Stat: first mapped keyword present (check multiword keys before single).
-    stat_map = _prop_stat_map_for_sport(sport)
     stat_group = stat_key = None
     for kw in sorted(stat_map, key=len, reverse=True):
         if _stat_keyword_in(kw, low):
@@ -745,6 +780,41 @@ def find_mlb_game_for_bet(date: str, bet: str) -> Optional[dict]:
                 return None
             return _game_result_dict(game, home.lower())
     return None
+
+
+def _mlb_find_game(date: str, bet: str) -> Optional[ResolvedGame]:
+    """MLB Player Prop Source `find_game`: locate the final MLB game for a bet and
+    project it to the opaque-handle ResolvedGame the resolver consumes (ref = gamePk).
+    The rich game-line finder (find_mlb_game_for_bet) is reused unchanged for the
+    MLB game-line paths; here we keep only what a prop needs."""
+    g = find_mlb_game_for_bet(date, bet)
+    if g is None:
+        return None
+    return ResolvedGame(ref=g["game_pk"], final_score=g["final_score"])
+
+
+# Registry of Player Prop Sources, keyed by uppercase sport. MLB only in slice 1;
+# NBA is added in #37. MLB's fetch_boxscore is effectively identity — the MLB Stats
+# API already returns the sport-agnostic teams.<side>.players[*].{person,stats} shape.
+PROP_SOURCES = {
+    "MLB": PlayerPropSource(
+        find_game=_mlb_find_game,
+        fetch_boxscore=fetch_mlb_boxscore,
+        stat_map=PROP_STAT_MAP,
+    ),
+}
+
+
+def _stat_map_for_sport(sport: str, sources: Optional[dict] = None) -> dict:
+    """Stat-keyword map for a sport: prefer a registered Player Prop Source, else fall
+    back to the legacy per-sport map for sports not yet migrated (NBA in slice 1).
+    The fallback (and the unknown-sport-defaults-to-MLB behavior it carries) is removed
+    once every sport has a source (#38)."""
+    reg = PROP_SOURCES if sources is None else sources
+    src = reg.get((sport or "").upper())
+    if src is not None:
+        return src.stat_map
+    return _prop_stat_map_for_sport(sport)
 
 
 # ── NBA Player Prop resolution (ADR 0005, ESPN hidden API) ──────────────────────
@@ -1189,8 +1259,13 @@ def cmd_log(args):
     print(json.dumps(pick, indent=2))
 
 
-def cmd_auto_resolve(_args):
-    """Automatically resolve open picks using official APIs. MLB ML and RL only."""
+def cmd_auto_resolve(_args, sources=None):
+    """Automatically resolve open picks using official APIs.
+
+    `sources` is the Player Prop Source registry (sport → PlayerPropSource); it
+    defaults to PROP_SOURCES and is injectable so tests can pass fake sources (the
+    seam IS the test surface — no monkeypatching of module functions, no live HTTP)."""
+    sources = PROP_SOURCES if sources is None else sources
     picks = load_picks()
     open_picks = [p for p in picks if p.get("result") is None]
 
@@ -1215,7 +1290,7 @@ def cmd_auto_resolve(_args):
             if classify_bet(p) != "prop":
                 skipped.append((p["id"], "NBA: only Player Props auto-resolve (resolve manually)"))
                 continue
-            spec = extract_prop(bet, line_num, sport="NBA")
+            spec = extract_prop(bet, line_num, NBA_PROP_STAT_MAP)
             if spec is None:
                 skipped.append((p["id"], "NBA prop: could not parse player/stat/side/threshold — resolve manually"))
                 continue
@@ -1251,17 +1326,24 @@ def cmd_auto_resolve(_args):
 
         kind = classify_bet(p)
 
-        # ── Player Prop: resolve from the boxscore. Hard guard — never fall through. ──
+        # ── Player Prop: resolve via the sport's Player Prop Source. Hard guard — ──
+        # never fall through to a game-line path (ADR 0004). The source supplies the
+        # game finder, boxscore fetcher, and stat map; the opaque `ref` is handed
+        # straight back to the same source's fetch_boxscore.
         if kind == "prop":
-            spec = extract_prop(bet, line_num)
+            src = sources.get(sport)
+            if src is None:
+                skipped.append((p["id"], f"prop: no Player Prop Source for sport={sport} — resolve manually"))
+                continue
+            spec = extract_prop(bet, line_num, src.stat_map)
             if spec is None:
                 skipped.append((p["id"], "prop: could not parse player/stat/side/threshold — resolve manually"))
                 continue
-            game = find_mlb_game_for_bet(date, bet)
+            game = src.find_game(date, bet)
             if game is None:
                 skipped.append((p["id"], f"prop: game not found or not final on {date}"))
                 continue
-            box = fetch_mlb_boxscore(game["game_pk"])
+            box = src.fetch_boxscore(game.ref)
             if box is None:
                 skipped.append((p["id"], "prop: boxscore fetch failed (API blocked?) — left open"))
                 continue
@@ -1272,7 +1354,7 @@ def cmd_auto_resolve(_args):
             outcome = prop_outcome(value, spec["side"], spec["threshold"])
             p["result"] = outcome
             p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
-            p["final_score"] = game["final_score"]
+            p["final_score"] = game.final_score
             p["prop_result"] = f"{value} {spec['stat_key']}"
             p["prop_margin"] = prop_margin(value, spec["threshold"])
             sign = "+" if p["units_won_lost"] >= 0 else ""

@@ -533,9 +533,30 @@ class TestFindMlbGameForBet(unittest.TestCase):
 
 # ── #19: cmd_auto_resolve routing + never-mis-score-as-ML regression ─────────────
 
+def fake_prop_source(game=None, box=None, stat_map=None):
+    """Build a fake PlayerPropSource with canned find_game/fetch_boxscore for routing
+    tests. `game` is a ResolvedGame (or None for not-found/not-final); `box` is a
+    sport-agnostic boxscore (or None for a fetch failure). Defaults to the MLB stat map."""
+    return tracker.PlayerPropSource(
+        find_game=lambda date, bet: game,
+        fetch_boxscore=lambda ref: box,
+        stat_map=stat_map if stat_map is not None else tracker.PROP_STAT_MAP,
+    )
+
+
+# The standard "final game found" handle used across MLB prop routing tests.
+def _mlb_game():
+    return tracker.ResolvedGame(ref=1, final_score="PIT 2, ARI 5")
+
+
 class TestCmdAutoResolveRouting(unittest.TestCase):
-    def _run(self, picks, **patches):
-        """Run cmd_auto_resolve with load/save patched; returns whether SystemExit was raised."""
+    def _run(self, picks, sources=None, **patches):
+        """Run cmd_auto_resolve with load/save patched; returns whether SystemExit was raised.
+
+        Player Props are resolved through an injected `sources` registry of (fake)
+        PlayerPropSources — the seam IS the test surface, so no module-name patching
+        and no live HTTP. `**patches` still patches module names by value for the
+        game-line (fetch_mlb_result) and still-inline NBA (find/fetch) paths."""
         ctxs = [patch.object(tracker, "load_picks", return_value=picks),
                 patch.object(tracker, "save_picks")]
         for name, val in patches.items():
@@ -544,7 +565,8 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         started = [c.start() for c in ctxs]
         try:
             try:
-                tracker.cmd_auto_resolve(None)
+                # sources=None is normalized to PROP_SOURCES inside cmd_auto_resolve.
+                tracker.cmd_auto_resolve(None, sources=sources)
             except SystemExit:
                 exited = True
         finally:
@@ -560,9 +582,7 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
 
     def test_prop_routes_to_prop_path(self):
         p = make_pick(bet="Corbin Burnes Over 6.5 strikeouts", line_num=6.5)
-        self._run([p],
-                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
-                  fetch_mlb_boxscore=make_boxscore())
+        self._run([p], sources={"MLB": fake_prop_source(game=_mlb_game(), box=make_boxscore())})
         self.assertEqual(p["result"], "win")  # 8 K vs over 6.5
         self.assertIn("prop_result", p)
         self.assertNotIn("game_margin", p)  # regression: NOT scored as moneyline
@@ -573,9 +593,7 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         # matching). It must still classify as a prop and never be scored on the
         # game margin.
         p = make_pick(bet="Corbin Burnes (Diamondbacks) Over 6.5 strikeouts", line_num=6.5)
-        self._run([p],
-                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
-                  fetch_mlb_boxscore=make_boxscore())
+        self._run([p], sources={"MLB": fake_prop_source(game=_mlb_game(), box=make_boxscore())})
         self.assertEqual(tracker.classify_bet(p), "prop")
         self.assertEqual(p["result"], "win")  # 8 K vs over 6.5
         self.assertIn("prop_result", p)
@@ -584,9 +602,7 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
     def test_prop_with_sportsbook_suffix_resolves(self):
         # #21: a copy-pasted line with a trailing "@ FanDuel" suffix resolves.
         p = make_pick(bet="Corbin Burnes Over 6.5 strikeouts @ FanDuel", line_num=6.5)
-        self._run([p],
-                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
-                  fetch_mlb_boxscore=make_boxscore())
+        self._run([p], sources={"MLB": fake_prop_source(game=_mlb_game(), box=make_boxscore())})
         self.assertEqual(p["result"], "win")
         self.assertNotIn("game_margin", p)
 
@@ -596,9 +612,7 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         # mis-scored as a game-line bet.
         p = make_pick(bet="Unknown Player (Diamondbacks) Over 6.5 strikeouts @ DraftKings",
                       line_num=6.5)
-        exited = self._run([p],
-                           find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
-                           fetch_mlb_boxscore=make_boxscore())
+        exited = self._run([p], sources={"MLB": fake_prop_source(game=_mlb_game(), box=make_boxscore())})
         self.assertEqual(tracker.classify_bet(p), "prop")
         self.assertIsNone(p["result"])      # skipped, not guessed
         self.assertNotIn("game_margin", p)  # never scored as moneyline
@@ -627,8 +641,19 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
 
     def test_unresolvable_prop_left_open(self):
         p = make_pick(bet="Corbin Burnes Over 6.5 strikeouts", line_num=6.5)
-        exited = self._run([p], find_mlb_game_for_bet=None)  # game not final / not found
+        # Source finds no final game → find_game returns None → pick left open.
+        exited = self._run([p], sources={"MLB": fake_prop_source(game=None)})
         self.assertIsNone(p["result"])
+        self.assertTrue(exited)
+
+    def test_prop_boxscore_fetch_failure_left_open(self):
+        # Game located but boxscore fetch returns None (e.g. API 403 from the cloud IP)
+        # → pick left OPEN, never guessed, never scored as a Game-Line Bet.
+        p = make_pick(bet="Corbin Burnes Over 6.5 strikeouts", line_num=6.5)
+        exited = self._run([p],
+                           sources={"MLB": fake_prop_source(game=_mlb_game(), box=None)})
+        self.assertIsNone(p["result"])
+        self.assertNotIn("game_margin", p)
         self.assertTrue(exited)
 
     # ── #22: expanded MLB stat-keyword map (end-to-end routing regression) ────────
@@ -636,9 +661,7 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
 
     def _resolve_betts_prop(self, bet, line_num):
         p = make_pick(bet=bet, line_num=line_num)
-        self._run([p],
-                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
-                  fetch_mlb_boxscore=make_boxscore())
+        self._run([p], sources={"MLB": fake_prop_source(game=_mlb_game(), box=make_boxscore())})
         return p
 
     def test_walks_prop_resolves_win(self):
@@ -669,17 +692,13 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
     def test_walks_push(self):
         # N+ form: "2+ walks" → Over (1.5). 1 walk vs over 1.5 → loss; use 1.0 to push.
         p = make_pick(bet="Mookie Betts Under 1 walks", line_num=1.0)
-        self._run([p],
-                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
-                  fetch_mlb_boxscore=make_boxscore())
+        self._run([p], sources={"MLB": fake_prop_source(game=_mlb_game(), box=make_boxscore())})
         self.assertEqual(p["result"], "push")  # 1 walk == 1.0
 
     def test_nplus_form_still_resolves_as_over(self):
         # "2+ runs" → Over (1.5). Betts scored 2 → win. Confirms N+ form intact.
         p = make_pick(bet="Mookie Betts 2+ runs", line_num=None)
-        self._run([p],
-                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
-                  fetch_mlb_boxscore=make_boxscore())
+        self._run([p], sources={"MLB": fake_prop_source(game=_mlb_game(), box=make_boxscore())})
         self.assertEqual(p["result"], "win")
         self.assertNotIn("game_margin", p)
 
@@ -774,9 +793,7 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         # Burnes 8 K vs Over 7.5 — whole stat against a .5 line. The old bug gated
         # on whether the stat was whole and truncated int(0.5) -> 0.
         p = make_pick(bet="Corbin Burnes Over 7.5 strikeouts", line_num=7.5)
-        self._run([p],
-                  find_mlb_game_for_bet={"game_pk": 1, "final_score": "PIT 2, ARI 5"},
-                  fetch_mlb_boxscore=make_boxscore())
+        self._run([p], sources={"MLB": fake_prop_source(game=_mlb_game(), box=make_boxscore())})
         self.assertEqual(p["result"], "win")        # 8 K vs over 7.5
         self.assertEqual(p["prop_margin"], 0.5)     # regression: NOT 0
 
