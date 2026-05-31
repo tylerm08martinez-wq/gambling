@@ -1042,5 +1042,65 @@
     "line_num": -148.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260531-mlb-v2-under-total",
+    "date": "2026-05-31",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Under 9 Phillies at Dodgers (Painter vs Yamamoto)",
+    "line": "-120 @ Caesars",
+    "units": 1,
+    "score": 6.7,
+    "primary_edge": "Public Over pressure failed to move total off 9; VSiN ratings favor Under by 0.8 runs",
+    "primary_edge_type": "underdog_fade",
+    "source_evidence": [
+      {
+        "status": "usable",
+        "source": "SportsBettingDime Phillies vs Dodgers May 31 preview",
+        "freshness": "May 31, 2026 current slate; odds timestamp 5:51 AM ET",
+        "category": "public_ticket_data",
+        "url": "https://www.sportsbettingdime.com/news/mlb/predictions-props-betting-splits-phillies-dodgers-may-31/",
+        "market": "PHI-LAD total",
+        "line": "Under 9 (-120)",
+        "book": "Caesars",
+        "observed_at": "2026-05-31 05:51 ET",
+        "details": "Over drew 92.8% of tickets and 89.8% of money, while the total remained 9 with Under juiced -120 rather than moving toward the public Over."
+      },
+      {
+        "status": "usable",
+        "source": "VSiN Steve Makinen MLB ratings",
+        "freshness": "May 31, 2026 current slate; systems as of 11:00 AM ET",
+        "category": "quant_projection",
+        "url": "https://vsin.com/mlb/steve-makinens-mlb-picks-from-betting-splits-and-systems-for-sunday-may-31/",
+        "market": "PHI-LAD total",
+        "line": "Under 9",
+        "observed_at": "2026-05-31 11:00 ET",
+        "details": "Makinen daily ratings listed PHI-LAD Under 9 as a biggest total projection favoring under by 0.8 runs."
+      },
+      {
+        "status": "usable",
+        "source": "MLB Stats API schedule",
+        "freshness": "May 31, 2026 checked pre-game",
+        "category": "official_schedule",
+        "url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-05-31",
+        "market": "Philadelphia Phillies at Los Angeles Dodgers",
+        "line": "game time 1:10 PM AZ",
+        "observed_at": "2026-05-31",
+        "details": "Official MLB schedule showed Phillies at Dodgers pre-game with 1:10 PM Arizona start; probable pitchers Andrew Painter vs Yoshinobu Yamamoto."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 9.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
