@@ -587,15 +587,6 @@ class PlayerPropSource(NamedTuple):
     stat_map: dict
 
 
-def _prop_stat_map_for_sport(sport: str) -> dict:
-    """Return the stat-keyword map for a sport. NBA → points-only map; else MLB map.
-
-    Legacy per-sport dispatch retained as the fallback for sports not yet registered
-    in PROP_SOURCES during the migration (NBA in slice 1). Removed once every sport
-    has a Player Prop Source (issue #38)."""
-    return NBA_PROP_STAT_MAP if (sport or "").upper() == "NBA" else PROP_STAT_MAP
-
-
 def _stat_keyword_in(kw: str, text: str) -> bool:
     """
     Whole-word match for a stat keyword. Plain substring matching collides with
@@ -970,15 +961,20 @@ PROP_SOURCES = {
 
 
 def _stat_map_for_sport(sport: str, sources: Optional[dict] = None) -> dict:
-    """Stat-keyword map for a sport: prefer a registered Player Prop Source, else fall
-    back to the legacy per-sport map for sports not yet migrated (NBA in slice 1).
-    The fallback (and the unknown-sport-defaults-to-MLB behavior it carries) is removed
-    once every sport has a source (#38)."""
+    """Stat-keyword map for a sport.
+
+    Empty/blank sport defaults to MLB to preserve legacy MLB-style picks that omitted
+    sport. The unknown-sport-defaults-to-MLB fallback has been removed: an
+    unregistered sport now yields no stat keywords, so classify_bet cannot classify
+    its bet as a prop. It routes to the game-line path, where non-MLB/NBA is skipped
+    and left open — never mis-resolved against the MLB stat map.
+    """
     reg = PROP_SOURCES if sources is None else sources
-    src = reg.get((sport or "").upper())
-    if src is not None:
-        return src.stat_map
-    return _prop_stat_map_for_sport(sport)
+    key = (sport or "").upper()
+    if key == "":
+        key = "MLB"
+    src = reg.get(key)
+    return src.stat_map if src is not None else {}
 
 
 # ── Commands ──────────────────────────────────────────────────────────────────
