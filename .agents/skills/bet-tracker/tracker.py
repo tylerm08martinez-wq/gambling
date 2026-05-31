@@ -16,6 +16,7 @@ import math
 import time
 import unicodedata
 import urllib.request
+import urllib.parse
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, NamedTuple
@@ -428,7 +429,8 @@ def _http_get_json(url: str, retries: int = 3) -> Optional[dict]:
             last_err = e
             if attempt < retries - 1:
                 time.sleep(1.5 * (attempt + 1))  # 1.5s, 3.0s backoff
-    print(f"⚠️  MLB API error after {retries} attempts: {last_err}", file=sys.stderr)
+    host = urllib.parse.urlparse(url).netloc or "API"
+    print(f"⚠️  HTTP error from {host} after {retries} attempts: {last_err}", file=sys.stderr)
     return None
 
 
