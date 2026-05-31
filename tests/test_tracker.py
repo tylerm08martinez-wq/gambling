@@ -565,10 +565,8 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         started = [c.start() for c in ctxs]
         try:
             try:
-                if sources is not None:
-                    tracker.cmd_auto_resolve(None, sources=sources)
-                else:
-                    tracker.cmd_auto_resolve(None)
+                # sources=None is normalized to PROP_SOURCES inside cmd_auto_resolve.
+                tracker.cmd_auto_resolve(None, sources=sources)
             except SystemExit:
                 exited = True
         finally:

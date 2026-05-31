@@ -620,6 +620,10 @@ def classify_bet(pick: dict) -> str:
         return "total"
     # Player prop: a mapped stat keyword + a side (Over/Under or N+). Use the
     # sport-appropriate stat map so NBA points props classify as prop, not ml.
+    # NOTE: classification reads the GLOBAL PROP_SOURCES (via _stat_map_for_sport),
+    # not any `sources` registry injected into cmd_auto_resolve. In production these
+    # are the same object, so there is no divergence; an injected source with a
+    # non-standard stat_map would be honored for resolution but not classification.
     stat_map = _stat_map_for_sport(pick.get("sport", ""))
     if any(_stat_keyword_in(k, low) for k in stat_map) and re.search(r'\b(over|under)\b|\d+\+', low):
         return "prop"
