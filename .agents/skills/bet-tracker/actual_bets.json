@@ -73,6 +73,7 @@
   },
   "20260531-mlb-v2-under-total": {
     "verified": true,
-    "stake": 15
+    "stake": 15,
+    "actual_odds": -118
   }
 }
