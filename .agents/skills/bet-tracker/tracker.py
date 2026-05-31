@@ -793,28 +793,11 @@ def _mlb_find_game(date: str, bet: str) -> Optional[ResolvedGame]:
     return ResolvedGame(ref=g["game_pk"], final_score=g["final_score"])
 
 
-# Registry of Player Prop Sources, keyed by uppercase sport. MLB only in slice 1;
-# NBA is added in #37. MLB's fetch_boxscore is effectively identity — the MLB Stats
-# API already returns the sport-agnostic teams.<side>.players[*].{person,stats} shape.
-PROP_SOURCES = {
-    "MLB": PlayerPropSource(
-        find_game=_mlb_find_game,
-        fetch_boxscore=fetch_mlb_boxscore,
-        stat_map=PROP_STAT_MAP,
-    ),
-}
-
-
-def _stat_map_for_sport(sport: str, sources: Optional[dict] = None) -> dict:
-    """Stat-keyword map for a sport: prefer a registered Player Prop Source, else fall
-    back to the legacy per-sport map for sports not yet migrated (NBA in slice 1).
-    The fallback (and the unknown-sport-defaults-to-MLB behavior it carries) is removed
-    once every sport has a source (#38)."""
-    reg = PROP_SOURCES if sources is None else sources
-    src = reg.get((sport or "").upper())
-    if src is not None:
-        return src.stat_map
-    return _prop_stat_map_for_sport(sport)
+def _nba_find_game(date: str, bet: str) -> Optional[ResolvedGame]:
+    g = find_nba_game_for_bet(date, bet)
+    if g is None:
+        return None
+    return ResolvedGame(ref=g["game_id"], final_score=g["final_score"])
 
 
 # ── NBA Player Prop resolution (ADR 0005, ESPN hidden API) ──────────────────────
@@ -967,6 +950,35 @@ def fetch_nba_boxscore(game_id) -> Optional[dict]:
     if summary is None:
         return None
     return adapt_espn_nba_boxscore(summary)
+
+
+# Registry of Player Prop Sources, keyed by uppercase sport. MLB's fetch_boxscore is
+# effectively identity — the MLB Stats API already returns the sport-agnostic
+# teams.<side>.players[*].{person,stats} shape. NBA's source adapts ESPN's summary.
+PROP_SOURCES = {
+    "MLB": PlayerPropSource(
+        find_game=_mlb_find_game,
+        fetch_boxscore=fetch_mlb_boxscore,
+        stat_map=PROP_STAT_MAP,
+    ),
+    "NBA": PlayerPropSource(
+        find_game=_nba_find_game,
+        fetch_boxscore=fetch_nba_boxscore,
+        stat_map=NBA_PROP_STAT_MAP,
+    ),
+}
+
+
+def _stat_map_for_sport(sport: str, sources: Optional[dict] = None) -> dict:
+    """Stat-keyword map for a sport: prefer a registered Player Prop Source, else fall
+    back to the legacy per-sport map for sports not yet migrated (NBA in slice 1).
+    The fallback (and the unknown-sport-defaults-to-MLB behavior it carries) is removed
+    once every sport has a source (#38)."""
+    reg = PROP_SOURCES if sources is None else sources
+    src = reg.get((sport or "").upper())
+    if src is not None:
+        return src.stat_map
+    return _prop_stat_map_for_sport(sport)
 
 
 # ── Commands ──────────────────────────────────────────────────────────────────
@@ -1282,48 +1294,6 @@ def cmd_auto_resolve(_args, sources=None):
         date = p.get("date", datetime.now().strftime("%Y-%m-%d"))
         line_num = p.get("line_num")
 
-        # ── NBA Player Prop (points only, issue #24): route through the ESPN path. ──
-        # Classify-before-resolve, then the same never-fall-through hard guard as MLB
-        # (ADR 0004/0005): if game/player/stat/side can't be confidently resolved,
-        # leave the pick OPEN — never guess, never score as a Game-Line Bet.
-        if sport == "NBA":
-            if classify_bet(p) != "prop":
-                skipped.append((p["id"], "NBA: only Player Props auto-resolve (resolve manually)"))
-                continue
-            spec = extract_prop(bet, line_num, NBA_PROP_STAT_MAP)
-            if spec is None:
-                skipped.append((p["id"], "NBA prop: could not parse player/stat/side/threshold — resolve manually"))
-                continue
-            game = find_nba_game_for_bet(date, bet)
-            if game is None:
-                skipped.append((p["id"], f"NBA prop: game not found or not final on {date}"))
-                continue
-            box = fetch_nba_boxscore(game["game_id"])
-            if box is None:
-                skipped.append((p["id"], "NBA prop: boxscore fetch failed (API blocked?) — left open"))
-                continue
-            value, reason = resolve_prop_value(box, spec["player"], spec["stat_group"], spec["stat_key"])
-            if reason:
-                skipped.append((p["id"], f"NBA prop: {reason}"))
-                continue
-            outcome = prop_outcome(value, spec["side"], spec["threshold"])
-            # Combo stat_key is a tuple of component keys (PRA) — render readably.
-            sk = spec["stat_key"]
-            stat_label = "+".join(sk) if isinstance(sk, (tuple, list)) else sk
-            p["result"] = outcome
-            p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
-            p["final_score"] = game["final_score"]
-            p["prop_result"] = f"{value} {stat_label}"
-            p["prop_margin"] = prop_margin(value, spec["threshold"])
-            sign = "+" if p["units_won_lost"] >= 0 else ""
-            print(f"✅ {p['id']}: {outcome.upper()} — {value} {stat_label} vs {spec['side']} {spec['threshold']} → {sign}{p['units_won_lost']}u")
-            resolved.append(p["id"])
-            continue
-
-        if sport != "MLB":
-            skipped.append((p["id"], f"sport={sport} — only MLB/NBA auto-resolve (resolve manually)"))
-            continue
-
         kind = classify_bet(p)
 
         # ── Player Prop: resolve via the sport's Player Prop Source. Hard guard — ──
@@ -1352,14 +1322,20 @@ def cmd_auto_resolve(_args, sources=None):
                 skipped.append((p["id"], f"prop: {reason}"))
                 continue
             outcome = prop_outcome(value, spec["side"], spec["threshold"])
+            sk = spec["stat_key"]
+            stat_label = "+".join(sk) if isinstance(sk, (tuple, list)) else sk
             p["result"] = outcome
             p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
             p["final_score"] = game.final_score
-            p["prop_result"] = f"{value} {spec['stat_key']}"
+            p["prop_result"] = f"{value} {stat_label}"
             p["prop_margin"] = prop_margin(value, spec["threshold"])
             sign = "+" if p["units_won_lost"] >= 0 else ""
-            print(f"✅ {p['id']}: {outcome.upper()} — {value} {spec['stat_key']} vs {spec['side']} {spec['threshold']} → {sign}{p['units_won_lost']}u")
+            print(f"✅ {p['id']}: {outcome.upper()} — {value} {stat_label} vs {spec['side']} {spec['threshold']} → {sign}{p['units_won_lost']}u")
             resolved.append(p["id"])
+            continue
+
+        if sport != "MLB":
+            skipped.append((p["id"], f"sport={sport} — only MLB/NBA auto-resolve (resolve manually)"))
             continue
 
         # ── Game total: orientation is symmetric, match game by either team name. ──

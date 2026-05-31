@@ -556,7 +556,7 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         Player Props are resolved through an injected `sources` registry of (fake)
         PlayerPropSources — the seam IS the test surface, so no module-name patching
         and no live HTTP. `**patches` still patches module names by value for the
-        game-line (fetch_mlb_result) and still-inline NBA (find/fetch) paths."""
+        game-line paths."""
         ctxs = [patch.object(tracker, "load_picks", return_value=picks),
                 patch.object(tracker, "save_picks")]
         for name, val in patches.items():
@@ -730,11 +730,18 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
     # ── #24: NBA points Player Prop (ESPN path, end-to-end routing regression) ─────
     # Fixture: Devin Booker 30 pts, Kevin Durant 20 pts (make_nba_boxscore defaults).
 
+    _DEFAULT_NBA_GAME = object()
+
+    def _nba_source(self, game=_DEFAULT_NBA_GAME, box=None):
+        if game is self._DEFAULT_NBA_GAME:
+            game = tracker.ResolvedGame(ref="401", final_score="LAL 110, PHX 118")
+        if box is None:
+            box = make_nba_boxscore()
+        return {"NBA": fake_prop_source(game=game, box=box, stat_map=tracker.NBA_PROP_STAT_MAP)}
+
     def test_nba_points_prop_resolves_win(self):
         p = make_pick(sport="NBA", bet="Devin Booker Over 27.5 points", line_num=27.5)
-        self._run([p],
-                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
-                  fetch_nba_boxscore=make_nba_boxscore())
+        self._run([p], sources=self._nba_source())
         self.assertEqual(p["result"], "win")   # 30 pts vs over 27.5
         self.assertEqual(tracker.classify_bet(p), "prop")
         self.assertIn("prop_result", p)
@@ -742,31 +749,23 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
 
     def test_nba_points_prop_resolves_loss(self):
         p = make_pick(sport="NBA", bet="Devin Booker Over 32.5 points", line_num=32.5)
-        self._run([p],
-                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
-                  fetch_nba_boxscore=make_nba_boxscore())
+        self._run([p], sources=self._nba_source())
         self.assertEqual(p["result"], "loss")  # 30 pts vs over 32.5
 
     def test_nba_points_prop_resolves_push(self):
         p = make_pick(sport="NBA", bet="Devin Booker Under 30 points", line_num=30.0)
-        self._run([p],
-                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
-                  fetch_nba_boxscore=make_nba_boxscore())
+        self._run([p], sources=self._nba_source())
         self.assertEqual(p["result"], "push")  # 30 == 30.0
 
     def test_nba_points_under_resolves_win(self):
         p = make_pick(sport="NBA", bet="Kevin Durant Under 24.5 points", line_num=24.5)
-        self._run([p],
-                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
-                  fetch_nba_boxscore=make_nba_boxscore())
+        self._run([p], sources=self._nba_source())
         self.assertEqual(p["result"], "win")   # 20 pts vs under 24.5
 
     def test_nba_nplus_points_resolves_as_over(self):
         # "20+ points" → Over (19.5). Durant scored 20 → win. Confirms N+ form on NBA path.
         p = make_pick(sport="NBA", bet="Kevin Durant 20+ points", line_num=None)
-        self._run([p],
-                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
-                  fetch_nba_boxscore=make_nba_boxscore())
+        self._run([p], sources=self._nba_source())
         self.assertEqual(p["result"], "win")   # 20 vs over 19.5
         self.assertNotIn("game_margin", p)
 
@@ -774,16 +773,14 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         # ADR 0004/0005 guarantee preserved on the NBA path: an unknown player is
         # left OPEN, never mis-scored.
         p = make_pick(sport="NBA", bet="Nobody Atall Over 27.5 points", line_num=27.5)
-        exited = self._run([p],
-                           find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
-                           fetch_nba_boxscore=make_nba_boxscore())
+        exited = self._run([p], sources=self._nba_source())
         self.assertIsNone(p["result"])         # skipped, not guessed
         self.assertNotIn("game_margin", p)     # never scored as a Game-Line Bet
         self.assertTrue(exited)                # nothing resolved → sys.exit(0)
 
     def test_nba_game_not_final_left_open(self):
         p = make_pick(sport="NBA", bet="Devin Booker Over 27.5 points", line_num=27.5)
-        exited = self._run([p], find_nba_game_for_bet=None)  # not found / not final
+        exited = self._run([p], sources=self._nba_source(game=None))  # not found / not final
         self.assertIsNone(p["result"])
         self.assertTrue(exited)
 
@@ -800,9 +797,7 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
     def test_nba_prop_margin_persists_true_half_point(self):
         # Booker 28 pts vs Over 27.5 — the live case from PRD #20 that recorded 0.
         p = make_pick(sport="NBA", bet="Devin Booker Over 27.5 points", line_num=27.5)
-        self._run([p],
-                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
-                  fetch_nba_boxscore=make_nba_boxscore(booker_pts=28))
+        self._run([p], sources=self._nba_source(box=make_nba_boxscore(booker_pts=28)))
         self.assertEqual(p["result"], "win")        # 28 pts vs over 27.5
         self.assertEqual(p["prop_margin"], 0.5)     # regression: NOT 0
 
@@ -819,9 +814,7 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
 
     def _resolve_nba_prop(self, bet, line_num):
         p = make_pick(sport="NBA", bet=bet, line_num=line_num)
-        self._run([p],
-                  find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
-                  fetch_nba_boxscore=make_nba_boxscore())
+        self._run([p], sources=self._nba_source())
         return p
 
     def test_nba_rebounds_prop_resolves_win(self):
@@ -899,9 +892,7 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         ]}}
         box = tracker.adapt_espn_nba_boxscore(summary)
         p = make_pick(sport="NBA", bet="Devin Booker Over 30.5 points+rebounds+assists", line_num=30.5)
-        exited = self._run([p],
-                           find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
-                           fetch_nba_boxscore=box)
+        exited = self._run([p], sources=self._nba_source(box=box))
         self.assertIsNone(p["result"])      # left open, never guessed
         self.assertNotIn("prop_result", p)
         self.assertTrue(exited)
@@ -919,9 +910,7 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         ]}}
         box = tracker.adapt_espn_nba_boxscore(summary)
         p = make_pick(sport="NBA", bet="Devin Booker Over 0.5 blocks", line_num=0.5)
-        exited = self._run([p],
-                           find_nba_game_for_bet={"game_id": "401", "final_score": "LAL 110, PHX 118"},
-                           fetch_nba_boxscore=box)
+        exited = self._run([p], sources=self._nba_source(box=box))
         self.assertIsNone(p["result"])      # left open, never guessed
         self.assertTrue(exited)
 
