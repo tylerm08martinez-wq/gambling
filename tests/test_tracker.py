@@ -284,6 +284,12 @@ class TestClassifyBet(unittest.TestCase):
     def test_infer_prop_nplus_form(self):
         self.assertEqual(tracker.classify_bet({"bet": "Mookie Betts 2+ hits"}), "prop")
 
+    def test_unregistered_sport_prop_shape_falls_back_to_ml(self):
+        self.assertEqual(
+            tracker.classify_bet({"sport": "NHL", "bet": "Connor McDavid Over 0.5 hits"}),
+            "ml",
+        )
+
     def test_fallback_moneyline(self):
         self.assertEqual(tracker.classify_bet({"bet": "Diamondbacks ML"}), "ml")
 
@@ -578,6 +584,14 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         p = make_pick(sport="NFL", bet="Chiefs -3.5 Spread")
         exited = self._run([p])
         self.assertIsNone(p["result"])
+        self.assertTrue(exited)  # nothing resolved → sys.exit(0)
+
+    def test_unregistered_sport_prop_shape_left_open(self):
+        p = make_pick(sport="NHL", bet="Connor McDavid Over 0.5 hits", line_num=0.5)
+        exited = self._run([p])
+        self.assertIsNone(p["result"])
+        self.assertNotIn("prop_result", p)
+        self.assertNotIn("game_margin", p)
         self.assertTrue(exited)  # nothing resolved → sys.exit(0)
 
     def test_prop_routes_to_prop_path(self):
