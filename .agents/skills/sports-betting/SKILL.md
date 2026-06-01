@@ -2,7 +2,7 @@
 name: sports-betting
 description: "V1-TRENDS: Find today's best sports bets using ATS trends, expert consensus, situational angles, and line movement. Use when looking for today's best bets (trends-based model). Compare performance against sports-betting-sharp."
 argument-hint: [sport or "all"]
-allowed-tools: WebSearch, WebFetch, Read, Write
+allowed-tools: WebSearch, WebFetch, Read, Write, Bash
 ---
 
 # V1-Trends — Today's Best Bets
@@ -17,6 +17,18 @@ Identify value bets from props, ATS trends, situational spots, line movement, an
 - If today's date falls outside a sport's season, skip it entirely.
 
 **Daily cap: 5 picks maximum across V1 and V2 combined, with no more than 3 V1 picks and no more than 3 V2 picks. No minimum picks.** Check Step 0 for today's count before researching. If already at 5 total or 3 V1 picks, output "Daily cap reached — sitting out."
+
+## Data source — BettingPros API (datacenter-IP-tolerant)
+
+All prop/odds/event research goes through the **BettingPros client** and **prop-edge extractor** (ADR 0006), not HTML scraping — scrapers 403 from the cloud routine's datacenter egress IP. The two modules live in `.agents/skills/bet-tracker/`:
+
+```bash
+GAMBLING="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+BP="$GAMBLING/.agents/skills/bet-tracker/bettingpros.py"
+PE="$GAMBLING/.agents/skills/bet-tracker/prop_edge.py"
+```
+
+**Fail-loud, never self-heal:** if a BettingPros call returns empty/`[]`, the data is unavailable — **do not edit or commit any SKILL file, do not swap in a scraper, do not fabricate a line.** Log zero picks and post `"BettingPros API unavailable — V1 sitting out"` to #bet-picks. (`/props` needs no key; `/events`/`/offers` use the public key the client resolves automatically.)
 
 ## Process
 
@@ -48,82 +60,60 @@ Use this to **calibrate confidence** during scoring:
 Print a one-line context summary before researching, e.g.:
 `📊 Context: MLB 5-2 (71%), ATS trend 4-3 (57%), props 3-1 (75%) — no threshold changes | 1 pick logged today`
 
-### 1a. Prop Research — run FIRST (2 WebSearch calls, free)
+### 1a. Prop Research — run FIRST (primary edge)
 
-Issue both searches in one turn:
-```
-WebSearch: "[sport] player prop line gaps DraftKings FanDuel BetMGM [date]"
-WebSearch: "[sport] best player props today sharp value [date]"
+Fetch today's props and extract the signalled candidates in one pipe (the extractor keeps only props with a Cross-Book Prop Gap or standalone prop_trend, biggest gap first):
+
+```bash
+python3 "$BP" props MLB | python3 "$PE"
 ```
 
-**Target prop types by sport:**
+Each candidate carries `primary_edge_type` (`cross_book_gap` or `prop_trend`), `side`, `bet_line`, `bet_book` (the stale book to bet), `gap`, `ev`, `trend_confirmed`, and `player`. For NBA, swap `MLB`→`NBA`.
+
+**Target prop types by sport** (use to prioritise among candidates):
 - **MLB:** pitcher strikeouts (K's), batter hits, total bases, first 5 innings total
-- **NBA:** points, assists, rebounds on non-star players (books use simpler models on these)
-- **NFL:** passing yards, rushing yards, receiving yards, receptions
+- **NBA:** points, assists, rebounds on non-star players
 
-**Flag as a prop candidate if:**
-- Line gap ≥ 0.5 units across DK / FD / BetMGM, OR
-- Prop line moved 0.5+ since open with no news explanation
-
-If 2+ prop candidates found → skip Step 1b game line research entirely (early exit, save tokens).
+If 2+ qualifying prop candidates found → skip Step 1b game line research entirely (early exit).
 
 ### 1b. Game Line Research — only if props didn't yield 2+ candidates
 
-Token budget: ≤2 WebFetch calls (props already used 0 fetches).
+Pull today's games and a cross-book odds snapshot:
 
-Issue searches in one turn:
-```
-WebSearch: "[sport] best bets picks today [date]"
-WebSearch: "[sport] odds line movement [date]"
-WebSearch: "[sport] injury report starter out [date]"
+```bash
+python3 "$BP" events MLB "$(date +%F)"            # games + UTC scheduled + probable pitchers
+python3 "$BP" offers <event_id> <market_id>       # cross-book lines + opening_line per selection
 ```
 
-**Primary fetch (if needed):**
-- `https://www.covers.com/picks/best-bets-today`
+For each candidate game collect: matchup, sport, the BettingPros UTC `scheduled` time, best line + book, and the opening-vs-current movement across books. A reputable model/expert edge may be gathered via `WebSearch` as *supporting* evidence only — it is never a standalone scheduled-run Primary Edge (see Step 3).
 
-**Conditional fetch (only if primary lacks data):**
-- `https://www.oddsshark.com/picks/best-bets`
-
-Stop fetching once you have 3–5 candidate games with lines + at least one signal each.
-
-**Fetch failure:** Skip failed URLs and use next source. If all fail, output: *"No qualifying picks today — data sources unavailable."* Do not fabricate picks.
-
-**Stale URLs (do not fetch):**
-- ~~actionnetwork.com/todays-picks~~ — 404
-
-For each candidate game collect: matchup, sport, time, ML/spread/total + juice, opening vs current line, public % if available.
+**Data unavailable:** if both props and events come back empty, output the fail-loud message above and sit out. Never fabricate picks.
 
 ### 2. Line Shopping — best-effort, not a gate
 
-Compare lines across DK / FD / BetMGM when the data is reachable:
-> "DK: [line] · FD: [line] · MGM: [line] → Best: [book] at [line]"
-
-If only one or two books are surfaced (common — most articles cite a single book), use what you have and **note "single-book verified — line shopping incomplete" as a risk on the pick.** Do NOT sit out solely because cross-book verification failed. A 0.5-point difference is a ~5% edge boost when reachable; missing it is a known cost, not a disqualifier.
-
-Always recommend the best line you actually saw, with the book name. If lines are identical across all three, note it.
+The `/offers` snapshot already lists every book's current line. Recommend the best line you actually saw, with the book name (decoded via the client's `BOOKS` map). If only one book is surfaced, note "single-book verified — line shopping incomplete" as a risk; do NOT sit out solely for that.
 
 ### 3. Identify Value Signals
 
 **Priority order (highest edge first):**
-1. **Prop gap** — ≥ 0.5 unit difference across books, or line moved 0.5+ with no news
-2. **Market-confirmed model/expert convergence** — reputable model publishes quantified edge ≥6% (Dimers, BettingPros, RotoWire, DK Network, FanDuel Research), OR 2+ independent sources land on the same pick, AND the pick has current market confirmation such as CLV, cross-book price gap, stale line, RLM, steam, or line value. Expert/model consensus alone is supporting evidence, not a scheduled-run Primary Edge.
-3. **Season-trend prop edge** — pitcher avg ≥0.8 K below the K line (or ≥0.8 above for Over), batter on 5+ game hit streak with matchup edge, role-player avg ≥1.0 unit from line in the favorable direction. Cleanest retail-reachable prop signal.
-4. **Total (over/under)** — structural inefficiency (injury to key offensive/defensive player, weather, pace mismatch)
-5. **Reverse line movement** — public on A, line moves toward B (confirm 70%+ public, actual move required)
-6. **ATS trend** — 5+ of last 7 ATS, situational angle (rest, travel, revenge, division)
-7. **Unpriced injury** — major injury, line hasn't adjusted (or teammate usage boost)
-8. **Moneyline** — only with confirmed RLM or steam; avoid heavy juice (worse than −130)
+1. **Prop gap** (`cross_book_gap`) — ≥ 0.5 unit best-line-vs-consensus gap from the extractor; bet the stale book's line
+2. **Season-trend prop edge** (`prop_trend`) — the extractor's standalone prop_trend (strong projection/rating), or pitcher avg ≥0.8 K from the K line in the favorable direction
+3. **Total (over/under)** (`matchup_edge`) — structural inefficiency (injury, weather, pace mismatch)
+4. **Reverse line movement** (`hard_rlm`) — **Manual-Run-only** (Public Ticket Data is unavailable to a Scheduled Run, CONTEXT.md). Do not log on a scheduled run.
+5. **ATS trend** (`ats_trend`) — situational angle. **Supporting evidence only on a Scheduled Run** — never a standalone scheduled Primary Edge.
+6. **Unpriced injury** (`matchup_edge`) — major injury, line hasn't adjusted
+7. **Moneyline** (`plus_money_start`) — only with a market-confirmed edge; avoid juice worse than −130
 
-Avoid: chasing public consensus, parlays, juice worse than −130 without Confidence ≥ 8.
+**Scheduled-run gate (Market-Confirmed Primary Edge — ADR 0003):** on `--run-type scheduled`, every logged pick's Primary Edge must be market-confirmed (cross-book gap, prop_trend with current price, steam, or line value). An `ats_trend` or expert/model-consensus-only candidate with no current market confirmation is recorded as a **Rejected Candidate**, never logged as a pick.
 
 ### 4. Score
 
 **Confidence base: 4.** Add bonuses:
-- Prop gap confirmed across books: +4
-- Model/expert convergence (≥6% quant edge OR 2+ source agreement): +3
-- Sharp money / RLM confirmed (70%+, line moved): +3
-- Season-trend prop edge (≥0.8 unit from line in favorable direction): +2
-- Strong ATS trend (5+ of last 7): +2
+- Prop gap confirmed (extractor `cross_book_gap`): +4
+- Prop trend confirmed (extractor `prop_trend` / season trend ≥0.8 unit): +2
+- Model/expert convergence (≥6% quant edge OR 2+ source agreement) **with market confirmation**: +3
+- Total structural inefficiency: +2
+- Strong ATS trend (5+ of last 7) — supporting only: +1
 - Key injury advantage / unpriced usage boost: +2
 - Favorable situational spot: +1
 - Plus-money price (+100 or better) on a side a model likes: +1
@@ -134,12 +124,12 @@ Cap at 10.
 
 **Value (1–10):** based on edge — >8% EV: 10 · 5–8%: 8 · 3–5%: 6 · 1–3%: 4 · <1%: 2
 
-**Overall = Confidence × 0.6 + Value × 0.4.** Recommend only if **≥ 6.0**.
+**Overall = Confidence × 0.6 + Value × 0.4. Recommend only if ≥ 6.0.**
 
 **Unit sizing:** Score ≥ 8.0 → 2u · Score 6.0–7.9 → 1u · Below 6.0 → no pick.
 **Hard cap: 2u maximum per pick. No exceptions.**
 
-### 4. Output
+### 4b. Output
 
 Rank picks by score descending (highest confidence first) so top picks are easy to identify.
 
@@ -152,27 +142,26 @@ Daily cap: [X/5 used across V1+V2] · V1 cap: [Y/3 used]
 Per pick:
 - **Type**: Prop / Total / Spread / ML
 - **Edge**: [primary reason]
-- **Lines**: DK [X] · FD [X] · MGM [X] → Best: [book]
+- **Lines**: [book: line · …] → Best: [book]
 - **Support**: [2-3 specific data points]
 - **Risk**: [main counterargument]
 - **Units**: 1u or 2u
 
-If no picks: *"No qualifying picks today (threshold 6.5). Sitting out is the play."*
+If no picks: *"No qualifying picks today (threshold 6.0). Sitting out is the play."*
 
 ### 5. Auto-Log
 
-Never append directly to `$PICKS`. All qualifying picks must be logged through the tracker CLI so duplicate checks, validation, rejected-candidate logging, and future write-boundary guardrails apply.
+Never append directly to `$PICKS`. All qualifying picks must be logged through the tracker CLI so duplicate checks, validation, rejected-candidate logging, and write-boundary guardrails apply.
 
 Before reading, pull latest: `git -C "$GAMBLING" pull`
 After logging, push only tracker-managed changes: `git -C "$GAMBLING" add .agents/skills/bet-tracker/picks.json .agents/skills/bet-tracker/rejected-candidates.json && git -C "$GAMBLING" commit -m "chore: log picks" && git -C "$GAMBLING" push origin main`
 
-**game_time rules — read carefully:**
-- Source the start time from the game's own ESPN or MLB.com box score URL, not from a picks/odds page (odds sites sometimes list wrong or approximate times).
-- Always verify the time is for the *correct specific game* being bet — cross-check the two teams and date.
-- Convert to **AZ time (MST, UTC-7 year-round — Arizona does not observe DST)**:
-  - EDT (summer, Mar–Nov): AZ = ET − 3 hours (e.g. 7:05 PM ET → 4:05 PM AZ)
-  - EST (winter, Nov–Mar): AZ = ET − 2 hours (e.g. 7:05 PM ET → 5:05 PM AZ)
-- If uncertain after checking two sources, omit `--game-time` rather than guess.
+**game_time — from the BettingPros UTC `scheduled` field:**
+- Use the event's `scheduled` value from `bettingpros.py events` (already UTC) for the *correct specific game* (cross-check the two teams and date).
+- Convert UTC → **AZ (MST, UTC-7 year-round — Arizona does not observe DST)**: `AZ = UTC − 7h`. No month/DST table — the source timestamp is unambiguous UTC.
+- If the event can't be matched with confidence, omit `--game-time` rather than guess.
+
+**Signal → canonical `primary_edge_type`:** prop gap → `cross_book_gap` · prop trend/season trend → `prop_trend` · total inefficiency / unpriced injury → `matchup_edge` · ATS trend (manual only) → `ats_trend` · RLM (manual only) → `hard_rlm` · plus-money ML → `plus_money_start` · multi-source quant w/ market confirm → `quant_convergence`.
 
 ```bash
 python3 ".agents/skills/bet-tracker/tracker.py" log \
@@ -190,7 +179,7 @@ python3 ".agents/skills/bet-tracker/tracker.py" log \
   --run-type manual
 ```
 
-Use `--run-type scheduled` for unattended/scheduled runs. Scheduled runs must include `--primary-edge-type` and `--source-evidence-json`; candidates missing either should be skipped or recorded as rejected, not hand-written into `picks.json`.
+Use `--run-type scheduled` for unattended/scheduled runs. Scheduled runs must include `--primary-edge-type` and `--source-evidence-json` and a **Market-Confirmed Primary Edge**; candidates missing either, or whose only edge is `ats_trend`/consensus, are recorded as rejected, not hand-written into `picks.json`.
 
 Tell user: "Logged X picks. V1 total: Y/3. Daily total: Z/5."
 
@@ -204,12 +193,19 @@ _[X] picks · [Y]u at risk · [Z/5] daily cap used_
 
 [sport emoji] *[BET TYPE] · [SPORT]*
 *[Bet]*  ·  💰 [Line] @ [Best Book]
-📦 [X]u · Score [X.X] (🟢 8+, 🟡 6.5-7.9)
+📦 [X]u · Score [X.X] (🟢 8+, 🟡 6.0-7.9)
 • [edge]
-• Lines: DK [X] · FD [X] · MGM [X]
+• Lines: [book: line · …]
 ⚠️ _[risk]_
 
 (repeat per pick, ranked by score)
 
 [1 punchy sentence]
+```
+
+If no picks (or data unavailable):
+```
+🎯 *V1-Trends | [Weekday Mon DD]*
+No qualifying picks today (threshold 6.0). Sitting out is the play.
+[1 sentence — or "BettingPros API unavailable — V1 sitting out" if the feed was empty]
 ```
