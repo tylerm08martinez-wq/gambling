@@ -417,12 +417,20 @@ def extract_bet_team(bet: str) -> str:
 _MLB_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 
 
-def _http_get_json(url: str, retries: int = 3) -> Optional[dict]:
-    """GET JSON with a browser User-Agent and exponential backoff. None on failure."""
+def _http_get_json(url: str, retries: int = 3, headers: Optional[dict] = None) -> Optional[dict]:
+    """GET JSON with a browser User-Agent and exponential backoff. None on failure.
+
+    `headers` are merged on top of the browser User-Agent — used to pass a public
+    `x-api-key` to datacenter-tolerant APIs like BettingPros (ADR 0006). Existing
+    callers pass nothing and are unaffected.
+    """
+    req_headers = {"User-Agent": _MLB_UA}
+    if headers:
+        req_headers.update(headers)
     last_err = None
     for attempt in range(retries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": _MLB_UA})
+            req = urllib.request.Request(url, headers=req_headers)
             with urllib.request.urlopen(req, timeout=10) as r:
                 return json.loads(r.read())
         except Exception as e:

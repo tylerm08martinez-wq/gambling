@@ -116,6 +116,29 @@ class TestDetermineOutcome(unittest.TestCase):
         self.assertEqual(tracker.determine_outcome("ml", 0, None), "push")
 
 
+class TestHttpGetJsonHeaders(unittest.TestCase):
+    def _ok(self, mock_urlopen, body=b'{"ok": true}'):
+        cm = MagicMock()
+        cm.__enter__ = MagicMock(return_value=cm)
+        cm.__exit__ = MagicMock(return_value=False)
+        cm.read.return_value = body
+        mock_urlopen.return_value = cm
+
+    @patch("urllib.request.urlopen")
+    def test_merges_custom_headers(self, mock_urlopen):
+        self._ok(mock_urlopen)
+        tracker._http_get_json("https://api.example.com/x", headers={"x-api-key": "KEY"})
+        req = mock_urlopen.call_args[0][0]
+        self.assertEqual(req.get_header("X-api-key"), "KEY")
+        # The browser User-Agent is still sent alongside the custom header.
+        self.assertIsNotNone(req.get_header("User-agent"))
+
+    @patch("urllib.request.urlopen")
+    def test_works_with_no_headers_backward_compatible(self, mock_urlopen):
+        self._ok(mock_urlopen)
+        self.assertEqual(tracker._http_get_json("https://api.example.com/x"), {"ok": True})
+
+
 class TestFetchMlbResult(unittest.TestCase):
     def _make_game(self, home_score, away_score, status="Final", home_name="Arizona Diamondbacks", away_name="Los Angeles Dodgers"):
         return {
