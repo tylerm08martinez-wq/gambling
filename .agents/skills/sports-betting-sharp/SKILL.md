@@ -50,14 +50,14 @@ Props are the **primary target** — biggest accessible edge. Totals second. Spr
 
 ### 0. Performance Context — read before researching
 
-Detect machine, then pull and read picks.json:
+Locate the repo root, then pull and read picks.json:
 ```bash
-if [ "$(uname)" = "Darwin" ]; then
-  GAMBLING="/Users/tylermartinez/Projects/gambling"
-else
-  GAMBLING="C:/Users/metro/Claude/gambling"
-fi
+# Derive the repo root portably — works on macOS, Windows git-bash, and the
+# remote routine's Linux clone. Do NOT hard-code machine paths here.
+GAMBLING="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 PICKS="$GAMBLING/.agents/skills/bet-tracker/picks.json"
+# Fail loud if cwd isn't the gambling repo — never operate on the wrong picks.json.
+[ -f "$PICKS" ] || { echo "❌ not in the gambling repo (cwd=$PWD, GAMBLING=$GAMBLING)"; exit 1; }
 git -C "$GAMBLING" pull
 ```
 
@@ -287,7 +287,7 @@ Tell user: "Logged X picks. V2 total: Y/3. Daily total: Z/5."
 
 ## Slack Format
 
-Send to DM `U0ATA0A6NKB`. No markdown tables.
+Post to the `#bet-picks` channel: use `slack_search_channels` to resolve the channel named exactly `bet-picks` to its ID, then `slack_send_message` to it. No markdown tables.
 
 If picks:
 ```
