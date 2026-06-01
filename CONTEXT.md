@@ -106,7 +106,7 @@ Handle/Ticket divergence of 20+ points without confirmed line movement. Weaker t
 The sportsbook that has not yet adjusted its line after the sharp-hit book moved. The target for entering a prop gap bet (typically DraftKings or FanDuel, which accept higher limits and adjust more slowly).
 
 ## Steam Move
-A rapid line shift of ≥1pt spread or ≥15c ML at 3+ books simultaneously with no public catalyst. 1-2 books = house positioning (noise). 4+ books = mega steam (highest-confidence signal).
+A rapid line shift of ≥1pt spread or ≥15c ML at 3+ books simultaneously with no public catalyst. 1-2 books = house positioning (noise). 4+ books = mega steam (highest-confidence signal). **"Simultaneously" is operationalized as "within a single 5-minute Odds API snapshot window"** — V2 detects steam by diffing consecutive historical snapshots and counting books that each moved ≥threshold in the same direction inside one window. Slow drift across multiple windows is not steam. This is V2's [[Scheduled Run]] sharp game-line signal, replacing the Manual-Run-only [[Hard RLM]].
 
 ## Relationships
 
