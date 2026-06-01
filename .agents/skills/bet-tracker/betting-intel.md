@@ -735,3 +735,35 @@ None yet — will populate as data accumulates.
 **Pattern updates**:
 - MLB under templates are heating up: Kauffman suppression plus dual-ace/low-total setups both cashed cleanly. Continue tracking separately from generic totals because the signals are different.
 - V1-Trends moved to 14-7 with +5.504u after these results; MLB remains the strongest sport split at 14-5 and +9.547u.
+
+---
+
+### 2026-06-01 — V1-Trends Session
+
+**Status**: V1 cap already at 3/3 when this agent ran — sitting out. Three picks logged earlier in the day:
+- Chase Burns Over 6.5 Strikeouts vs Royals (Avila)
+- Cade Cavalli Over 5.5 Strikeouts vs Marlins (Alcantara)
+- Under 7.5 Rangers at Cardinals (deGrom vs McGreevy)
+
+No new research performed — daily cap already used for V1.
+
+---
+
+### 2026-06-01 — V2-Sharp Session
+
+**Props scanned**: 15 cross_book_gap + 1 prop_trend via BettingPros extractor · **Picks**: 2
+
+**Signal observations**:
+- Vargas (CWS) Hits Under 0.5: gap 1.0 (largest of day) — discarded. Opening 1.5 → most books moved to 0.5 is almost certainly lineup-based (Vargas platoon/bench player, very limited season sample: 0-1 this season). trend_confirmed=false confirms projection doesn't support the move as sharp. "Public catalyst explains the move" = discard per V2 rules.
+- Yelich (MIL) Hits Over 0.5: gap 0.5, trend_confirmed. Best line 0.5 vs BettingPros consensus 1.0. Hard Rock -105 best price. Score 8.4. Logged 2u.
+- Aranda (TB) Total Bases Over 1.5: gap 0.5, trend_confirmed. Best line 1.5 vs consensus 2.0. Underdog +118 plus money. Score 9.0. Logged 2u.
+
+**Calibration notes**:
+- Neither pick has Pinnacle CLV (Pinnacle not available in BettingPros prop market offers). Both logged with "CLV unverified" per rules. If these cash, track whether the extractor's cross_book_gap (best vs consensus) is a reliable V2 signal even without Pinnacle verification.
+- Aranda at 9.0 is the highest V2 score logged to date. The plus money (+118) on a lower-than-consensus line (1.5 vs 2.0) is the value driver.
+- Game-line steam check: BettingPros API offers endpoint only works for prop market IDs; game-line market IDs (ML, spread, total) return empty. This is a persistent limitation — game-line steam is unverifiable via BettingPros API alone on scheduled runs.
+
+**Patterns reinforced or challenged**:
+- First session where V2 found qualifying prop signals via the BettingPros extractor. Prior V2 sessions either found no signals or relied on RLM (manual-run-only). This establishes the cross_book_gap extractor path as the primary V2 scheduled-run signal source.
+- Vargas discard confirms: a massive line drop (1.0+ units) with trend_confirmed=false is more likely lineup news than sharp action. Apply this heuristic going forward: if gap ≥1.0 AND trend_confirmed=false AND player has minimal season data → discard as lineup-based.
+- Daily cap hit (5/5). No more picks possible today regardless of signals found.
