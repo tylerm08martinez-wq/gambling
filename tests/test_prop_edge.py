@@ -88,5 +88,16 @@ class TestPropTrend(unittest.TestCase):
         self.assertTrue(c["trend_confirmed"])
 
 
+class TestSelectEdges(unittest.TestCase):
+    def test_keeps_only_signalled_candidates_sorted_by_gap(self):
+        props = [
+            _prop(over_line=6.0, under_line=6.0, consensus=6.0, rec_side="over", over_rating=2),  # none
+            _prop(over_line=5.5, under_line=5.5, consensus=6.0),  # gap 0.5
+            _prop(over_line=4.0, under_line=4.0, consensus=6.0),  # gap 2.0
+        ]
+        out = prop_edge.select_edges(props)
+        self.assertEqual([c["gap"] for c in out], [2.0, 0.5])  # signalled only, biggest first
+
+
 if __name__ == "__main__":
     unittest.main()

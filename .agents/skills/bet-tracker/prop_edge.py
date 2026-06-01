@@ -72,3 +72,18 @@ def extract_prop_edge(prop: dict) -> dict:
             trend_confirmed=True,
         )
     return candidate
+
+
+def select_edges(props):
+    """Map a list of normalized props to the candidates that carry a signal,
+    biggest cross-book gap first (then prop_trend). The skill's research entry point."""
+    cands = [extract_prop_edge(p) for p in props]
+    signalled = [c for c in cands if c["primary_edge_type"]]
+    return sorted(signalled, key=lambda c: (c["gap"], c["trend_confirmed"]), reverse=True)
+
+
+if __name__ == "__main__":
+    import json
+    import sys
+    props = json.load(sys.stdin)
+    json.dump(select_edges(props), sys.stdout, indent=1)
