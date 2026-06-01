@@ -28,6 +28,8 @@ Locate the repo root, then pull and read picks.json:
 # remote routine's Linux clone. Do NOT hard-code machine paths here.
 GAMBLING="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 PICKS="$GAMBLING/.agents/skills/bet-tracker/picks.json"
+# Fail loud if cwd isn't the gambling repo — never operate on the wrong picks.json.
+[ -f "$PICKS" ] || { echo "❌ not in the gambling repo (cwd=$PWD, GAMBLING=$GAMBLING)"; exit 1; }
 git -C "$GAMBLING" pull
 ```
 
