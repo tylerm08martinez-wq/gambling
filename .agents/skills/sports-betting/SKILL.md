@@ -22,14 +22,11 @@ Identify value bets from props, ATS trends, situational spots, line movement, an
 
 ### 0. Performance Context — read before researching
 
-Detect machine, then pull and read picks.json:
+Locate the repo root, then pull and read picks.json:
 ```bash
-# Detect OS
-if [ "$(uname)" = "Darwin" ]; then
-  GAMBLING="/Users/tylermartinez/Projects/gambling"
-else
-  GAMBLING="C:/Users/metro/Claude/gambling"
-fi
+# Derive the repo root portably — works on macOS, Windows git-bash, and the
+# remote routine's Linux clone. Do NOT hard-code machine paths here.
+GAMBLING="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 PICKS="$GAMBLING/.agents/skills/bet-tracker/picks.json"
 git -C "$GAMBLING" pull
 ```
@@ -197,11 +194,11 @@ Tell user: "Logged X picks. V1 total: Y/3. Daily total: Z/5."
 
 ## Slack Format
 
-Send to DM `U0ATA0A6NKB`. No markdown tables.
+Post to the `#bet-picks` channel: use `slack_search_channels` to resolve the channel named exactly `bet-picks` to its ID, then `slack_send_message` to it. No markdown tables.
 
 ```
 🎯 *V1-Trends | [Weekday Mon DD]*
-_[X] picks · [Y]u at risk · [Z/4] daily cap used_
+_[X] picks · [Y]u at risk · [Z/5] daily cap used_
 
 [sport emoji] *[BET TYPE] · [SPORT]*
 *[Bet]*  ·  💰 [Line] @ [Best Book]

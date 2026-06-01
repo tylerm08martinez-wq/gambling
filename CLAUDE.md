@@ -145,7 +145,7 @@ The dashboard fetches picks directly from GitHub (always live, auto-refreshes ev
 
 | Routine | Schedule | Purpose | ID |
 |---------|----------|---------|-----|
-| Daily Bet Picks (V1 + V2) | 10am Arizona | V1 + V2 research; log picks, commit/push to GitHub, post summary to Slack #bet-picks | `trig_01Q4jLHo9e2Zp6iqA7ZA5wcS` |
+| Daily Bet Picks (V1 + V2) | 9am Arizona | V1 + V2 research; log picks, commit/push to GitHub, post summary to Slack #bet-picks | `trig_01SkNEk48CK981znKJPaHb47` |
 | Nightly Bet Tracker — Auto-Resolve Picks | 11pm Arizona | Look up final scores, calculate CLV, commit results to GitHub | `trig_01SwKt54TorHpUVWSbsrnP2m` |
 
 All routines run in Anthropic's cloud — PC does not need to be on.
