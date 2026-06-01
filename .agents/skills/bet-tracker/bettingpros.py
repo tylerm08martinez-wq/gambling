@@ -42,16 +42,25 @@ def scrape_api_key(*, get_text):
     return None
 
 
-def resolve_api_key(*, get_text=None):
-    """The public key: env override first (BETTINGPROS_API_KEY), else live scrape.
+# A *public* app key shipped in BettingPros' client JS to every browser (used only
+# for `/events` and `/offers`; `/props` needs none). Not a secret — committed as a
+# last-resort fallback so the cloud routine works with no operational setup. The env
+# override and scrape-first path below let it rotate without a code change.
+_PUBLIC_KEY_FALLBACK = "CHi8Hy5CEE4khd46XNYL23dCFX96oUdw6qOt1Dnh"
 
-    Env override keeps `/events` reliable if the key moves into a lazily-loaded
-    chunk the scraper misses; nothing is committed either way.
+
+def resolve_api_key(*, get_text=None):
+    """The public key, in priority order: env override → live scrape → public fallback.
+
+    `BETTINGPROS_API_KEY` wins if set (rotation without a code change). Otherwise we
+    try scraping the live site JS; if that fails (the key currently lives in a lazily
+    loaded chunk the scraper does not reach), we fall back to the committed public key
+    so `/events`/`/offers` still work cloud-side with zero setup.
     """
     env = os.environ.get("BETTINGPROS_API_KEY")
     if env:
         return env
-    return scrape_api_key(get_text=get_text or _live_get_text)
+    return scrape_api_key(get_text=get_text or _live_get_text) or _PUBLIC_KEY_FALLBACK
 
 
 # --- Live (production) fetchers — not unit-tested; verified by the cloud re-trigger ---

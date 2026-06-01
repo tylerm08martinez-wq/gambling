@@ -93,6 +93,17 @@ class TestResolveApiKey(unittest.TestCase):
                 "ENVKEY",
             )
 
+    def test_falls_back_to_public_key_when_no_env_and_scrape_empty(self):
+        import os
+        from unittest.mock import patch
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("BETTINGPROS_API_KEY", None)
+            # Scrape finds nothing → the committed public fallback is used.
+            self.assertEqual(
+                bettingpros.resolve_api_key(get_text=lambda url: "no key here"),
+                bettingpros._PUBLIC_KEY_FALLBACK,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
