@@ -1102,5 +1102,113 @@
     "line_num": 9.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260601-mlb-v1-chase-total",
+    "date": "2026-06-01",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Chase Burns Over 6.5 Strikeouts vs Royals (Avila)",
+    "line": "-110 @ FanDuel",
+    "units": 1,
+    "score": 7.4,
+    "primary_edge": "Season-trend prop edge + elite K matchup: 10.08 K/9, L3 starts 8/9/7 all over 6.5, vs Royals (6-game skid, 2nd-fewest R/G, 12 K last game)",
+    "primary_edge_type": "prop_trend",
+    "source_evidence": [
+      {
+        "category": "prop_line",
+        "source": "FanDuel Research / SI / BetMGM previews 6-1-2026",
+        "freshness": "2026-06-01",
+        "status": "usable",
+        "detail": "Over 6.5 K -110, consistent across FD/SI/BetMGM"
+      },
+      {
+        "category": "season_stats",
+        "source": "FanDuel Research strikeout props 6-1-2026",
+        "freshness": "2026-06-01",
+        "status": "usable",
+        "detail": "10.08 K/9, 72 K in 64.1 IP, sub-2.00 ERA"
+      },
+      {
+        "category": "recent_form",
+        "source": "SI betting preview Royals-Reds Jun 1",
+        "freshness": "2026-06-01",
+        "status": "usable",
+        "detail": "L3 starts 8/9/7 K, all over 6.5"
+      },
+      {
+        "category": "matchup",
+        "source": "SI / oddsindex Jun 1 2026",
+        "freshness": "2026-06-01",
+        "status": "usable",
+        "detail": "Royals 6-game skid, 2nd-fewest R/G, 12 K last game"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 6.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260601-mlb-v1-cade-rl",
+    "date": "2026-06-01",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Cade Cavalli Over 5.5 Strikeouts vs Marlins (Alcantara)",
+    "line": "-104 @ DraftKings",
+    "units": 1,
+    "score": 7.4,
+    "primary_edge": "Season-trend prop edge: ~10.3 K/9, L3 starts 7/9/8, 8+ K in 4 of last 6 and 7+ in 3 straight; line 5.5 ~0.9 below season K/start at near-pickem price",
+    "primary_edge_type": "prop_trend",
+    "source_evidence": [
+      {
+        "category": "prop_line",
+        "source": "FanDuel Research strikeout props 6-1-2026",
+        "freshness": "2026-06-01",
+        "status": "usable",
+        "detail": "Over 5.5 K -104"
+      },
+      {
+        "category": "season_stats",
+        "source": "FanDuel Research 6-1-2026",
+        "freshness": "2026-06-01",
+        "status": "usable",
+        "detail": "~10.3 K/9 over 59.2 IP"
+      },
+      {
+        "category": "recent_form",
+        "source": "DK Network probables / FanDuel research Jun 1",
+        "freshness": "2026-06-01",
+        "status": "usable",
+        "detail": "L3 starts 7/9/8 K; 8+ K in 4 of last 6; 7+ in 3 straight"
+      },
+      {
+        "category": "matchup",
+        "source": "DK Network probable pitchers Jun 1 2026",
+        "freshness": "2026-06-01",
+        "status": "usable",
+        "detail": "vs Marlins, Alcantara opposing"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:45 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 5.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
