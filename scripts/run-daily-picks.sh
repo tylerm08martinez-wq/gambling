@@ -12,6 +12,36 @@ cd "$PROJECT_DIR"
 
 LOG="$PROJECT_DIR/scripts/.run-daily-picks.log"
 STAMP="$PROJECT_DIR/scripts/.last-run-date"
+
+# --- Failure alerting -------------------------------------------------------
+# A scheduled run that aborts (feed 403, claude crash, push fail) would otherwise
+# be silent — the skills only post to #bet-picks on SUCCESS. This trap fires on any
+# non-zero exit so a failed morning is never silent.
+#
+# Mechanism, in order of robustness:
+#   1. Slack incoming webhook (plain curl, no deps) — put the URL in
+#      ~/.config/bet-picks/slack-webhook (one line, outside the repo, never commit it).
+#   2. Fallback: claude -p Slack MCP post — works for feed/push failures, but NOT if
+#      claude itself is the thing that broke. That's why the webhook is preferred.
+notify_failure() {
+  local msg="$1"
+  local hook_file="$HOME/.config/bet-picks/slack-webhook"
+  if [ -f "$hook_file" ]; then
+    curl -s -X POST -H 'Content-type: application/json' \
+      --data "{\"text\":\"$msg\"}" "$(cat "$hook_file")" >/dev/null 2>&1 && return 0
+  fi
+  claude -p "Post exactly this message to the #bet-picks Slack channel and nothing else: $msg" \
+    --dangerously-skip-permissions >/dev/null 2>&1 || true
+}
+on_exit() {
+  local rc=$?
+  if [ "$rc" -ne 0 ]; then
+    notify_failure "🚨 Daily Bet Picks FAILED on $(hostname) at $(date '+%Y-%m-%d %H:%M %Z') (exit $rc). No picks posted today — check scripts/.run-daily-picks.log."
+  fi
+}
+trap on_exit EXIT
+# ---------------------------------------------------------------------------
+
 echo "=== $(date '+%Y-%m-%d %H:%M %Z') run-daily-picks ===" | tee -a "$LOG"
 
 # Idempotence guard: don't run twice for the same AZ date (the skills also dedup
