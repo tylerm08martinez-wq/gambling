@@ -5,3 +5,7 @@
 .env
 .env.local
 .env.*.local
+
+# Daily-picks runner local artifacts (home PC)
+scripts/.run-daily-picks.log
+scripts/.last-run-date
