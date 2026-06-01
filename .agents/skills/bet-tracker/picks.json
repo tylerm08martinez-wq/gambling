@@ -1281,5 +1281,91 @@
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260601-mlb-v2-christ-total",
+    "date": "2026-06-01",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Christian Yelich Hits Over 0.5 vs Giants (Roupp)",
+    "line": "-105 @ Hard Rock",
+    "units": 2,
+    "score": 8.4,
+    "primary_edge": "Cross-book prop gap 0.5: best line 0.5 vs consensus 1.0; projection confirms over (trend_confirmed=true)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "status": "usable",
+        "source": "BettingPros prop extractor",
+        "category": "current_odds",
+        "freshness": "2026-06-01",
+        "market": "MIL Yelich Hits",
+        "line": "Over 0.5, gap 0.5 vs consensus 1.0, trend_confirmed=true"
+      },
+      {
+        "status": "usable",
+        "source": "BettingPros offers API",
+        "category": "current_odds",
+        "freshness": "2026-06-01",
+        "market": "MIL vs SF Yelich Hits Over 0.5",
+        "line": "Hard Rock -105 best; FanDuel stale at Over 1.5 +220",
+        "details": "Most books moved to 0.5 line: Hard Rock -105, BetMGM -110, Fanatics -115; FanDuel/Novig/BetRivers still at 1.5"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:40 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260601-mlb-v2-jonath-total",
+    "date": "2026-06-01",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Jonathan Aranda Total Bases Over 1.5 vs Tigers (Madden)",
+    "line": "+118 @ Underdog",
+    "units": 2,
+    "score": 9.0,
+    "primary_edge": "Cross-book prop gap 0.5: best line 1.5 vs consensus 2.0; projection confirms over (trend_confirmed=true); plus money +118",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "status": "usable",
+        "source": "BettingPros prop extractor",
+        "category": "current_odds",
+        "freshness": "2026-06-01",
+        "market": "TB Aranda Total Bases",
+        "line": "Over 1.5, gap 0.5 vs consensus 2.0, trend_confirmed=true"
+      },
+      {
+        "status": "usable",
+        "source": "BettingPros offers API",
+        "category": "current_odds",
+        "freshness": "2026-06-01",
+        "market": "TB vs DET Aranda Total Bases Over 1.5",
+        "line": "Underdog +118 best; DK +110, Caesars +112, Fanatics +115; opening 1.5, no line movement",
+        "details": "All books at 1.5; Underdog offers best odds at +118; consensus line 2.0 creating 0.5 unit gap"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:40 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 1.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]

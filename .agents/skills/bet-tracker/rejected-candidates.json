@@ -1,0 +1,31 @@
+[
+  {
+    "id": "20260601-mlb-v2-christ-total",
+    "date": "2026-06-01",
+    "checked_at": "2026-06-01T15:32:13",
+    "run_type": "scheduled",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Christian Yelich Hits Over 0.5 vs Giants (Roupp)",
+    "line": "-105 @ Hard Rock",
+    "units": 2,
+    "score": 8.4,
+    "primary_edge": "Cross-book prop gap: best line 0.5 vs consensus 1.0; projection confirms over",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros prop extractor",
+        "finding": "Yelich Hits Over 0.5, gap 0.5 vs consensus 1.0, trend_confirmed=true, Hard Rock -105 best price"
+      },
+      {
+        "source": "BettingPros offers",
+        "finding": "FanDuel stale at Over 1.5, most books moved to 0.5: Hard Rock -105, BetMGM -110, Fanatics -115"
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
+  }
+]
