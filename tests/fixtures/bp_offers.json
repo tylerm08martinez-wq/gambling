@@ -1,0 +1,233 @@
+{
+ "offers": [
+  {
+   "id": "d455e98129e2209882ab285540558535",
+   "market_id": 285,
+   "event_id": 98221,
+   "player_id": 44668,
+   "team_id": null,
+   "opponent_id": null,
+   "link": "",
+   "active": true,
+   "participants": [
+    {
+     "id": "44668",
+     "name": "Ty Madden",
+     "link": "/mlb/props/ty-madden/",
+     "player": {
+      "short_name": "Ty Madden",
+      "first_name": "Ty",
+      "last_name": "Madden",
+      "image": "https://images.fantasypros.com/images/players/mlb/44668/headshot/210x210.webp",
+      "position": "RP",
+      "team": "DET",
+      "slug": "ty-madden",
+      "jersey_number": 36
+     }
+    }
+   ],
+   "selections": [
+    {
+     "participant": null,
+     "selection": "over",
+     "active": true,
+     "opening_line": {
+      "line": 4.5,
+      "cost": 110,
+      "book_id": 10,
+      "created": "2026-06-01 02:00:36"
+     },
+     "label": "Over",
+     "short_label": "Over",
+     "books": [
+      {
+       "id": 0,
+       "lines": [
+        {
+         "id": null,
+         "from_scout": false,
+         "main": true,
+         "best": false,
+         "updated": "2026-06-01 19:07:01",
+         "cost": -135,
+         "line": 3.5,
+         "is_off": false,
+         "active": true,
+         "link": "https://www.bettingpros.com",
+         "metrics": {
+          "projection": 0,
+          "cover_probability": 0,
+          "expected_value": null,
+          "bet_rating": null,
+          "result": null,
+          "notes": null,
+          "market_ev": null,
+          "fair_probability": null,
+          "pm_win_pct": 56.2
+         }
+        }
+       ]
+      },
+      {
+       "id": 10,
+       "lines": [
+        {
+         "id": "10_53194f95bd9b0e296b1a267038f0bd28",
+         "from_scout": true,
+         "main": true,
+         "best": false,
+         "updated": "2026-06-01 19:06:44",
+         "cost": -146,
+         "line": 3.5,
+         "is_off": false,
+         "active": true,
+         "link": "https://account.sportsbook.fanduel.com/sportsbook/addToBetslip?marketId=42.582801905&selectionId=73102962",
+         "metrics": {
+          "projection": 0,
+          "cover_probability": 0,
+          "expected_value": null,
+          "bet_rating": null,
+          "result": null,
+          "notes": null,
+          "market_ev": -0.09914553099145518,
+          "fair_probability": 0.5346534653465347,
+          "pm_win_pct": 56.2
+         }
+        }
+       ]
+      },
+      {
+       "id": 12,
+       "lines": [
+        {
+         "id": "12_53194f95bd9b0e296b1a267038f0bd28",
+         "from_scout": true,
+         "main": true,
+         "best": false,
+         "updated": "2026-06-01 19:05:11",
+         "cost": -151,
+         "line": 3.5,
+         "is_off": false,
+         "active": true,
+         "link": "https://sportsbook.draftkings.com/event/34226743?outcomes=0QA339240320%232169405342_13L84240Q12119796993Q20",
+         "metrics": {
+          "projection": 0,
+          "cover_probability": 0,
+          "expected_value": null,
+          "bet_rating": null,
+          "result": null,
+          "notes": null,
+          "market_ev": -0.10076465253243035,
+          "fair_probability": 0.540974252858976,
+          "pm_win_pct": 56.2
+         }
+        }
+       ]
+      }
+     ],
+     "id": "53194f95bd9b0e296b1a267038f0bd28"
+    },
+    {
+     "participant": null,
+     "selection": "under",
+     "active": true,
+     "opening_line": {
+      "line": 4.5,
+      "cost": -134,
+      "book_id": 10,
+      "created": "2026-06-01 02:00:36"
+     },
+     "label": "Under",
+     "short_label": "Under",
+     "books": [
+      {
+       "id": 0,
+       "lines": [
+        {
+         "id": null,
+         "from_scout": false,
+         "main": true,
+         "best": false,
+         "updated": "2026-06-01 19:07:01",
+         "cost": 100,
+         "line": 3.5,
+         "is_off": false,
+         "active": true,
+         "link": "https://www.bettingpros.com",
+         "metrics": {
+          "projection": 0,
+          "cover_probability": 0,
+          "expected_value": null,
+          "bet_rating": null,
+          "result": null,
+          "notes": null,
+          "market_ev": null,
+          "fair_probability": null,
+          "pm_win_pct": 46.68
+         }
+        }
+       ]
+      },
+      {
+       "id": 10,
+       "lines": [
+        {
+         "id": "10_f6f1ae821b317f1486c957f2469ad63f",
+         "from_scout": true,
+         "main": true,
+         "best": false,
+         "updated": "2026-06-01 19:06:44",
+         "cost": 110,
+         "line": 3.5,
+         "is_off": false,
+         "active": true,
+         "link": "https://account.sportsbook.fanduel.com/sportsbook/addToBetslip?marketId=42.582801905&selectionId=73102957",
+         "metrics": {
+          "projection": 0,
+          "cover_probability": 0,
+          "expected_value": null,
+          "bet_rating": null,
+          "result": null,
+          "notes": null,
+          "market_ev": -0.022772277227722793,
+          "fair_probability": 0.4653465346534653,
+          "pm_win_pct": 46.68
+         }
+        }
+       ]
+      },
+      {
+       "id": 12,
+       "lines": [
+        {
+         "id": "12_f6f1ae821b317f1486c957f2469ad63f",
+         "from_scout": true,
+         "main": true,
+         "best": false,
+         "updated": "2026-06-01 19:05:11",
+         "cost": 118,
+         "line": 3.5,
+         "is_off": false,
+         "active": true,
+         "link": "https://sportsbook.draftkings.com/event/34226743?outcomes=0QA339240320%232169405343_13L84240Q11084165140Q20",
+         "metrics": {
+          "projection": 0,
+          "cover_probability": 0,
+          "expected_value": null,
+          "bet_rating": null,
+          "result": null,
+          "notes": null,
+          "market_ev": 0.0006761287674318471,
+          "fair_probability": 0.45902574714102384,
+          "pm_win_pct": 46.68
+         }
+        }
+       ]
+      }
+     ],
+     "id": "f6f1ae821b317f1486c957f2469ad63f"
+    }
+   ]
+  }
+ ]
+}
