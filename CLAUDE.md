@@ -145,10 +145,10 @@ The dashboard fetches picks directly from GitHub (always live, auto-refreshes ev
 
 | Routine | Schedule | Purpose | ID |
 |---------|----------|---------|-----|
-| Daily Bet Picks (V1 + V2) | 9am Arizona | V1 + V2 research; log picks, commit/push to GitHub, post summary to Slack #bet-picks | `trig_01SkNEk48CK981znKJPaHb47` |
-| Nightly Bet Tracker — Auto-Resolve Picks | 11pm Arizona | Look up final scores, calculate CLV, commit results to GitHub | `trig_01SwKt54TorHpUVWSbsrnP2m` |
+| Daily Bet Picks (V1 + V2) | 9am Arizona | V1 + V2 research; log picks, commit/push to GitHub, post summary to Slack #bet-picks | **home PC** (`scripts/run-daily-picks.sh`) |
+| Nightly Bet Tracker — Auto-Resolve Picks | 11pm Arizona | Look up final scores, calculate CLV, commit results to GitHub | `trig_01SwKt54TorHpUVWSbsrnP2m` (cloud) |
 
-All routines run in Anthropic's cloud — PC does not need to be on.
+The **nightly auto-resolve** routine runs in Anthropic's cloud (it uses datacenter-tolerant APIs — MLB Stats + ESPN, ADR 0004/0005). The **Daily Bet Picks** routine runs on the **home PC** via a local scheduler, not the cloud: its research data (BettingPros cross-book props — the Primary Edge) is **403-blocked from datacenter IPs** (ADR 0006, 2026-06-01 acceptance test), so it must run from a residential IP. The PC must be powered/awake ~9am AZ. The old cloud trigger `trig_01SkNEk48CK981znKJPaHb47` is disabled.
 
 Manage routines: https://claude.ai/code/routines
 
