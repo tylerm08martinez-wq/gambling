@@ -11,7 +11,15 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_DIR"
 
 LOG="$PROJECT_DIR/scripts/.run-daily-picks.log"
+STAMP="$PROJECT_DIR/scripts/.last-run-date"
 echo "=== $(date '+%Y-%m-%d %H:%M %Z') run-daily-picks ===" | tee -a "$LOG"
+
+# Idempotence guard: don't run twice for the same AZ date (the skills also dedup
+# via their Step 0, but this avoids wasted headless runs on a re-fire).
+TODAY="$(TZ=America/Phoenix date +%F)"
+if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$TODAY" ]; then
+  echo "✅ Already ran for $TODAY — skipping." | tee -a "$LOG"; exit 0
+fi
 
 # Fail loud if the BettingPros props feed isn't reachable from THIS host — if it
 # 403s here too, this machine's IP is also blocked and there is nothing to run.
@@ -32,6 +40,10 @@ PROMPT='You are the Daily Bet Picks agent. Generate today'\''s V1-Trends and V2-
 
 Do NOT fabricate games/lines/odds. Do NOT lower the bar to fill the card. Do NOT edit picks.json by hand. Do NOT commit anything but tracker-managed files.'
 
-claude -p "$PROMPT" 2>&1 | tee -a "$LOG"
+# Headless/unattended: no TTY to approve tool prompts, so skip permission prompts.
+# Safe here — this is your own machine running your own repo's skills, which have
+# their own guardrails (never hand-edit picks.json, fail-loud, tracker-only commits).
+claude -p "$PROMPT" --dangerously-skip-permissions 2>&1 | tee -a "$LOG"
 
+echo "$TODAY" > "$STAMP"
 echo "=== done $(date '+%H:%M %Z') ===" | tee -a "$LOG"
