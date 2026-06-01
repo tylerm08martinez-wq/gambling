@@ -18,6 +18,15 @@ import sys
 BP_API_BASE = "https://api.bettingpros.com/v3"
 BP_SITE = "https://www.bettingpros.com"
 
+# book_id -> name (from /v3/books, 2026-06-01). 0 = consensus, 2 = Pinnacle (CLV
+# benchmark). Used to decode offer book ids to human names.
+BOOKS = {
+    0: "BettingPros Consensus", 2: "Pinnacle", 10: "FanDuel", 12: "DraftKings",
+    13: "Caesars", 14: "Fanatics", 18: "BetRivers", 19: "BetMGM", 24: "bet365",
+    33: "theScore Bet", 36: "Underdog", 37: "PrizePicks", 38: "ProphetX",
+    45: "Betr", 49: "Hard Rock", 60: "Novig",
+}
+
 # Matches `api_key:"..."`, `apiKey: '...'`, `"x-api-key":"..."` etc. in the site JS.
 # BettingPros keys are ~40-char alphanumeric. The key is public (shipped in client
 # JS), not a secret — but it is never committed, only scraped at run time.
@@ -145,6 +154,55 @@ def _normalize_event(raw: dict) -> dict:
             "visitor": pitchers.get("visitor_probable"),
         },
     }
+
+
+def _book_main_line(book: dict) -> dict:
+    """Pick a book's main (else first) line entry."""
+    lines = book.get("lines") or []
+    return next((l for l in lines if l.get("main")), lines[0] if lines else {})
+
+
+def _normalize_offer(raw: dict) -> dict:
+    selections = []
+    for s in raw.get("selections", []):
+        opening = (s.get("opening_line") or {}).get("line")
+        books = []
+        for b in s.get("books", []):
+            ml = _book_main_line(b)
+            if ml.get("line") is None and ml.get("cost") is None:
+                continue
+            bid = b.get("id")
+            books.append({
+                "book_id": bid,
+                "book": BOOKS.get(bid, f"book-{bid}"),
+                "line": ml.get("line"),
+                "odds": ml.get("cost"),
+            })
+        selections.append({
+            "label": s.get("short_label") or s.get("label"),
+            "opening_line": opening,
+            "books": books,
+        })
+    return {
+        "market_id": raw.get("market_id"),
+        "event_id": raw.get("event_id"),
+        "selections": selections,
+    }
+
+
+def fetch_offers(event_id, market_id, *, get_json=None):
+    """Return normalized cross-book offers (opening + per-book current) for an event/market.
+
+    Each selection carries its `opening_line` and every book's current line/odds, the
+    inputs a Steam Move check needs (3+ books off their opening in the same direction).
+    Empty list on failure — never fabricated.
+    """
+    get_json = get_json or _live_get_json
+    url = f"{BP_API_BASE}/offers?sport=MLB&event_id={event_id}&market_id={market_id}"
+    data = get_json(url)
+    if not data:
+        return []
+    return [_normalize_offer(o) for o in data.get("offers", [])]
 
 
 def fetch_events(sport, date, *, get_json=None):

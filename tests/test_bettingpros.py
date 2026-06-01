@@ -100,6 +100,26 @@ class TestScrapeApiKey(unittest.TestCase):
         self.assertIsNone(bettingpros.scrape_api_key(get_text=lambda url: js))
 
 
+class TestFetchOffers(unittest.TestCase):
+    def test_normalizes_cross_book_snapshot_with_names_and_opening(self):
+        offers = bettingpros.fetch_offers(
+            98221, 285, get_json=_fetcher(_load("bp_offers.json"))
+        )
+        self.assertTrue(offers, "expected at least one normalized offer")
+        sel = offers[0]["selections"][0]
+        self.assertIn("label", sel)
+        # opening_line is a plain number (the line that opened), for steam vs current
+        self.assertIsInstance(sel["opening_line"], (int, float))
+        b = sel["books"][0]
+        self.assertEqual(set(b), {"book_id", "book", "line", "odds"})
+        # book_id is decoded to a human name via the books map
+        self.assertEqual(bettingpros.BOOKS.get(2), "Pinnacle")
+        self.assertEqual(b["book"], bettingpros.BOOKS.get(b["book_id"], "book-%s" % b["book_id"]))
+
+    def test_returns_empty_when_fetch_fails_never_fabricates(self):
+        self.assertEqual(bettingpros.fetch_offers(1, 2, get_json=_fetcher(None)), [])
+
+
 class TestResolveApiKey(unittest.TestCase):
     def test_env_override_takes_precedence_over_scrape(self):
         import os
