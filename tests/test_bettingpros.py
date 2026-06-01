@@ -50,6 +50,24 @@ class TestFetchProps(unittest.TestCase):
         # A persistent block / timeout makes the shared client return None.
         self.assertEqual(bettingpros.fetch_props("MLB", get_json=_fetcher(None)), [])
 
+    def test_follows_pagination_across_all_pages(self):
+        # The API caps each page at 50; a real MLB slate spans many pages. The client
+        # must return every prop, not just page 1, or it silently drops the edge.
+        raw = _load("bp_props.json")["props"]
+        pages = {
+            1: {"props": raw, "_pagination": {"page": 1, "total_pages": 3, "next": "x"}},
+            2: {"props": raw, "_pagination": {"page": 2, "total_pages": 3, "next": "x"}},
+            3: {"props": raw, "_pagination": {"page": 3, "total_pages": 3, "next": None}},
+        }
+
+        def paged_get(url):
+            import re as _re
+            m = _re.search(r"page=(\d+)", url)
+            return pages[int(m.group(1)) if m else 1]
+
+        props = bettingpros.fetch_props("MLB", get_json=paged_get)
+        self.assertEqual(len(props), len(raw) * 3)
+
 
 class TestFetchEvents(unittest.TestCase):
     def test_normalizes_events_with_utc_time_and_pitchers(self):

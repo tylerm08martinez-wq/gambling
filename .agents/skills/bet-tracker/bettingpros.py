@@ -164,13 +164,24 @@ def fetch_props(sport, date=None, *, get_json=None):
     resolution fails (only `/events` and `/offers` require the key).
     """
     get_json = get_json or _live_get_json
-    url = f"{BP_API_BASE}/props?sport={sport}"
+    base = f"{BP_API_BASE}/props?sport={sport}&limit=50"
     if date:
-        url += f"&date={date}"
-    data = get_json(url)
-    if not data:
-        return []
-    return [_normalize_prop(p) for p in data.get("props", [])]
+        base += f"&date={date}"
+    props = []
+    page = 1
+    while True:
+        data = get_json(f"{base}&page={page}")
+        if not data:
+            # Page 1 failure → no data at all (never fabricate). A later-page failure
+            # returns what we have rather than silently looping.
+            break
+        props.extend(data.get("props", []))
+        pg = data.get("_pagination") or {}
+        total = pg.get("total_pages") or 1
+        if page >= total:
+            break
+        page += 1
+    return [_normalize_prop(p) for p in props]
 
 
 def _main(argv):
@@ -189,5 +200,4 @@ def _main(argv):
 
 
 if __name__ == "__main__":
-    import sys
     raise SystemExit(_main(sys.argv[1:]))
