@@ -6,6 +6,10 @@
 .env.local
 .env.*.local
 
+# Python bytecode
+__pycache__/
+*.pyc
+
 # Daily-picks runner local artifacts (home PC)
 scripts/.run-daily-picks.log
 scripts/.last-run-date
