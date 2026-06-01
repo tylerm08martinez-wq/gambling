@@ -1210,5 +1210,76 @@
     "line_num": 5.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260601-mlb-v1-under-total",
+    "date": "2026-06-01",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Under 7.5 Rangers at Cardinals (deGrom vs McGreevy)",
+    "line": "-110 @ FanDuel",
+    "units": 1,
+    "score": 6.6,
+    "primary_edge": "Quant convergence on the under with market-confirmed total move from 8 to 7.5; deGrom/McGreevy run prevention, Rangers lineup injuries, and wind-in setup support run suppression",
+    "primary_edge_type": "quant_convergence",
+    "source_evidence": [
+      {
+        "status": "usable",
+        "source": "CLEATZ MLB Best Bets",
+        "category": "line_movement_data",
+        "url": "https://cleatz.com/mlb-best-bets-june-01-2026/",
+        "freshness": "2026-06-01",
+        "market": "TEX/STL total",
+        "line": "Under 7.5 -107; total bet down 8 to 7.5",
+        "observed_at": "2026-06-01 10:34 ET",
+        "details": "Cleatz identified TEX/STL Under 7.5 as a sharp-aligned total play after the total moved from 8 to 7.5."
+      },
+      {
+        "status": "usable",
+        "source": "FanDuel Research",
+        "category": "current_odds",
+        "url": "https://www.fanduel.com/research/rangers-vs-cardinals-mlb-odds-prediction-point-spread-over-under-and-betting-trends-for-6-1-2026",
+        "freshness": "2026-06-01",
+        "market": "TEX/STL total",
+        "line": "7.5, Over -110 / Under -110 at FanDuel",
+        "book": "FanDuel",
+        "observed_at": "2026-06-01 13:12 ET",
+        "details": "FanDuel Research lists the current total at 7.5 with Under -110."
+      },
+      {
+        "status": "usable",
+        "source": "PicksOffice",
+        "category": "independent_pick_context",
+        "url": "https://picksoffice.com/picks/mlb-rangers-vs-cardinals-2026-06-01",
+        "freshness": "2026-06-01",
+        "market": "TEX/STL total",
+        "line": "Under 7.5",
+        "observed_at": "2026-06-01",
+        "details": "Independent under analysis cites deGrom/McGreevy, Rangers lineup absences, and 7 mph wind blowing in."
+      },
+      {
+        "status": "usable",
+        "source": "MLB.com Probable Pitchers",
+        "category": "official_schedule",
+        "url": "https://www.mlb.com/probable-pitchers/2026-06-01",
+        "freshness": "2026-06-01",
+        "market": "TEX at STL",
+        "line": "7:45 PM EDT official start",
+        "observed_at": "2026-06-01",
+        "details": "Official schedule confirms Rangers at Cardinals at 7:45 PM EDT, 4:45 PM Arizona time."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:45 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 7.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
