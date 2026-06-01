@@ -22,7 +22,7 @@ A discrepancy of 0.5+ units on the same player prop across DK / FanDuel / BetMGM
 A 20+ point gap between Handle % (dollars wagered) and Ticket % (number of bets) on the same side. Indicates large-dollar (sharp) action behind one side regardless of whether the line has moved. A soft RLM signal — requires one additional confirming factor to qualify for a pick.
 
 ## Hard RLM (Reverse Line Movement)
-70%+ of public tickets on one side AND the line moves in the opposite direction. Confirms sharp money is on the other side. Requires actual line movement — ticket splits alone are insufficient. **Manual-Run-only:** its required [[Public Ticket Data]] is sold only by scraper-hostile splits sites that 403 the routine's datacenter egress IP, so Hard RLM cannot be a [[Scheduled Run]] Primary Edge — a human on a residential IP can still source it. Scheduled Runs use [[Steam Move]] for the sharp game-line signal instead.
+70%+ of public tickets on one side AND the line moves in the opposite direction. Confirms sharp money is on the other side. Requires actual line movement — ticket splits alone are insufficient.
 
 ## Prop Trend Confirmation
 A +0.5 score bonus applied to Signal A (prop gap) when the player's season average is on the same side as the gap. E.g., pitcher averaging 7.2 Ks with the gap pointing Over at a 6.5 line.
@@ -70,7 +70,7 @@ A bet on an individual player's statistical line (e.g. pitcher strikeouts, batte
 The per-sport adapter that supplies everything auto-resolution needs to settle a [[Player Prop]] from a finished game, behind one small interface: `find_game` (locate the final game for the bet's date/teams, returning an opaque game handle plus the final score), `fetch_boxscore` (turn that handle into the sport-agnostic per-player boxscore shape the resolver consumes — `teams.<side>.players[*].{person.fullName, stats.<group>.<key>}`), and the sport's `stat_map` (stat-keyword → boxscore group/key). MLB and NBA are the two adapters today: MLB's `fetch_boxscore` is effectively identity (the MLB Stats API already returns the shared shape), NBA's runs the ESPN boxscore adaptation (ADR 0005). The game handle is **opaque** — the resolver never inspects it; whatever a source's `find_game` produces is handed straight back to that same source's `fetch_boxscore`, so the `game_pk`-vs-`game_id` difference never reaches shared code. Adding a sport is registering one more Player Prop Source, not adding a branch to the resolver. The resolver is given its source registry as an argument, so a fake Player Prop Source is the test surface for the whole resolution loop.
 
 ## Public Ticket Data
-The percentage of bets on each side of a market, used to identify the public side for RLM. **Not available to a [[Scheduled Run]]:** no odds API sells ticket/handle percentages; the data lives only on splits sites (cleatz et al.) that 403 the routine's datacenter egress IP. Obtainable only on a Manual Run from a residential IP. This makes [[Hard RLM]] and [[Soft RLM]] Manual-Run-only signals.
+The percentage of bets on each side of a market, used to identify the public side for RLM.
 
 ## Line Movement Data
 The opening line and current line for a market, used to confirm whether price moved against the public side.
@@ -100,7 +100,7 @@ A betting source that should be skipped because it is unavailable, blocked, stal
 A 0–100 process metric blending Win Rate (40pts), CLV (35pts), and ROI (25pts). A long-run signal, not a current snapshot. Becomes meaningful only once Pinnacle closing lines are recorded consistently — until then the CLV component is neutral by design and the score reflects Win Rate + ROI only.
 
 ## Soft RLM
-Handle/Ticket divergence of 20+ points without confirmed line movement. Weaker than Hard RLM — requires one additional confirming factor (line movement, prop gap, or quant convergence) before qualifying for a pick. **Manual-Run-only** for the same reason as [[Hard RLM]]: depends on [[Public Ticket Data]] the cloud routine cannot reach.
+Handle/Ticket divergence of 20+ points without confirmed line movement. Weaker than Hard RLM — requires one additional confirming factor (line movement, prop gap, or quant convergence) before qualifying for a pick.
 
 ## Stale Book
 The sportsbook that has not yet adjusted its line after the sharp-hit book moved. The target for entering a prop gap bet (typically DraftKings or FanDuel, which accept higher limits and adjust more slowly).
@@ -117,7 +117,6 @@ A rapid line shift of ≥1pt spread or ≥15c ML at 3+ books simultaneously with
 - A **Rejected Candidate** is recorded separately from picks and must not affect betting statistics.
 - A **Signal Requirement** determines whether available source evidence is sufficient for a specific betting signal.
 - A **Hard RLM** signal requires usable **Public Ticket Data** and usable **Line Movement Data**.
-- **Public Ticket Data** is unobtainable on a **Scheduled Run** (datacenter-IP 403), so **Hard RLM** and **Soft RLM** are Manual-Run-only Primary Edges; a **Scheduled Run** uses **Steam Move** for its sharp game-line signal.
 - Usable **Line Movement Data** includes the opening line, current line, and a **Freshness Marker**.
 - Usable **Public Ticket Data** includes the ticket percentage, public side, and a **Freshness Marker**.
 - If a **Signal Requirement** is not met, that signal cannot qualify as the primary edge, but the pick may still qualify through a different signal whose requirement is met.
