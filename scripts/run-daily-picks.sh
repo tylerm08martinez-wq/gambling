@@ -46,7 +46,11 @@ echo "=== $(date '+%Y-%m-%d %H:%M %Z') run-daily-picks ===" | tee -a "$LOG"
 
 # Idempotence guard: don't run twice for the same AZ date (the skills also dedup
 # via their Step 0, but this avoids wasted headless runs on a re-fire).
-TODAY="$(TZ=America/Phoenix date +%F)"
+# NOTE: use POSIX 'MST7' (Mountain Standard, 7h west of UTC, no DST = Arizona),
+# NOT 'America/Phoenix' — git-bash/MSYS2 ships no zoneinfo DB, so named zones
+# silently fall back to UTC. With UTC the guard rolls over at 5pm AZ and a second
+# same-day run after 5pm sails past the guard (burned 2026-06-01).
+TODAY="$(TZ='MST7' date +%F)"
 if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$TODAY" ]; then
   echo "✅ Already ran for $TODAY — skipping." | tee -a "$LOG"; exit 0
 fi
