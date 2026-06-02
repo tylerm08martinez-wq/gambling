@@ -1367,5 +1367,71 @@
     "line_num": 1.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260602-mlb-v1-grayso-total",
+    "date": "2026-06-02",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Grayson Rodriguez Under 5.5 Strikeouts vs Rockies (Sugano)",
+    "line": "+146 @ ProphetX",
+    "units": 2,
+    "score": 10.0,
+    "primary_edge": "Cross-book prop gap (1.0 unit): consensus 5.5, Fanatics moved Over to 6.5 \u2014 bet Under 5.5 plus-money where market hasn't repriced. BettingPros projection 5.31 K's confirms under side.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB",
+        "category": "prop_market_data",
+        "status": "usable",
+        "freshness": "2026-06-02 fetched live",
+        "detail": "event 99396 mkt 285 \u2014 over.line 6.5 @ Fanatics, under.line 5.5 @ ProphetX +146, consensus 5.5; projection 5.31, recommended under (gap=1.0, trend_confirmed)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:38 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 5.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260602-mlb-v1-isaac-total",
+    "date": "2026-06-02",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Isaac Collins Under 1.5 Hits at Reds (Abbott)",
+    "line": "+100 @ Novig",
+    "units": 2,
+    "score": 9.0,
+    "primary_edge": "Cross-book prop gap (0.5 unit): consensus under 1.5 -118, Novig priced Under 1.5 at even money +100. BettingPros projection 0.82 hits confirms under side (diff -0.68).",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB",
+        "category": "prop_market_data",
+        "status": "usable",
+        "freshness": "2026-06-02 fetched live",
+        "detail": "event 99601 mkt 293 \u2014 under.line 1.5 @ Novig +100, consensus_line 1.5 consensus_odds -118 (gap=0.5, trend_confirmed); projection 0.82 hits"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 1.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
