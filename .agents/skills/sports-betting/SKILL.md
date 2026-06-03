@@ -57,6 +57,8 @@ Use this to **calibrate confidence** during scoring:
 - If an edge type is below 40% win rate on 5+ settled picks → reduce its Confidence bonus by 1 point
 - If no settled picks yet → proceed with default thresholds
 
+Then read **only the Active Intelligence section** at the top of `.agents/skills/bet-tracker/betting-intel.md` (stop before the Session Log archive — it's a long append-only history and reading it wastes tokens) for working templates, confirmed signal rules, and blocked data sources.
+
 Print a one-line context summary before researching, e.g.:
 `📊 Context: MLB 5-2 (71%), ATS trend 4-3 (57%), props 3-1 (75%) — no threshold changes | 1 pick logged today`
 
@@ -84,6 +86,8 @@ Pull today's games and a cross-book odds snapshot:
 python3 "$BP" events MLB "$(date +%F)"            # games + UTC scheduled + probable pitchers
 python3 "$BP" offers <event_id> <market_id>       # cross-book lines + opening_line per selection
 ```
+
+**Research cap: deep-dive at most the top ~6 matchups** — prioritise games with an early signal (RLM/steam, injury, clear pitching mismatch) and skip the rest rather than researching the full slate. The token cost of researching every game rarely changes the card.
 
 For each candidate game collect: matchup, sport, the BettingPros UTC `scheduled` time, best line + book, and the opening-vs-current movement across books. A reputable model/expert edge may be gathered via `WebSearch` as *supporting* evidence only — it is never a standalone scheduled-run Primary Edge (see Step 3).
 
