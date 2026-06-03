@@ -108,6 +108,14 @@ CANONICAL_PRIMARY_EDGE_TYPES = {
 SCHEDULED_DAILY_PICK_CAP = 7  # 7 total across V1+V2+V3 (ADR 0007); per-model cap below
 SCHEDULED_DAILY_MODEL_CAP = 3
 
+# Model registry — the dashboard renders one card per entry and resolves labels here,
+# so adding a model is a one-row data change, never a new conditional branch (#45).
+MODELS = [
+    {"id": "v1-trends", "name": "V1-Trends", "label": "V1-TRENDS", "short": "V1", "emoji": "🎯"},
+    {"id": "v2-sharp",  "name": "V2-Sharp",  "label": "V2-SHARP",  "short": "V2", "emoji": "🔪"},
+    {"id": "v3-value",  "name": "V3-Value",  "label": "V3-VALUE",  "short": "V3", "emoji": "💎"},
+]
+
 def normalize_key(value: Optional[str]) -> Optional[str]:
     if value is None:
         return None
@@ -398,6 +406,24 @@ def model_stats(picks: list) -> dict:
         units_wagered=units_wagered, units_net=units_net,
         win_pct=win_pct, roi=roi, avg_score=avg_score, open=open_count,
     )
+
+
+def model_label(model_id: str, models: list = MODELS) -> str:
+    """Short dashboard label for a model id ('v1-trends' -> 'V1'). Unknown ids echo
+    back the id rather than being silently mislabeled (the old code defaulted to 'V2')."""
+    for m in models:
+        if m["id"] == model_id:
+            return m["short"]
+    return model_id or "?"
+
+
+def dashboard_summaries(picks: list, models: list = MODELS) -> list:
+    """Registry-driven per-model summary rows: each registry entry merged with its
+    model_stats(). Order follows the registry; adding a model needs only a MODELS row."""
+    return [
+        {**m, **model_stats([p for p in picks if p.get("model") == m["id"]])}
+        for m in models
+    ]
 
 
 # ── MLB Stats API ─────────────────────────────────────────────────────────────
@@ -1003,34 +1029,29 @@ def cmd_stats(_args):
     picks = load_picks()
     today = datetime.now().strftime("%B %d, %Y")
 
-    v1_picks = [p for p in picks if p["model"] == "v1-trends"]
-    v2_picks = [p for p in picks if p["model"] == "v2-sharp"]
-
-    v1 = model_stats(v1_picks)
-    v2 = model_stats(v2_picks)
+    summaries = dashboard_summaries(picks)
     cb = model_stats(picks)
 
     settled_all = [p for p in picks if p.get("result") in {"win", "loss", "push"}]
     open_picks = [p for p in picks if p.get("result") is None]
     void_picks = [p for p in picks if p.get("result") == "void"]
 
-    diff = v1["units_net"] - v2["units_net"]
-    if diff > 0:
-        leader = f"V1-Trends by {diff:.2f}u"
-    elif diff < 0:
-        leader = f"V2-Sharp by {abs(diff):.2f}u"
-    else:
-        leader = "Tied"
+    # Leader = registered model with the highest net units; margin to the runner-up.
+    ranked = sorted(summaries, key=lambda r: r["units_net"], reverse=True)
+    top = ranked[0]
+    runner_up_net = ranked[1]["units_net"] if len(ranked) > 1 else 0.0
+    margin = top["units_net"] - runner_up_net
+    leader = f"{top['name']} by {margin:.2f}u" if margin > 0 else "Tied"
 
     print(f"\n📊 BETTING TRACKER — {today}")
     void_label = f" · {len(void_picks)} void" if void_picks else ""
     print(f"{len(picks)} picks tracked · {cb['settled']} settled · {cb['open']} open{void_label}\n")
     print(divider())
 
-    # ── Model cards ──
-    for label, emoji, st in [("V1-TRENDS", "🎯", v1), ("V2-SHARP", "🔪", v2)]:
+    # ── Model cards (one per registered model) ──
+    for st in summaries:
         avg = f"{st['avg_score']:.1f}/10" if st['avg_score'] is not None else "—"
-        print(f"\n{emoji} {label}")
+        print(f"\n{st['emoji']} {st['label']}")
         print(f"Record: {fmt_record(st)} · Win %: {st['win_pct']:.1f}%")
         print(f"Net: {fmt_net(st['units_net'])} · ROI: {fmt_roi(st['roi'])} {roi_emoji(st['roi'])}")
         print(f"Avg score: {avg} · {st['open']} open")
@@ -1050,13 +1071,13 @@ def cmd_stats(_args):
     print(f"\n{divider()}\n")
     print("📋 RECENT PICKS\n")
     for p in recent:
-        model_label = "V1" if p["model"] == "v1-trends" else "V2"
+        mlabel = model_label(p["model"])
         result = p.get("result")
         icon = RESULT_ICON.get(result, "—").split()[0]
         date_short = p["date"][5:]  # MM-DD
         pl_str = "void" if result == "void" else fmt_net(p.get("units_won_lost") or 0) if result else "pending"
         bet_display = p["bet"][:38]
-        print(f"{icon} {date_short} · {model_label} · {bet_display} · {p['line']} · {p['units']}u · {pl_str}")
+        print(f"{icon} {date_short} · {mlabel} · {bet_display} · {p['line']} · {p['units']}u · {pl_str}")
         ctx = build_context(p)
         if ctx != "⏳ Pending":
             print(f"   {ctx}")
@@ -1067,8 +1088,7 @@ def cmd_stats(_args):
         print(divider())
         print(f"\n⏳ OPEN / PENDING\n")
         for p in open_picks:
-            model_label = "V1" if p["model"] == "v1-trends" else "V2"
-            print(f"• {p['bet']} · {p['line']} · {p['units']}u  [{model_label}]")
+            print(f"• {p['bet']} · {p['line']} · {p['units']}u  [{model_label(p['model'])}]")
         print()
 
     # ── Edge Breakdown ──
