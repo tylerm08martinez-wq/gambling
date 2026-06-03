@@ -1068,5 +1068,111 @@ class TestBuildContextPropMargin(unittest.TestCase):
         self.assertEqual(tracker.fmt_margin(0.5), "0.5")
 
 
+class TestComputeDashboard(unittest.TestCase):
+    """compute_dashboard is the pure seam under cmd_stats — assert the domain
+    figures directly instead of scraping printed output."""
+
+    @staticmethod
+    def _pick(model, result, units, won_lost, *, sport="MLB", score=None,
+              primary_edge=None, bet="X O0.5", line="-110", date="2026-06-01"):
+        return {"model": model, "result": result, "units": units,
+                "units_won_lost": won_lost, "sport": sport, "score": score,
+                "primary_edge": primary_edge, "bet": bet, "line": line, "date": date}
+
+    def test_empty_picks_safe(self):
+        d = tracker.compute_dashboard([])
+        self.assertEqual(d["counts"], {"total": 0, "settled": 0, "open": 0, "voids": 0})
+        self.assertEqual(d["edges"], [])
+        self.assertEqual(d["sports"], [])
+        self.assertEqual(d["score_calibration"], [])
+        self.assertIsNone(d["leader"]["model"])
+
+    def test_counts_split_settled_open_void(self):
+        picks = [
+            self._pick("v1-trends", "win", 2, 1.8),
+            self._pick("v1-trends", "loss", 2, -2.0),
+            self._pick("v2-sharp", None, 2, None),     # open
+            self._pick("v2-sharp", "void", 2, 0.0),    # void, not settled
+        ]
+        d = tracker.compute_dashboard(picks)
+        self.assertEqual(d["counts"]["total"], 4)
+        self.assertEqual(d["counts"]["settled"], 2)
+        self.assertEqual(d["counts"]["open"], 1)
+        self.assertEqual(d["counts"]["voids"], 1)
+
+    def test_leader_v1_ahead(self):
+        picks = [self._pick("v1-trends", "win", 2, 3.0),
+                 self._pick("v2-sharp", "loss", 2, -2.0)]
+        d = tracker.compute_dashboard(picks)
+        self.assertEqual(d["leader"]["model"], "v1-trends")
+        self.assertAlmostEqual(d["leader"]["units"], 5.0)
+
+    def test_leader_v2_ahead(self):
+        picks = [self._pick("v1-trends", "loss", 2, -2.0),
+                 self._pick("v2-sharp", "win", 2, 1.0)]
+        d = tracker.compute_dashboard(picks)
+        self.assertEqual(d["leader"]["model"], "v2-sharp")
+        self.assertAlmostEqual(d["leader"]["units"], 3.0)
+
+    def test_leader_tie(self):
+        picks = [self._pick("v1-trends", "win", 2, 1.0),
+                 self._pick("v2-sharp", "win", 2, 1.0)]
+        d = tracker.compute_dashboard(picks)
+        self.assertIsNone(d["leader"]["model"])
+
+    def test_edge_breakdown_aggregates_and_sorts_by_net(self):
+        picks = [
+            self._pick("v1-trends", "win", 2, 2.0, primary_edge="cross_book_gap — DK"),
+            self._pick("v1-trends", "loss", 2, -2.0, primary_edge="RLM 75%"),
+            self._pick("v2-sharp", "win", 2, 1.5, primary_edge="cross_book_gap"),
+        ]
+        d = tracker.compute_dashboard(picks)
+        # Edge key splits on em-dash/hyphen/space but NOT underscore, so
+        # "cross_book_gap" -> "CROSS_BOOK_GAP" (net +3.5), "RLM 75%" -> "RLM"
+        # (net -2.0); sorted by net desc.
+        self.assertEqual([e["name"] for e in d["edges"]], ["CROSS_BOOK_GAP", "RLM"])
+        cross = d["edges"][0]
+        self.assertEqual(cross["picks"], 2)
+        self.assertEqual(cross["wins"], 2)        # both cross_book_gap picks won
+        self.assertAlmostEqual(cross["net"], 3.5)
+        self.assertAlmostEqual(cross["win_pct"], 100.0)
+        self.assertAlmostEqual(cross["roi"], 3.5 / 4 * 100)
+
+    def test_sport_breakdown(self):
+        picks = [
+            self._pick("v1-trends", "win", 2, 2.0, sport="MLB"),
+            self._pick("v1-trends", "loss", 1, -1.0, sport="NBA"),
+        ]
+        d = tracker.compute_dashboard(picks)
+        names = {s["name"] for s in d["sports"]}
+        self.assertEqual(names, {"MLB", "NBA"})
+        mlb = next(s for s in d["sports"] if s["name"] == "MLB")
+        self.assertAlmostEqual(mlb["net"], 2.0)
+        self.assertAlmostEqual(mlb["roi"], 100.0)
+
+    def test_score_calibration_buckets_and_underperform_flag(self):
+        # 3 settled picks scored 9-10, two losses + one win -> 33% W, n>=3 -> flagged.
+        picks = [
+            self._pick("v1-trends", "loss", 2, -2.0, score=9.0),
+            self._pick("v1-trends", "loss", 2, -2.0, score=9.5),
+            self._pick("v2-sharp", "win", 2, 1.8, score=10.0),
+            self._pick("v2-sharp", "win", 2, 1.8, score=7.5),  # 7-8 bucket, single
+        ]
+        d = tracker.compute_dashboard(picks)
+        by_bucket = {b["bucket"]: b for b in d["score_calibration"]}
+        self.assertIn("9-10", by_bucket)
+        top = by_bucket["9-10"]
+        self.assertEqual(top["count"], 3)
+        self.assertAlmostEqual(top["win_pct"], 100 * 1 / 3)
+        self.assertTrue(top["underperforming"])          # <52.4% and n>=3
+        self.assertFalse(by_bucket["7-8"]["underperforming"])  # n<3, never flagged
+
+    def test_void_excluded_from_breakdowns(self):
+        picks = [self._pick("v1-trends", "void", 2, 0.0, primary_edge="cross_book_gap")]
+        d = tracker.compute_dashboard(picks)
+        self.assertEqual(d["edges"], [])
+        self.assertEqual(d["sports"], [])
+
+
 if __name__ == "__main__":
     unittest.main()
