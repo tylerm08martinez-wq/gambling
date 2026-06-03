@@ -4,7 +4,7 @@ Bet Tracker CLI
 Usage:
   tracker.py stats
   tracker.py open
-  tracker.py log --model <v1-trends|v2-sharp> --sport <sport> --bet <bet> --line <line> --units <1-3> [--score <float>] [--edge <str>]
+  tracker.py log --model <v1-trends|v2-sharp|v3-value> --sport <sport> --bet <bet> --line <line> --units <1-3> [--score <float>] [--edge <str>]
   tracker.py resolve <id> <win|loss|push|void> --final-score <str> --game-margin <int> --line-num <float> [--prop-result <str>]
 """
 
@@ -93,6 +93,7 @@ def merge_actual_bets(canonical: dict, legacy: dict) -> dict:
 
 CANONICAL_PRIMARY_EDGE_TYPES = {
     "cross_book_gap",
+    "clv_value",
     "steam",
     "hard_rlm",
     "soft_rlm",
@@ -104,7 +105,7 @@ CANONICAL_PRIMARY_EDGE_TYPES = {
     "plus_money_start",
     "underdog_fade",
 }
-SCHEDULED_DAILY_PICK_CAP = 5
+SCHEDULED_DAILY_PICK_CAP = 7  # 7 total across V1+V2+V3 (ADR 0007); per-model cap below
 SCHEDULED_DAILY_MODEL_CAP = 3
 
 def normalize_key(value: Optional[str]) -> Optional[str]:
@@ -1449,7 +1450,7 @@ def main():
     sub.add_parser("migrate-actual-bets", help="Merge stale .claude My Bets data into .agents")
 
     log_p = sub.add_parser("log", help="Log a new pick")
-    log_p.add_argument("--model", required=True, choices=["v1-trends", "v2-sharp"])
+    log_p.add_argument("--model", required=True, choices=["v1-trends", "v2-sharp", "v3-value"])
     log_p.add_argument("--sport", required=True)
     log_p.add_argument("--bet", required=True, help="Full bet description incl. opponent")
     log_p.add_argument("--line", required=True, help="Odds (e.g. -110, +146)")
