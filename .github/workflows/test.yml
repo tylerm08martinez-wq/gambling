@@ -17,4 +17,5 @@ jobs:
       - run: node tests/calc-actual-pl.test.js
       - run: node tests/adj-clv.test.js
       - run: node tests/line-column.test.js
+      - run: node tests/parse-bet.test.mjs
       - run: python3 -m unittest discover -s tests -p "*.py"

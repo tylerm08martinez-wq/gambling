@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tyler's Betting Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Live Peek (read-only inline grader, ADR 0007). Exposes renderLivePeek/livePeekFallbackUrl
+     to the classic dashboard script via window. live-peek.js never writes picks.json. -->
+<script type="module">
+  import { renderLivePeek, fallbackLink } from './live-peek.js';
+  window.renderLivePeek = renderLivePeek;
+  window.livePeekFallbackUrl = fallbackLink;
+  // Signal that the module loaded so panels mounted before load can re-render.
+  window.dispatchEvent(new Event('live-peek-ready'));
+  window.__livePeekReady = true;
+</script>
 <style>
   :root {
     --bg: #0d1117;
@@ -1836,7 +1846,7 @@ function renderLog() {
       : '<span class="dim">No closing line</span>';
 
     const shortDate = p.date ? p.date.slice(5) : '—'; // MM-DD
-    const pickId = p.id || i;
+    const pickId = p.id || picks.indexOf(p); // global index, not the sorted/filtered row index — matches actual_bets keying
     const myBet = getActualBet(pickId);
     const vBadge = myBet.verified ? `<span class="verified-badge" id="vbadge-${pickId}">✓</span>` : `<span class="verified-badge" id="vbadge-${pickId}" style="display:none">✓</span>`;
     const actualPLVal = myBet.verified && myBet.stake ? calcActualPL(p, myBet.stake, myBet.actual_odds) : null;
@@ -1880,7 +1890,9 @@ function renderLog() {
             <h4>Game Result</h4>
             <p>${gameResult}</p>
             ${p.prop_result ? `<p style="margin-top:6px;color:var(--muted);font-size:11px">${propLine}</p>` : ''}
-            <a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-block;margin-top:6px;font-size:10px;color:var(--muted);text-decoration:none;border-bottom:1px dashed var(--border)">Search scores →</a>
+            <!-- Live Peek mount (ADR 0007): renderLivePeek fills this when the detail opens.
+                 Replaces the old generic "Search scores →" Google link for this call site. -->
+            <div class="live-peek-mount" id="peek-${pickId}" data-pick-id="${escapeHtml(String(p.id ?? ''))}" onclick="event.stopPropagation()"></div>
             ${(() => {
               const primaryUrl = bookBetUrl(p);
               const lineText = p.line || '';
@@ -2045,7 +2057,38 @@ function toggleDetail(id, row) {
   if (!isOpen) {
     panel.classList.add('open');
     row.classList.add('expanded');
+    renderLivePeekInPanel(panel);
   }
+}
+
+// Lazily render the read-only Live Peek panel (ADR 0007) into a just-opened detail.
+// Renders once per pick view; settled picks resolve with no network, unsettled MLB
+// props fetch + grade inline, everything else degrades to a deep-link.
+function renderLivePeekInPanel(panel) {
+  const mount = panel.querySelector('.live-peek-mount');
+  if (!mount || mount.dataset.rendered === '1') return;
+  const pick = resolvePickForMount(mount);
+  if (!pick) return;
+  if (typeof window.renderLivePeek !== 'function') {
+    // Module not loaded yet — retry once it signals ready.
+    window.addEventListener('live-peek-ready', () => renderLivePeekInPanel(panel), { once: true });
+    return;
+  }
+  mount.dataset.rendered = '1';
+  window.renderLivePeek(pick, mount).catch(() => { mount.dataset.rendered = ''; });
+}
+
+// Resolve the pick a Live Peek mount belongs to: prefer the stored pick id, fall
+// back to the numeric suffix index for legacy picks that have no id.
+function resolvePickForMount(mount) {
+  const pid = mount.dataset.pickId;
+  if (pid) {
+    const byId = picks.find(p => String(p.id) === pid);
+    if (byId) return byId;
+  }
+  const m = (mount.id || '').match(/^peek-(\d+)$/);
+  if (m) return picks[Number(m[1])] || null;
+  return null;
 }
 
 // ── Navigate from Today callout to Pick Log ─────────────────────
