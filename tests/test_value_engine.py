@@ -202,12 +202,24 @@ class TestUnits(unittest.TestCase):
         self.assertEqual(ve.units_from_clv(0.80, 0.50, 0.60, "moneyline",
                                            confirmation=True), 2)
 
+    def test_two_units_reachable_end_to_end_and_gated_on_confirmation(self):
+        # Pinnacle A -160/B +140 -> fair A .596; best A -115 (.535) -> +11.5% CLV.
+        # With a confirmation flag the board must size to 2u; without it, 1u.
+        board = {"market": "moneyline", "confirmation": True,
+                 "pinnacle": {"A": "-160", "B": "+140"},
+                 "best_book_prices": {"A": "-115 (DK)"}}
+        confirmed = ve.evaluate_board(board)
+        self.assertEqual(confirmed["action"], "log")
+        self.assertEqual(confirmed["picks"][0]["units"], 2)
+        unconfirmed = ve.evaluate_board({**board, "confirmation": False})
+        self.assertEqual(unconfirmed["picks"][0]["units"], 1)
+
 
 class TestSteamClassifier(unittest.TestCase):
     def test_three_plus_books_toward_pinnacle_is_usable_steam(self):
         s = ve.classify_steam(
             opening=-130, current_by_book={"DK": -148, "FD": -146, "MGM": -149, "CZR": -147},
-            pinnacle_now=-150, side_is_favorite=True, market="moneyline")
+            pinnacle_now=-150)
         self.assertTrue(s["is_steam"])
         self.assertTrue(s["is_mega"])        # 4+ books
         self.assertTrue(s["toward_pinnacle"])
@@ -217,17 +229,18 @@ class TestSteamClassifier(unittest.TestCase):
         # books blew past the current Pinnacle number -> retail overreaction, skip
         s = ve.classify_steam(
             opening=-130, current_by_book={"DK": -158, "FD": -160, "MGM": -159},
-            pinnacle_now=-150, side_is_favorite=True, market="moneyline")
+            pinnacle_now=-150)
         self.assertTrue(s["is_steam"])
         self.assertFalse(s["toward_pinnacle"])
         self.assertFalse(s["usable"])
 
-    def test_confirmation_only_never_a_standalone_pick(self):
-        # steam never logs a bet on its own (mirrors fixture steam_no_clv at the engine level)
-        self.assertTrue(ve.classify_steam(
-            opening=-130, current_by_book={"DK": -148, "FD": -146},
-            pinnacle_now=-150, side_is_favorite=True, market="moneyline")["is_steam"] is False)
-        # only 2 books -> below the 3-book floor
+    def test_below_three_book_floor_is_not_steam(self):
+        # only 2 books off the opening -> below the 3-book floor, not steam, not usable
+        s = ve.classify_steam(
+            opening=-130, current_by_book={"DK": -148, "FD": -146}, pinnacle_now=-150)
+        self.assertFalse(s["is_steam"])
+        self.assertFalse(s["usable"])
+        # (the engine ignores steam entirely when picking — see test_steam_without_clv_is_no_bet)
 
 
 if __name__ == "__main__":
