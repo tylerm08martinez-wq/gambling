@@ -75,5 +75,10 @@
     "verified": true,
     "stake": 15,
     "actual_odds": -118
+  },
+  "20260602-mlb-v1-grayso-total": {
+    "verified": true,
+    "stake": 15,
+    "actual_odds": 134
   }
 }
