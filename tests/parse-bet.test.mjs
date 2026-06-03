@@ -11,7 +11,7 @@ import assert from 'node:assert';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { parseBet, gradeOverUnder, fallbackLink } from '../live-peek.js';
+import { parseBet, gradeOverUnder, fallbackLink, livePeek } from '../live-peek.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 let passed = 0;
@@ -72,6 +72,26 @@ check('N+ form: "Nico Hoerner 2+ Total Bases" → over 1.5', () => {
   assert.strictEqual(p.statKey, 'totalBases');
   assert.strictEqual(p.side, 'over');
   assert.strictEqual(p.line, 1.5);                // 2+ ⇒ Over 1.5
+});
+
+// ── Combined-stat props route to fallback, not a confident wrong grade (#4) ─
+check('combined stat "Hits+Runs+RBIs" flagged combined, not graded as a single stat', () => {
+  const p = parseBet({ bet: 'Aaron Judge Hits+Runs+RBIs Over 1.5 vs Red Sox', sport: 'MLB' });
+  assert.strictEqual(p.kind, 'prop');
+  assert.strictEqual(p.combined, true, 'expected combined:true');
+  assert.strictEqual(p.statKey, null, 'combined stat must not resolve to a single statKey');
+  assert.ok(/judge/i.test(p.player), `player should still parse, got ${JSON.stringify(p.player)}`);
+});
+check('combined stat with spaces "Runs + RBIs" also flagged combined', () => {
+  const p = parseBet({ bet: 'Mookie Betts Runs + RBIs Over 1.5 vs Padres', sport: 'MLB' });
+  assert.strictEqual(p.combined, true);
+  assert.strictEqual(p.statKey, null);
+});
+check('N+ line ("2+ Total Bases") is NOT mistaken for a combined stat', () => {
+  const p = parseBet({ bet: 'Nico Hoerner 2+ Total Bases (Cubs vs Braves)', sport: 'MLB' });
+  assert.notStrictEqual(p.combined, true, 'N+ form must not be flagged combined');
+  assert.strictEqual(p.statKey, 'totalBases');
+  assert.strictEqual(p.line, 1.5);
 });
 
 // ── Opponent-hint extraction (vs / at / @) ─────────────────────────────────
@@ -142,4 +162,29 @@ check('all current picks.json strings classify without throwing', () => {
   if (process.env.VERBOSE) console.log(`  swept ${all.length} picks`);
 });
 
-console.log(`All parseBet tests passed (${passed} cases).`);
+// ── livePeek orchestrator: combined stat degrades to fallback, never fetches (#4) ──
+// A fake source that throws if touched — proves the combined-stat bet short-circuits to
+// the deep-link fallback before any network grading is attempted.
+const explodingSource = {
+  findGame() { throw new Error('source.findGame should not be called for a combined stat'); },
+  fetchBoxscore() { throw new Error('source.fetchBoxscore should not be called for a combined stat'); },
+  findPlayerStat() { throw new Error('source.findPlayerStat should not be called for a combined stat'); },
+};
+
+const asyncChecks = [
+  async () => {
+    const res = await livePeek(
+      { bet: 'Aaron Judge Hits+Runs+RBIs Over 1.5 vs Red Sox', sport: 'MLB', date: '2026-06-01', result: null },
+      explodingSource,
+    );
+    assert.strictEqual(res.state, 'fallback', `combined stat should fall back, got ${res.state}`);
+    assert.ok(res.url && res.url.includes('statmuse.com'), `prop fallback should be StatMuse, got ${res.url}`);
+    passed++;
+  },
+];
+
+const run = async () => {
+  for (const fn of asyncChecks) await fn();
+  console.log(`All parseBet tests passed (${passed} cases).`);
+};
+run().catch(err => { console.error(err); process.exit(1); });
