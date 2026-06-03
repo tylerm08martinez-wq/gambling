@@ -33,6 +33,40 @@
     --shadow: 0 1px 3px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.2);
     --radius: 10px;
     --radius-sm: 6px;
+    --accent: #58a6ff;  /* used by the 🔍 links and the Live Peek module's fallback anchor */
+  }
+
+  /* Live Peek popover (issue #75): the 🔍 on a Pick Log row OR a My Bets row opens a small
+     focused popover anchored at the icon containing ONLY the Live Peek (window.renderLivePeek).
+     One open at a time; closes on re-click / outside-click / Esc. Positioned in JS (flips &
+     clamps to the viewport). */
+  .live-peek-popover {
+    position: absolute;
+    z-index: 1200;
+    width: 280px;
+    max-width: calc(100vw - 24px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 28px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.2);
+    padding: 12px 14px 14px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .live-peek-popover .lpp-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2px;
+  }
+  .live-peek-popover .lpp-title {
+    font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted);
+  }
+  .live-peek-popover .lpp-close {
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    font-size: 16px; line-height: 1; padding: 0 2px;
+  }
+  .live-peek-popover .lpp-close:hover { color: var(--text); }
+  .live-peek-popover .lpp-bet {
+    font-size: 11px; color: var(--muted); margin-bottom: 4px; word-break: break-word;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; }
@@ -845,42 +879,8 @@ function bookBetUrl(pick) {
   return null;
 }
 
-function gameSearchUrl(pick) {
-  const bet = pick.bet || '';
-  const date = pick.date || '';
-  const sport = pick.sport || '';
-  const isProp = inferBetType(pick) === 'Prop';
-  // Extract team matchup from parentheticals like "(Cardinals @ Athletics)" or "(Spurs vs Thunder)"
-  const teamMatch = bet.match(/\(([^)]*(?:\bvs\.?\b|@)[^)]*)\)/i);
-
-  if (isProp) {
-    // Player name = everything before over/under/N+
-    const propMatch = bet.match(/^(.+?)\s+(?:over|under)\s+[\d.]+/i)
-                  || bet.match(/^(.+?)\s+\d+\+/i);
-    const player = propMatch ? propMatch[1].trim() : '';
-    const context = teamMatch ? teamMatch[1] : '';
-    // Include opponent context so Google pins to the right game
-    const q = player
-      ? `${player} stats ${context} ${date}`
-      : `${sport} ${context || bet.slice(0, 40)} stats ${date}`;
-    return `https://www.google.com/search?q=${encodeURIComponent(q.replace(/\s+/g, ' ').trim())}`;
-  }
-
-  // Game bet — prefer team matchup from parenthetical, otherwise extract from full description
-  let game;
-  if (teamMatch) {
-    game = teamMatch[1];
-  } else {
-    game = bet
-      .replace(/\([^)]*\)/g, '')                      // strip venue/subtitle parens
-      .replace(/\b(?:over|under)\s+[\d.]+/gi, '')     // strip Over/Under totals
-      .replace(/\s[+-]\d+\.?\d*/g, '')                // strip point spreads (+6.5, -3)
-      .replace(/\b(?:ml|rl|moneyline|run line|puck line)\b/gi, '')
-      .replace(/\s+/g, ' ').trim().slice(0, 60);
-  }
-  const q = `${sport} ${game} score ${date}`.replace(/\s+/g, ' ').trim();
-  return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
-}
+// (gameSearchUrl removed in #75 — the 🔍 now opens the Live Peek popover via
+//  openLivePeekPopover()/window.renderLivePeek, not a raw Google search.)
 
 function inferBetType(pick) {
   if (pick && pick.bet_type) {
@@ -1875,7 +1875,7 @@ function renderLog() {
       })()}</td>
       <td>${clvCell}</td>
       <td>${pl}</td>
-      <td class="col-betlink" onclick="event.stopPropagation()" style="white-space:nowrap">${(() => { const u = bookBetUrl(p); const betLink = u ? `<a href="${u}" target="_blank" rel="noopener" class="bet-now-btn">Bet →</a>` : `<a href="https://sportsbook.draftkings.com/" target="_blank" rel="noopener" class="bet-now-btn">Bet →</a>`; const cleanBet = (p.bet||'').replace(/\s*\([^)]*\)/g,'').trim(); const searchLink = `<a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" style="color:var(--accent);font-size:15px;text-decoration:none;margin-left:6px" title="Check score / result">🔍</a>`; return betLink + searchLink; })()}</td>
+      <td class="col-betlink" onclick="event.stopPropagation()" style="white-space:nowrap">${(() => { const u = bookBetUrl(p); const betLink = u ? `<a href="${u}" target="_blank" rel="noopener" class="bet-now-btn">Bet →</a>` : `<a href="https://sportsbook.draftkings.com/" target="_blank" rel="noopener" class="bet-now-btn">Bet →</a>`; const searchLink = `<span class="live-peek-trigger" role="button" tabindex="0" onclick="event.stopPropagation();openLivePeekPopover('${escapeHtml(String(pickId))}', this)" style="cursor:pointer;color:var(--accent);font-size:15px;text-decoration:none;margin-left:6px" title="Live Peek — quick look at this bet">🔍</span>`; return betLink + searchLink; })()}</td>
     </tr>
     <tr class="pick-detail-row">
       <td colspan="13">
@@ -2089,6 +2089,120 @@ function resolvePickForMount(mount) {
   const m = (mount.id || '').match(/^peek-(\d+)$/);
   if (m) return picks[Number(m[1])] || null;
   return null;
+}
+
+// ── Live Peek popover (issue #75) ───────────────────────────────────────────
+// Clicking 🔍 on a Pick Log row OR a My Bets row opens a small focused popover anchored
+// at the icon that renders ONLY the Live Peek (window.renderLivePeek from live-peek.js —
+// no new grading logic). Click 🔍 again / click outside / Esc closes it; one open at a time.
+// READ-ONLY (ADR 0007): renderLivePeek never writes picks.json.
+let _livePeekPopover = null;       // the open popover element, or null
+let _livePeekPopoverPickId = null; // which pickId it belongs to (for toggle)
+
+function resolvePickById(pickId) {
+  // Same GLOBAL-index convention as the Pick Log / actual_bets keying:
+  // a pick's key is String(p.id || picks.indexOf(p)) — NOT a filtered/sorted row index.
+  const key = String(pickId);
+  return picks.find(p => String(p.id || picks.indexOf(p)) === key)
+      || picks.find((p, i) => String(i) === key)
+      || null;
+}
+
+function closeLivePeekPopover() {
+  if (_livePeekPopover) {
+    _livePeekPopover.remove();
+    _livePeekPopover = null;
+    _livePeekPopoverPickId = null;
+    document.removeEventListener('keydown', _livePeekKeyHandler, true);
+    document.removeEventListener('click', _livePeekOutsideHandler, true);
+  }
+}
+
+function _livePeekKeyHandler(e) {
+  if (e.key === 'Escape') { e.stopPropagation(); closeLivePeekPopover(); }
+}
+
+function _livePeekOutsideHandler(e) {
+  // Close when the click is outside the popover and outside the anchor that opened it.
+  if (!_livePeekPopover) return;
+  if (_livePeekPopover.contains(e.target)) return;
+  if (e.target.closest && e.target.closest('.live-peek-trigger')) return; // re-click handled by toggle
+  closeLivePeekPopover();
+}
+
+function positionLivePeekPopover(pop, anchorEl) {
+  const a = anchorEl.getBoundingClientRect();
+  const margin = 8;
+  const pw = pop.offsetWidth;
+  const ph = pop.offsetHeight;
+  const vw = document.documentElement.clientWidth;
+  const vh = document.documentElement.clientHeight;
+  // Prefer below-left-aligned; flip above if it would overflow the bottom.
+  let top = a.bottom + margin;
+  if (top + ph > vh && a.top - margin - ph > 0) top = a.top - margin - ph;
+  // Clamp horizontally so it stays on-screen (readable on mobile).
+  let left = a.left;
+  if (left + pw > vw - margin) left = vw - margin - pw;
+  if (left < margin) left = margin;
+  // Convert viewport coords → document coords (popover is position:absolute on <body>).
+  pop.style.top = `${top + window.scrollY}px`;
+  pop.style.left = `${left + window.scrollX}px`;
+}
+
+function openLivePeekPopover(pickId, anchorEl) {
+  // Toggle: clicking the same icon while its popover is open closes it.
+  if (_livePeekPopover && String(_livePeekPopoverPickId) === String(pickId)) {
+    closeLivePeekPopover();
+    return;
+  }
+  closeLivePeekPopover();
+
+  const pick = resolvePickById(pickId);
+  if (!pick) return;
+
+  const pop = document.createElement('div');
+  pop.className = 'live-peek-popover';
+  pop.setAttribute('role', 'dialog');
+  pop.innerHTML =
+    `<div class="lpp-head">`
+    + `<span class="lpp-title">Live Peek</span>`
+    + `<button class="lpp-close" title="Close" aria-label="Close">×</button>`
+    + `</div>`
+    + `<div class="lpp-bet">${escapeHtml(pick.bet || '')}</div>`
+    + `<div class="lpp-mount"></div>`;
+  document.body.appendChild(pop);
+  _livePeekPopover = pop;
+  _livePeekPopoverPickId = pickId;
+
+  pop.querySelector('.lpp-close').addEventListener('click', (e) => {
+    e.stopPropagation(); closeLivePeekPopover();
+  });
+
+  const mount = pop.querySelector('.lpp-mount');
+
+  const renderInto = () => {
+    if (typeof window.renderLivePeek !== 'function') {
+      // Module not loaded yet — wait for the ready signal, then render.
+      mount.innerHTML = `<div style="font-size:11px;color:var(--muted)">loading…</div>`;
+      window.addEventListener('live-peek-ready', renderInto, { once: true });
+      return;
+    }
+    window.renderLivePeek(pick, mount).catch(() => {
+      mount.innerHTML = `<div style="font-size:11px;color:var(--muted)">couldn't load live peek</div>`;
+    }).finally(() => {
+      // Re-clamp after async content changes the popover height.
+      positionLivePeekPopover(pop, anchorEl);
+    });
+  };
+  renderInto();
+
+  // Initial position (before async content), then listeners.
+  positionLivePeekPopover(pop, anchorEl);
+  // Defer the outside-click listener so the opening click doesn't immediately close it.
+  setTimeout(() => {
+    document.addEventListener('keydown', _livePeekKeyHandler, true);
+    document.addEventListener('click', _livePeekOutsideHandler, true);
+  }, 0);
 }
 
 // ── Navigate from Today callout to Pick Log ─────────────────────
@@ -2625,7 +2739,7 @@ function renderMBLog() {
     const badge = p.model === 'v1-trends' ? '<span class="badge badge-v1">V1</span>' : '<span class="badge badge-v2">V2</span>';
     const shortDate = p.date ? p.date.slice(5) : '—';
     const gameTime = p.game_time ? `<div class="game-time" style="font-size:10px;color:var(--muted);margin-top:2px">${p.game_time}</div>` : '';
-    const checkLink = `<a href="${gameSearchUrl(p)}" target="_blank" rel="noopener" style="color:var(--accent);font-size:15px;text-decoration:none" title="Check score / result">🔍</a>`;
+    const checkLink = `<span class="live-peek-trigger" role="button" tabindex="0" onclick="event.stopPropagation();openLivePeekPopover('${escapeHtml(String(id))}', this)" style="cursor:pointer;color:var(--accent);font-size:15px;text-decoration:none" title="Live Peek — quick look at this bet">🔍</span>`;
     const undoBtn = `<button class="remove-bet-btn" onclick="undoActualBet('${id}')" title="Remove from My Bets">Undo</button>`;
     return `<tr>
       <td><span class="date-full">${p.date || '—'}</span><span class="date-short">${shortDate}</span>${gameTime}</td>

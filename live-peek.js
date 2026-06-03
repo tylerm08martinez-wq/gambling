@@ -45,6 +45,14 @@ const PITCHING_STAT_KEYWORDS = new Set(['strikeouts', 'hits allowed']);
 // Longest keyword first so "total bases" wins over "bases", "hits allowed" over "hits".
 const STAT_KEYS = Object.keys(STAT_MAP).sort((a, b) => b.length - a.length);
 
+// Combined-stat props (e.g. "Hits+Runs+RBIs", "Runs + RBIs") are a SUM of several
+// boxscore fields. We don't grade them inline — substring-matching one keyword would
+// produce a confident WRONG peek (grading "Hits+Runs+RBIs" as just `hits`). Detect the
+// "+" that joins stat words and route the bet to the fallback instead (review #4, #75).
+// Matches a stat keyword immediately followed (allowing spaces) by "+" and another word,
+// or a word "+" then a stat keyword — i.e. the "+" is a stat conjunction, not an "N+" line.
+const COMBINED_STAT_RE = /[a-z]\s*\+\s*[a-z]/i;
+
 // ---------------------------------------------------------------------------
 // 1. CLASSIFY + PARSE
 //    parseBet returns a discriminated result:
@@ -84,6 +92,28 @@ export function parseBet(pick) {
   const statKeyword = STAT_KEYS.find(k => lc.includes(k)) || null;
 
   if (statKeyword) {
+    // COMBINED-STAT GUARD (review #4): a "+" joining stat words (e.g. "Hits+Runs+RBIs",
+    // "Runs + RBIs") is a SUM the inline grader can't compute from one boxscore field.
+    // Grading it as the single matched keyword would be a confident wrong peek, so flag
+    // it as combined → the orchestrator degrades to the StatMuse fallback. The "N+" line
+    // form ("2+ Total Bases") is digit+, not letter+letter, so it does NOT trip this.
+    if (COMBINED_STAT_RE.test(core)) {
+      return {
+        kind: 'prop',
+        combined: true,             // signals "don't grade inline — fall back"
+        statKeyword,                // kept so fallbackLink can build a sensible query
+        statKey: null,
+        side: side || 'over',
+        line,
+        teamHints: oppMatch ? splitTeams(opponent) : [],
+        player: core
+          .replace(/\s+(?:vs\.?|at|@)\s+.+$/i, '')
+          .replace(/\b(over|under)\b\s+[\d.]+/i, ' ')
+          .replace(/\b\d+(?:\.\d+)?\+/g, ' ')
+          .replace(/[a-z]+(?:\s*\+\s*[a-z]+)+/i, ' ')   // strip the combined-stat phrase
+          .replace(/\s+/g, ' ').trim(),
+      };
+    }
     // PROP: isolate the player name by stripping the opponent clause, the over/under
     // clause, the "N+" token, and the stat keyword from the core.
     let s = core;
@@ -337,6 +367,12 @@ export async function livePeek(pick, source = makeMlbSource()) {
       return { state: 'fallback', url: fallbackLink(pick), reason: `${parsed.kind} not graded inline` };
     }
 
+    if (parsed.combined) {
+      // Combined-stat prop (e.g. "Hits+Runs+RBIs") — no single boxscore field to grade
+      // against; degrade to the StatMuse fallback rather than peek a wrong number (#4).
+      return { state: 'fallback', url: fallbackLink(pick), reason: 'combined-stat prop not graded inline' };
+    }
+
     const game = await source.findGame(pick.date, parsed.teamHints);
     if (!game) {
       return { state: 'fallback', url: fallbackLink(pick), reason: 'no matching game' };
@@ -424,9 +460,12 @@ function panelHtml(result) {
   // fallback
   const isProp = parseBet(result.pickForFallback || {}).kind === 'prop';
   const label = isProp ? 'Look up stat on StatMuse →' : 'See scoreboard on ESPN →';
-  return `<div style="margin-top:8px;font-size:12px">`
+  // Review #5: show a friendly line instead of the raw `reason` (e.g. "error: Failed to
+  // fetch"). The deep-link stays; `reason` is preserved only as a hover/debug aid (title).
+  const dbg = result.reason ? ` title="${esc(result.reason)}"` : '';
+  return `<div style="margin-top:8px;font-size:12px"${dbg}>`
+    + `<div style="font-size:11px;color:var(--muted);margin-bottom:2px">couldn't load live result — check StatMuse/ESPN</div>`
     + fallbackAnchor(result.url, label)
-    + (result.reason ? `<div style="font-size:10px;color:var(--muted);margin-top:2px">${esc(result.reason)}</div>` : '')
     + `</div>`;
 }
 
