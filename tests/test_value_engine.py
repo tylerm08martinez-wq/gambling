@@ -152,6 +152,14 @@ class TestDevig(unittest.TestCase):
         self.assertAlmostEqual(fa, ma, delta=0.001)     # methods agree near 50/50
         self.assertLess(fa, 0.5)                         # -108 favorite side > 50% raw -> over priced; fair Over < .5
 
+    def test_power_handles_wide_lopsided_market(self):
+        # ~19% hold, lopsided -> root k > the nominal 1.5 bound; fair probs must still
+        # sum to 1 (regression: a clamped k silently returned non-normalized probs).
+        pa, pb = ve.american_to_prob(-900), ve.american_to_prob(250)
+        fa, fb = ve.power_devig(pa, pb)
+        self.assertAlmostEqual(fa + fb, 1.0, places=6)
+        self.assertGreater(fa, fb)  # the -900 favorite stays the favorite
+
     def test_fair_prob_routes_method_by_market(self):
         # game lines that are spreads/totals use the power method; ML/props multiplicative
         self.assertEqual(ve.devig_method("total 210.5"), "power")
