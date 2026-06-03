@@ -341,7 +341,9 @@ export async function livePeek(pick, source = makeMlbSource()) {
     if (!game) {
       return { state: 'fallback', url: fallbackLink(pick), reason: 'no matching game' };
     }
-    const live = !/final/i.test(game.status);
+    // MLB detailedState is "Game Over"/"Completed Early" for a window after the last
+    // out before it becomes "Final" — all three are terminal, not in-progress.
+    const live = !/final|game over|completed/i.test(game.status);
 
     if (parsed.kind === 'total') {
       const total = (game.awayR || 0) + (game.homeR || 0);
