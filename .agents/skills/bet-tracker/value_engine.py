@@ -38,7 +38,12 @@ MEGA_STEAM_BOOKS = 4  # 4+ = mega steam
 # implied probability
 # ==================================================================================
 def american_to_prob(odds) -> float:
-    """American odds -> implied probability. Accepts int/float or a string like '+120'."""
+    """American odds -> implied probability. Accepts int/float or a string like '+120'.
+
+    NB: tracker.py has a sibling `american_to_implied_prob`. This engine keeps its own
+    copy on purpose so it stays import-isolated (no dependency on the 1.5k-line tracker
+    module or its I/O); consolidating tracker onto this engine is follow-up, not #44.
+    """
     o = _parse_odds(odds)
     if o < 0:
         return (-o) / (-o + 100.0)
@@ -67,6 +72,11 @@ def power_devig(p_a: float, p_b: float, iterations: int = 80):
     sum to 1 by construction.
     """
     lo, hi = 0.5, 1.5
+    # Expand the upper bound so the root is always bracketed. Wide/lopsided markets
+    # (large overround) push k above the nominal 1.5; a clamped k would silently return
+    # fair probs that don't sum to 1. Keep doubling hi until f(hi) < 1 brackets the root.
+    while p_a ** hi + p_b ** hi > 1.0 and hi < 64.0:
+        lo, hi = hi, hi * 2.0
     for _ in range(iterations):
         k = (lo + hi) / 2.0
         if p_a ** k + p_b ** k > 1.0:
@@ -149,14 +159,14 @@ def units_from_clv(fair_p: float, p_best: float, clv: float, market: str,
 # ==================================================================================
 # steam — confirmation only, never a standalone pick (REFERENCE.md §6)
 # ==================================================================================
-def classify_steam(opening, current_by_book: dict, pinnacle_now, side_is_favorite: bool,
-                   market: str) -> dict:
+def classify_steam(opening, current_by_book: dict, pinnacle_now) -> dict:
     """Classify line movement as steam. Confirmation-only: it never *creates* a pick.
 
-    Steam = STEAM_MIN_BOOKS+ books moved the same direction off `opening`. Legit only
-    when the move is *toward* the current Pinnacle number; blowing *past* Pinnacle is
-    retail overreaction (`usable` False). Direction is read in implied-prob space so it
-    works for both ML/props and (line-based) spreads/totals via the favorite flag.
+    Steam = STEAM_MIN_BOOKS+ books moved the same direction (shortened the price) off
+    `opening`. Legit only when the move is *toward* the current Pinnacle number; blowing
+    *past* Pinnacle is retail overreaction (`usable` False). Read in implied-prob space,
+    so this covers moneylines/props only — spreads/totals move in line units and are out
+    of scope for this helper.
     """
     open_p = american_to_prob(opening)
     pin_p = american_to_prob(pinnacle_now)
@@ -194,6 +204,9 @@ def evaluate_market(market_snapshot: dict, confirmation: bool = False) -> dict:
     gate -> reject; nothing positive -> no_bet (covers the post-steam chase).
     """
     market = market_snapshot.get("market", "")
+    # A snapshot may carry a confirmation signal (e.g. usable steam / pm_win_pct agreement)
+    # the skill computed separately; it can only *raise* size to 2u, never create a pick.
+    confirmation = confirmation or bool(market_snapshot.get("confirmation"))
     pinnacle = market_snapshot.get("pinnacle", {})
     best = market_snapshot.get("best_book_prices", {})
     sides = list(pinnacle.keys())
@@ -256,7 +269,8 @@ def evaluate_board(board: dict) -> dict:
         markets = [board]
 
     considered = [evaluate_market(m) for m in markets]
-    picks = [r for r in considered if r["action"] == "log"]
+    picks = sorted((r for r in considered if r["action"] == "log"),
+                   key=lambda r: r["clv"], reverse=True)   # rank by CLV desc (SKILL.md spec)
     rejected = [r for r in considered if r["action"] == "reject"]
 
     if picks:
