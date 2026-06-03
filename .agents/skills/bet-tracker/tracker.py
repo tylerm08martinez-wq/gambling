@@ -274,6 +274,10 @@ def fmt_net(n: float) -> str:
 def fmt_roi(r: float) -> str:
     return f"+{r:.1f}%" if r >= 0 else f"{r:.1f}%"
 
+def fmt_clv(c: float) -> str:
+    """Format a CLV value (percentage points) with an explicit sign, e.g. '+2.50%'."""
+    return f"+{c:.2f}%" if c >= 0 else f"{c:.2f}%"
+
 def fmt_score(s) -> str:
     return f"{s:.1f}/10" if s is not None else "—"
 
@@ -424,6 +428,41 @@ def dashboard_summaries(picks: list, models: list = MODELS) -> list:
         {**m, **model_stats([p for p in picks if p.get("model") == m["id"]])}
         for m in models
     ]
+
+
+def is_measured_clv(pick: dict) -> bool:
+    """Measured CLV requires a fetched Pinnacle close. Unmeasured CLV — null clv, or a
+    placeholder +0.00% with no close fetched (CONTEXT.md) — is excluded from CLV stats
+    rather than counted as zero. A genuine measured 0.00% (close fetched, price tied the
+    close) IS measured: it counts in the denominator but did not beat the close."""
+    return pick.get("clv") is not None and bool(pick.get("closing_line"))
+
+
+def clv_stats(picks: list) -> dict:
+    """CLV process metrics over Measured-CLV picks (Unmeasured excluded). The V3-Value
+    model is judged by these, not short-run ROI: CLV+ rate (share that beat the close),
+    average CLV, and a per-Primary-Edge-Type breakdown."""
+    measured = [p for p in picks if is_measured_clv(p)]
+    n = len(measured)
+    by_edge: dict = {}
+    for p in measured:
+        et = p.get("primary_edge_type") or "(unclassified)"
+        b = by_edge.setdefault(et, {"n": 0, "clv_plus": 0, "clv_sum": 0.0})
+        b["n"] += 1
+        b["clv_sum"] += p["clv"]
+        if p["clv"] > 0:
+            b["clv_plus"] += 1
+    for b in by_edge.values():
+        b["avg_clv"] = b["clv_sum"] / b["n"]
+        b["plus_rate"] = b["clv_plus"] / b["n"] * 100
+    clv_plus = sum(1 for p in measured if p["clv"] > 0)
+    return {
+        "measured": n,
+        "unmeasured": len(picks) - n,
+        "clv_plus_rate": (clv_plus / n * 100) if n else None,
+        "avg_clv": (sum(p["clv"] for p in measured) / n) if n else None,
+        "by_edge_type": by_edge,
+    }
 
 
 # ── MLB Stats API ─────────────────────────────────────────────────────────────
@@ -1066,6 +1105,17 @@ def cmd_stats(_args):
         print(f"⚠️  Need 20+ settled picks for statistical significance ({cb['settled']} so far)")
     print(f"Breakeven win rate at −110: 52.4%")
 
+    # ── CLV Calibration (V3-Value scorecard — judge by CLV, not short-run ROI) ──
+    clv = clv_stats(picks)
+    if clv["measured"]:
+        print(f"\n{divider()}\n")
+        print(f"💹 CLV CALIBRATION  ({clv['measured']} measured · {clv['unmeasured']} unmeasured excluded)")
+        print(f"CLV+ rate: {clv['clv_plus_rate']:.0f}% · Avg CLV: {fmt_clv(clv['avg_clv'])}")
+        if clv["by_edge_type"]:
+            print("By edge type:")
+            for et, b in sorted(clv["by_edge_type"].items(), key=lambda x: -x[1]["avg_clv"]):
+                print(f"• {et}: {b['n']} · {b['plus_rate']:.0f}% CLV+ · avg {fmt_clv(b['avg_clv'])}")
+
     # ── Recent Picks ──
     recent = sorted(picks, key=lambda p: p["date"], reverse=True)[:10]
     print(f"\n{divider()}\n")
@@ -1470,7 +1520,7 @@ def main():
     sub.add_parser("migrate-actual-bets", help="Merge stale .claude My Bets data into .agents")
 
     log_p = sub.add_parser("log", help="Log a new pick")
-    log_p.add_argument("--model", required=True, choices=["v1-trends", "v2-sharp", "v3-value"])
+    log_p.add_argument("--model", required=True, choices=[m["id"] for m in MODELS])
     log_p.add_argument("--sport", required=True)
     log_p.add_argument("--bet", required=True, help="Full bet description incl. opponent")
     log_p.add_argument("--line", required=True, help="Odds (e.g. -110, +146)")
