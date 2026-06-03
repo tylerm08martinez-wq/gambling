@@ -424,10 +424,15 @@ def model_label(model_id: str, models: list = MODELS) -> str:
 def dashboard_summaries(picks: list, models: list = MODELS) -> list:
     """Registry-driven per-model summary rows: each registry entry merged with its
     model_stats(). Order follows the registry; adding a model needs only a MODELS row."""
-    return [
-        {**m, **model_stats([p for p in picks if p.get("model") == m["id"]])}
-        for m in models
-    ]
+    rows = []
+    for m in models:
+        mp = [p for p in picks if p.get("model") == m["id"]]
+        clv = clv_stats(mp)
+        rows.append({**m, **model_stats(mp),
+                     "clv_measured": clv["measured"],
+                     "clv_plus_rate": clv["clv_plus_rate"],
+                     "avg_clv": clv["avg_clv"]})
+    return rows
 
 
 def is_measured_clv(pick: dict) -> bool:
@@ -1094,6 +1099,10 @@ def cmd_stats(_args):
         print(f"Record: {fmt_record(st)} · Win %: {st['win_pct']:.1f}%")
         print(f"Net: {fmt_net(st['units_net'])} · ROI: {fmt_roi(st['roi'])} {roi_emoji(st['roi'])}")
         print(f"Avg score: {avg} · {st['open']} open")
+        if st["clv_measured"]:
+            print(f"CLV+: {st['clv_plus_rate']:.0f}% · avg {fmt_clv(st['avg_clv'])} · {st['clv_measured']} measured")
+        else:
+            print("CLV+: — no measured picks yet")
 
     print(f"\n📈 COMBINED")
     print(f"Record: {fmt_record(cb)} · Win %: {cb['win_pct']:.1f}%")

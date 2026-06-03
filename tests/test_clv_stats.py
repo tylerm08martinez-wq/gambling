@@ -100,5 +100,33 @@ class TestClvRendersInDashboard(unittest.TestCase):
         self.assertIn("V3-VALUE", out)
 
 
+class TestPerModelClv(unittest.TestCase):
+    def test_dashboard_summaries_include_per_model_clv(self):
+        picks = [
+            _pick(2.0, model="v1-trends"),                       # measured, beats close
+            _pick(-1.0, model="v1-trends"),                      # measured, doesn't beat
+            _pick(None, closing_line=None, model="v2-sharp"),    # unmeasured
+        ]
+        rows = {r["id"]: r for r in tracker.dashboard_summaries(picks)}
+        v1 = rows["v1-trends"]
+        self.assertEqual(v1["clv_measured"], 2)
+        self.assertAlmostEqual(v1["clv_plus_rate"], 50.0, places=4)
+        self.assertAlmostEqual(v1["avg_clv"], 0.5, places=4)
+        v2 = rows["v2-sharp"]
+        self.assertEqual(v2["clv_measured"], 0)
+        self.assertIsNone(v2["clv_plus_rate"])  # never fabricate a rate from zero samples
+
+    def test_per_model_clv_renders_on_cards(self):
+        picks = [_pick(2.0, model="v1-trends"),
+                 _pick(None, closing_line=None, model="v2-sharp")]
+        buf = io.StringIO()
+        with patch.object(tracker, "load_picks", return_value=picks):
+            with contextlib.redirect_stdout(buf):
+                tracker.cmd_stats(None)
+        out = buf.getvalue()
+        self.assertIn("CLV+:", out)                  # measured model shows a rate
+        self.assertIn("no measured picks yet", out)  # unmeasured model says so, not 0%
+
+
 if __name__ == "__main__":
     unittest.main()
