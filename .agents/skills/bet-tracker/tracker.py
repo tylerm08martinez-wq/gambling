@@ -399,6 +399,90 @@ def model_stats(picks: list) -> dict:
     )
 
 
+def compute_dashboard(picks: list) -> dict:
+    """Pure computation of every figure ``cmd_stats`` displays.
+
+    This is the testable seam: ``cmd_stats`` formats and prints the returned dict
+    and adds NO domain logic of its own. Any breakdown/calibration formula lives
+    here so it can be asserted directly without scraping stdout.
+    """
+    v1 = model_stats([p for p in picks if p["model"] == "v1-trends"])
+    v2 = model_stats([p for p in picks if p["model"] == "v2-sharp"])
+    combined = model_stats(picks)
+
+    settled_all = [p for p in picks if p.get("result") in {"win", "loss", "push"}]
+    void_count = sum(1 for p in picks if p.get("result") == "void")
+
+    # Leader: which model is ahead on net units, and by how much.
+    diff = v1["units_net"] - v2["units_net"]
+    if diff > 0:
+        leader = {"model": "v1-trends", "units": diff}
+    elif diff < 0:
+        leader = {"model": "v2-sharp", "units": abs(diff)}
+    else:
+        leader = {"model": None, "units": 0.0}
+
+    def _breakdown(key_fn) -> list:
+        groups: dict = {}
+        for p in settled_all:
+            g = groups.setdefault(key_fn(p),
+                                  {"picks": 0, "wins": 0, "wagered": 0.0, "net": 0.0})
+            g["picks"] += 1
+            g["wagered"] += p["units"]
+            g["net"] += p.get("units_won_lost") or 0
+            if p["result"] == "win":
+                g["wins"] += 1
+        rows = []
+        for name, g in groups.items():
+            wp = g["wins"] / g["picks"] * 100 if g["picks"] else 0
+            roi = g["net"] / g["wagered"] * 100 if g["wagered"] else 0
+            rows.append({"name": name, "picks": g["picks"], "wins": g["wins"],
+                         "win_pct": wp, "wagered": g["wagered"], "net": g["net"], "roi": roi})
+        rows.sort(key=lambda r: -r["net"])
+        return rows
+
+    def _edge_key(p) -> str:
+        raw_edge = p.get("primary_edge") or "Unknown"
+        return raw_edge.split("—")[0].split("-")[0].strip().split()[0].upper()
+
+    edges = _breakdown(_edge_key)
+    sports = _breakdown(lambda p: p.get("sport", "Unknown").upper())
+
+    # Score calibration buckets (mirror the original >=9 / >=7 / >=5 cut points).
+    scored_settled = [p for p in settled_all if p.get("score") is not None]
+    buckets: dict = {"9-10": [], "7-8": [], "5-6": []}
+    for p in scored_settled:
+        sc = p["score"]
+        if sc >= 9:
+            buckets["9-10"].append(p)
+        elif sc >= 7:
+            buckets["7-8"].append(p)
+        elif sc >= 5:
+            buckets["5-6"].append(p)
+    score_calibration = []
+    for label in ("9-10", "7-8", "5-6"):
+        bpicks = buckets[label]
+        if not bpicks:
+            continue
+        wins = sum(1 for p in bpicks if p["result"] == "win")
+        losses = sum(1 for p in bpicks if p["result"] == "loss")
+        net = sum(p.get("units_won_lost") or 0 for p in bpicks)
+        wp = wins / (wins + losses) * 100 if (wins + losses) > 0 else 0
+        score_calibration.append({
+            "bucket": label, "count": len(bpicks), "wins": wins, "losses": losses,
+            "net": net, "win_pct": wp,
+            "underperforming": wp < 52.4 and (wins + losses) >= 3,
+        })
+
+    return {
+        "counts": {"total": len(picks), "settled": combined["settled"],
+                   "open": combined["open"], "voids": void_count},
+        "v1": v1, "v2": v2, "combined": combined,
+        "leader": leader, "edges": edges, "sports": sports,
+        "score_calibration": score_calibration,
+    }
+
+
 # ── MLB Stats API ─────────────────────────────────────────────────────────────
 
 def extract_bet_team(bet: str) -> str:
@@ -1001,29 +1085,21 @@ def divider() -> str:
 def cmd_stats(_args):
     picks = load_picks()
     today = datetime.now().strftime("%B %d, %Y")
+    d = compute_dashboard(picks)
+    v1, v2, cb = d["v1"], d["v2"], d["combined"]
+    counts = d["counts"]
 
-    v1_picks = [p for p in picks if p["model"] == "v1-trends"]
-    v2_picks = [p for p in picks if p["model"] == "v2-sharp"]
-
-    v1 = model_stats(v1_picks)
-    v2 = model_stats(v2_picks)
-    cb = model_stats(picks)
-
-    settled_all = [p for p in picks if p.get("result") in {"win", "loss", "push"}]
-    open_picks = [p for p in picks if p.get("result") is None]
-    void_picks = [p for p in picks if p.get("result") == "void"]
-
-    diff = v1["units_net"] - v2["units_net"]
-    if diff > 0:
-        leader = f"V1-Trends by {diff:.2f}u"
-    elif diff < 0:
-        leader = f"V2-Sharp by {abs(diff):.2f}u"
+    lead = d["leader"]
+    if lead["model"] == "v1-trends":
+        leader = f"V1-Trends by {lead['units']:.2f}u"
+    elif lead["model"] == "v2-sharp":
+        leader = f"V2-Sharp by {lead['units']:.2f}u"
     else:
         leader = "Tied"
 
     print(f"\n📊 BETTING TRACKER — {today}")
-    void_label = f" · {len(void_picks)} void" if void_picks else ""
-    print(f"{len(picks)} picks tracked · {cb['settled']} settled · {cb['open']} open{void_label}\n")
+    void_label = f" · {counts['voids']} void" if counts['voids'] else ""
+    print(f"{counts['total']} picks tracked · {cb['settled']} settled · {cb['open']} open{void_label}\n")
     print(divider())
 
     # ── Model cards ──
@@ -1062,6 +1138,7 @@ def cmd_stats(_args):
     print()
 
     # ── Open Tonight ──
+    open_picks = [p for p in picks if p.get("result") is None]
     if open_picks:
         print(divider())
         print(f"\n⏳ OPEN / PENDING\n")
@@ -1071,74 +1148,29 @@ def cmd_stats(_args):
         print()
 
     # ── Edge Breakdown ──
-    if settled_all:
-        edges: dict = {}
-        for p in settled_all:
-            raw_edge = p.get("primary_edge") or "Unknown"
-            edge_key = raw_edge.split("—")[0].split("-")[0].strip().split()[0].upper()
-            if edge_key not in edges:
-                edges[edge_key] = {"picks": 0, "wins": 0, "wagered": 0.0, "net": 0.0}
-            e = edges[edge_key]
-            e["picks"] += 1
-            e["wagered"] += p["units"]
-            e["net"] += p.get("units_won_lost") or 0
-            if p["result"] == "win":
-                e["wins"] += 1
-
+    if d["edges"]:
         print(divider())
         print(f"\n🔍 EDGE BREAKDOWN\n")
-        for edge, e in sorted(edges.items(), key=lambda x: -x[1]["net"]):
-            wp = e["wins"] / e["picks"] * 100
-            roi = e["net"] / e["wagered"] * 100 if e["wagered"] else 0
-            print(f"• {edge}: {e['picks']} picks · {wp:.0f}% W · {fmt_net(e['net'])} ({fmt_roi(roi)}) {roi_emoji(roi)}")
+        for e in d["edges"]:
+            print(f"• {e['name']}: {e['picks']} picks · {e['win_pct']:.0f}% W · {fmt_net(e['net'])} ({fmt_roi(e['roi'])}) {roi_emoji(e['roi'])}")
         print()
 
     # ── Sport Breakdown ──
-    if settled_all:
-        sports: dict = {}
-        for p in settled_all:
-            s = p.get("sport", "Unknown").upper()
-            if s not in sports:
-                sports[s] = {"picks": 0, "wins": 0, "wagered": 0.0, "net": 0.0}
-            sp = sports[s]
-            sp["picks"] += 1
-            sp["wagered"] += p["units"]
-            sp["net"] += p.get("units_won_lost") or 0
-            if p["result"] == "win":
-                sp["wins"] += 1
-
+    if d["sports"]:
         print(divider())
         print(f"\n🏟️  BY SPORT\n")
-        for sport, s in sorted(sports.items(), key=lambda x: -x[1]["net"]):
-            wp = s["wins"] / s["picks"] * 100 if s["picks"] else 0
-            roi = s["net"] / s["wagered"] * 100 if s["wagered"] else 0
-            print(f"• {sport}: {s['picks']} picks · {wp:.0f}% W · {fmt_net(s['net'])} ({fmt_roi(roi)}) {roi_emoji(roi)}")
+        for s in d["sports"]:
+            print(f"• {s['name']}: {s['picks']} picks · {s['win_pct']:.0f}% W · {fmt_net(s['net'])} ({fmt_roi(s['roi'])}) {roi_emoji(s['roi'])}")
         print()
 
     # ── Score Calibration ──
-    scored_settled = [p for p in settled_all if p.get("score") is not None] if settled_all else []
-    if scored_settled:
-        buckets = {"9-10": [], "7-8": [], "5-6": []}
-        for p in scored_settled:
-            sc = p["score"]
-            if sc >= 9: buckets["9-10"].append(p)
-            elif sc >= 7: buckets["7-8"].append(p)
-            elif sc >= 5: buckets["5-6"].append(p)
-
-        has_data = any(buckets[k] for k in buckets)
-        if has_data:
-            print(divider())
-            print(f"\n🎯 SCORE CALIBRATION\n")
-            for bucket, bpicks in buckets.items():
-                if not bpicks:
-                    continue
-                wins = sum(1 for p in bpicks if p["result"] == "win")
-                losses = sum(1 for p in bpicks if p["result"] == "loss")
-                net = sum(p.get("units_won_lost") or 0 for p in bpicks)
-                wp = wins / (wins + losses) * 100 if (wins + losses) > 0 else 0
-                flag = " ⚠️" if wp < 52.4 and (wins + losses) >= 3 else ""
-                print(f"• Score {bucket}: {len(bpicks)} picks · {wp:.0f}% W · {fmt_net(net)}{flag}")
-            print()
+    if d["score_calibration"]:
+        print(divider())
+        print(f"\n🎯 SCORE CALIBRATION\n")
+        for b in d["score_calibration"]:
+            flag = " ⚠️" if b["underperforming"] else ""
+            print(f"• Score {b['bucket']}: {b['count']} picks · {b['win_pct']:.0f}% W · {fmt_net(b['net'])}{flag}")
+        print()
 
 
 def cmd_open(_args):
