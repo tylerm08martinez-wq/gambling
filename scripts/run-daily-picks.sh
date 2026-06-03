@@ -64,15 +64,35 @@ fi
 
 git pull --rebase origin main 2>&1 | tee -a "$LOG"
 
-# The routine prompt: execute both skills exactly as written. Mirrors the retired
-# cloud trigger's prompt. Requires the `claude` CLI + Slack MCP configured on this host.
-PROMPT='You are the Daily Bet Picks agent. Generate today'\''s V1-Trends and V2-Sharp betting picks by executing the project'\''s two betting skills exactly as written, then confirm the results pushed to GitHub. The repo is the current working directory. Always use python3.
+# The routine prompt: execute the betting skills exactly as written. Mirrors the
+# retired cloud trigger's prompt. Requires the `claude` CLI + Slack MCP on this host.
+#
+# V3-Value (CLV/+EV de-vig model, ADR 0007) is GATED OFF by default — it is still
+# incubating in the experiments lab. Activate by exporting V3_VALUE_ENABLED=1 in the
+# scheduler's environment, but ONLY after BOTH prerequisites are met:
+#   1. its autoeval loop is green (the engine de-vigs correctly), and
+#   2. a runnable copy exists on THIS host — either graduated into ~/.claude/skills
+#      or forked to .agents/skills/sports-betting-value/ (the path referenced below).
+# Until then V3 logs nothing live, so a mis-computed pick can't pollute the CLV ledger.
+if [ "${V3_VALUE_ENABLED:-0}" = "1" ]; then
+  V3_STEP='3. Then read .agents/skills/sports-betting-value/SKILL.md in full and execute it the same way (run AFTER V1 and V2 so it respects the shared daily cap: 7 total, 3 per model). It logs with --model v3-value and --primary-edge-type clv_value.
+'
+  echo "ℹ️  V3-Value ENABLED for this run." | tee -a "$LOG"
+else
+  V3_STEP=''
+  echo "ℹ️  V3-Value gated OFF (export V3_VALUE_ENABLED=1 after the autoeval pass + a host copy exists)." | tee -a "$LOG"
+fi
+
+PROMPT_HEAD='You are the Daily Bet Picks agent. Generate today'\''s betting picks by executing the project'\''s betting skills exactly as written, then confirm the results pushed to GitHub. The repo is the current working directory. Always use python3.
 
 1. Read .agents/skills/sports-betting/SKILL.md in full and execute every step in order (Step 0 context pull, research via the BettingPros client/extractor, logging via tracker.py with --run-type scheduled + --primary-edge-type + --source-evidence-json, git push, Slack post to #bet-picks).
 2. Then read .agents/skills/sports-betting-sharp/SKILL.md in full and execute it the same way (run AFTER V1 so it respects the shared daily cap).
-3. Verify both pushes landed on origin/main; retry any missing push. Print a summary of V1/V2 pick counts and cap usage. 0 picks is a valid outcome.
+'
+PROMPT_TAIL='Finally, verify all pushes landed on origin/main; retry any missing push. Print a summary of pick counts and cap usage. 0 picks is a valid outcome.
 
 Do NOT fabricate games/lines/odds. Do NOT lower the bar to fill the card. Do NOT edit picks.json by hand. Do NOT commit anything but tracker-managed files.'
+
+PROMPT="${PROMPT_HEAD}${V3_STEP}${PROMPT_TAIL}"
 
 # Headless/unattended: no TTY to approve tool prompts, so skip permission prompts.
 # Safe here — this is your own machine running your own repo's skills, which have
