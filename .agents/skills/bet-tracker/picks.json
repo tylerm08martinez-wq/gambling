@@ -1433,5 +1433,125 @@
     "line_num": 1.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260603-mlb-v1-grant-total",
+    "date": "2026-06-03",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Grant Holmes Under 16.5 Outs Recorded vs TOR",
+    "line": "-101 @ DraftKings",
+    "units": 2,
+    "score": 8.4,
+    "primary_edge": "Cross-book gap 1.0 (Novig over 17.5 vs consensus 16.5); projection 15.42 vs 16.5 (diff -1.08) confirms under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 405",
+        "category": "cross_book_prop_gap",
+        "status": "usable",
+        "freshness": "2026-06-03 live fetch",
+        "detail": "over best line 17.5 (Novig) vs consensus 16.5; under at DK line 16.5 @ -101; gap=1.0"
+      },
+      {
+        "source": "BettingPros projection",
+        "category": "model_projection",
+        "status": "usable",
+        "freshness": "2026-06-03 live fetch",
+        "detail": "projection value 15.42 outs; recommended_side=under; diff -1.08"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:15 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260603-mlb-v1-cristo-total",
+    "date": "2026-06-03",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Cristopher Sanchez Under 6.5 Strikeouts vs SD",
+    "line": "+124 @ FanDuel",
+    "units": 2,
+    "score": 8.4,
+    "primary_edge": "Cross-book gap 1.0 (Novig over 7.5 vs consensus 6.5); projection 6.33 vs 6.5 (diff -0.17) confirms under; plus-money under at +124",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 285",
+        "category": "cross_book_prop_gap",
+        "status": "usable",
+        "freshness": "2026-06-03 live fetch",
+        "detail": "over best line 7.5 (Novig) vs consensus 6.5; under at FanDuel line 6.5 @ +124; gap=1.0"
+      },
+      {
+        "source": "BettingPros projection",
+        "category": "model_projection",
+        "status": "usable",
+        "freshness": "2026-06-03 live fetch",
+        "detail": "projection value 6.33 K; recommended_side=under; diff -0.17"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:40 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 6.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260603-mlb-v1-steven-total",
+    "date": "2026-06-03",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Steven Kwan Over 0.5 Hits+Runs+RBIs vs NYY",
+    "line": "-193 @ DraftKings",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Cross-book gap 0.5 (DK over 0.5 vs consensus 1.0); projection 1.42 vs 0.5 (diff +0.92) strongly confirms over; heavy juice limits Value to 4",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 403",
+        "category": "cross_book_prop_gap",
+        "status": "usable",
+        "freshness": "2026-06-03 live fetch",
+        "detail": "over best line 0.5 (DK) vs consensus 1.0; under at Novig line 0.5 @ +147; gap=0.5; bet over at DK -193"
+      },
+      {
+        "source": "BettingPros projection",
+        "category": "model_projection",
+        "status": "usable",
+        "freshness": "2026-06-03 live fetch",
+        "detail": "projection value 1.42 H+R+RBI; recommended_side=over; diff +0.92"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:05 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
