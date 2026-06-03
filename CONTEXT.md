@@ -40,7 +40,7 @@ A 1–10 confidence rating assigned by the skill at the time a pick is logged, r
 The betting signal that must independently satisfy its Signal Requirement before a pick can be logged.
 
 ## Primary Edge Type
-The canonical, structured classification of a Primary Edge. The authoritative category used for dashboard filtering, grouping, and statistics. Distinct from the human-readable `primary_edge` text, which is freeform and meant for review context only. Canonical values: `cross_book_gap`, `steam`, `hard_rlm`, `soft_rlm`, `ats_trend`, `quant_convergence`, `pitching_edge`, `prop_trend`, `matchup_edge`, `plus_money_start`, `underdog_fade`. Legacy picks without a Primary Edge Type fall back to parsing the freeform `primary_edge`.
+The canonical, structured classification of a Primary Edge. The authoritative category used for dashboard filtering, grouping, and statistics. Distinct from the human-readable `primary_edge` text, which is freeform and meant for review context only. Canonical values: `cross_book_gap`, `clv_value`, `steam`, `hard_rlm`, `soft_rlm`, `ats_trend`, `quant_convergence`, `pitching_edge`, `prop_trend`, `matchup_edge`, `plus_money_start`, `underdog_fade`. Legacy picks without a Primary Edge Type fall back to parsing the freeform `primary_edge`.
 
 ## Source Evidence
 Structured proof attached to a pick candidate showing which source supported the Primary Edge and whether that source was current, parseable, and usable.
@@ -51,11 +51,17 @@ Agreement between public-facing pick sites, projection models, or analysts. Supp
 ## Market-Confirmed Primary Edge
 A Primary Edge supported by current market price evidence such as CLV, cross-book gaps, hard RLM, steam, or line value.
 
+## Line-Value Edge
+The price currently available at a book beats the de-vigged Pinnacle (`book_id` 2) fair line by a threshold margin (≥2% for game lines, ≥3% for player props), expressed as projected CLV. Its canonical [[Primary Edge Type]] is `clv_value`. A [[Market-Confirmed Primary Edge]] computed purely from cross-book odds — it needs no [[Public Ticket Data]], so unlike [[Hard RLM]] it is sourceable on a [[Scheduled Run]] from the BettingPros `/offers` feed. The documented engine of [[V3-Value]].
+
+## V3-Value
+The third pick-generation model, after V1-Trends and V2-Sharp: a pure CLV/+EV engine that logs a [[Pick]] only when an available price beats the de-vigged Pinnacle fair line — a [[Line-Value Edge]]. Optimizes for [[CLV-Positive +EV Candidate]]s and is judged by CLV (CLV+ rate, average CLV) and [[Sharp Score]], never short-run win rate. Its originating Primary Edges are `clv_value` and [[Cross-Book Prop Gap]]; [[Steam Move]] and consensus win probability are confirmation-only.
+
 ## Scheduled Run
 An unattended betting routine run that may log picks only when structured edge type and source evidence are present. Distinct from a Manual Run, which may capture incomplete candidates for human review.
 
 ## Daily Pick Cap
-The maximum number of picks a Scheduled Run may log for one date: 5 total, no more than 3 from V1-Trends and no more than 3 from V2-Sharp, with no minimum.
+The maximum number of picks a Scheduled Run may log for one date: 7 total, no more than 3 from V1-Trends, no more than 3 from V2-Sharp, and no more than 3 from V3-Value, with no minimum.
 
 ## Rejected Candidate
 A proposed bet that was not logged because its Primary Edge failed its Signal Requirement.
@@ -128,6 +134,7 @@ A rapid line shift of ≥1pt spread or ≥15c ML at 3+ books simultaneously with
 - A **High-ROI Pick** can only be identified after settlement; it is not a valid pre-game target label.
 - A **Scheduled Run** must include **Source Evidence** and a **Primary Edge Type** for every logged **Pick**.
 - A **Scheduled Run** must obey the **Daily Pick Cap**.
+- A **V3-Value** Scheduled Run logs only **Line-Value Edge** (`clv_value`) or **Cross-Book Prop Gap** picks; **Steam Move** and consensus win probability are confirmation-only, never a standalone Primary Edge.
 - **Expert/Model Consensus** may support a **Pick**, but a **Scheduled Run** needs a **Market-Confirmed Primary Edge** before logging.
 - ROI should not be treated as mature until **CLV Coverage** reaches at least 90%.
 - A **Live Peek** is never authoritative and never persisted; the nightly resolution is the sole writer of a settled outcome. A Peek exists only for a **Pick** with no stored result, and only for sports that have a **Player Prop Source**.
