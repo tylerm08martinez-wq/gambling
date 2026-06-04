@@ -1504,15 +1504,15 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "3:40 PM AZ",
-    "result": null,
-    "units_won_lost": null,
+    "result": "loss",
+    "units_won_lost": -2.0,
     "closing_line": null,
     "clv": null,
-    "final_score": null,
+    "final_score": "SAN 2, PHI 3",
     "game_margin": null,
     "line_num": 6.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "8 strikeOuts",
+    "prop_margin": 1.5
   },
   {
     "id": "20260603-mlb-v1-steven-total",
