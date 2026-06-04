@@ -347,6 +347,23 @@ class TestExtractProp(unittest.TestCase):
         spec = tracker.extract_prop("Mookie Betts Over 1.5 total bases", 1.5)
         self.assertEqual(spec["stat_key"], "totalBases")
 
+    def test_stat_name_before_side_not_swallowed_into_player(self):
+        # Regression: "Total Bases Over 1.5" puts the stat keyword BEFORE the side,
+        # so the player segment (everything before "over") absorbed it → lookup of
+        # "jonathan aranda total bases" failed. The stat must be stripped from the
+        # player name regardless of ordering.
+        spec = tracker.extract_prop("Jonathan Aranda Total Bases Over 1.5", 1.5)
+        self.assertEqual(spec["player"], "jonathan aranda")
+        self.assertEqual(spec["stat_key"], "totalBases")
+        self.assertEqual(spec["side"], "over")
+        self.assertEqual(spec["threshold"], 1.5)
+
+    def test_stat_before_nplus_form_not_swallowed(self):
+        spec = tracker.extract_prop("Mookie Betts Hits 2+", None)
+        self.assertEqual(spec["player"], "mookie betts")
+        self.assertEqual(spec["stat_key"], "hits")
+        self.assertEqual(spec["threshold"], 1.5)
+
     def test_unmapped_stat_returns_none(self):
         # "triples" is intentionally NOT in PROP_STAT_MAP → must not be scored.
         self.assertIsNone(tracker.extract_prop("Mike Trout Over 1.5 triples", 1.5))
@@ -414,6 +431,34 @@ class TestResolvePropValue(unittest.TestCase):
         value, reason = tracker.resolve_prop_value(self.box, "mookie betts", "pitching", "strikeOuts")
         self.assertIsNone(value)
         self.assertIsNotNone(reason)
+
+    def test_dnp_player_all_empty_groups_returns_dnp_reason(self):
+        # A rostered player who did not appear has EMPTY stat groups across the
+        # board ({"batting": {}, "pitching": {}, ...}). That is a did-not-play —
+        # distinct from a real 0, which has a populated dict. Caller voids on this.
+        box = {"teams": {
+            "away": {"players": {
+                "ID1": {"person": {"fullName": "Isaac Collins"},
+                        "stats": {"batting": {}, "pitching": {}, "fielding": {}}},
+            }},
+            "home": {"players": {}},
+        }}
+        value, reason = tracker.resolve_prop_value(box, "isaac collins", "batting", "hits")
+        self.assertIsNone(value)
+        self.assertEqual(reason, tracker.PROP_DNP)
+
+    def test_played_other_role_is_not_dnp(self):
+        # Found, requested group empty, but ANOTHER group has data → played a
+        # different role. NOT a DNP (must not void) — left open for manual review.
+        value, reason = tracker.resolve_prop_value(self.box, "mookie betts", "pitching", "strikeOuts")
+        self.assertIsNone(value)
+        self.assertNotEqual(reason, tracker.PROP_DNP)
+
+    def test_zero_stat_is_resolved_not_dnp(self):
+        # Chad Betts went 0-for with a POPULATED batting dict → real 0, resolves.
+        value, reason = tracker.resolve_prop_value(self.box, "chad betts", "batting", "hits")
+        self.assertEqual(value, 0)
+        self.assertIsNone(reason)
 
 
 class TestPropOutcome(unittest.TestCase):
@@ -559,6 +604,23 @@ class TestFindMlbGameForBet(unittest.TestCase):
         mock_sched.return_value = [make_game(5, 2)]
         self.assertIsNone(tracker.find_mlb_game_for_bet("2026-05-27", "Yankees ML"))
 
+    @patch.object(tracker, "fetch_mlb_schedule")
+    def test_team_last_word_substring_does_not_false_match(self, mock_sched):
+        # Regression: "rays" (Tampa Bay Rays) is a substring of "G-rays-on". A naive
+        # `in` check matched the Rays game FIRST and resolved the prop against the
+        # wrong boxscore. Whole-word matching must skip the Rays game and find the
+        # Rockies game named in the bet. The Rays game is listed first on purpose.
+        mock_sched.return_value = [
+            make_game(8, 0, home_name="Tampa Bay Rays", away_name="Detroit Tigers",
+                      home_abbr="TAM", away_abbr="DET", game_pk=111),
+            make_game(3, 5, home_name="Los Angeles Angels", away_name="Colorado Rockies",
+                      home_abbr="LAA", away_abbr="COL", game_pk=222),
+        ]
+        result = tracker.find_mlb_game_for_bet(
+            "2026-06-02", "Grayson Rodriguez Under 5.5 Strikeouts vs Rockies (Sugano)")
+        self.assertIsNotNone(result)
+        self.assertEqual(result["game_pk"], 222)  # Rockies game, NOT the Rays game
+
 
 # ── #19: cmd_auto_resolve routing + never-mis-score-as-ML regression ─────────────
 
@@ -692,6 +754,22 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         self.assertIsNone(p["result"])
         self.assertNotIn("game_margin", p)
         self.assertTrue(exited)
+
+    def test_dnp_prop_is_voided(self):
+        # A prop whose player did not play (all stat groups empty) is VOIDED with
+        # the stake refunded — not left open forever, and never scored as a game line.
+        dnp_box = {"teams": {
+            "away": {"players": {
+                "ID1": {"person": {"fullName": "Isaac Collins"},
+                        "stats": {"batting": {}, "pitching": {}, "fielding": {}}},
+            }},
+            "home": {"players": {}},
+        }}
+        p = make_pick(bet="Isaac Collins Under 1.5 Hits", line_num=1.5)
+        self._run([p], sources={"MLB": fake_prop_source(game=_mlb_game(), box=dnp_box)})
+        self.assertEqual(p["result"], "void")
+        self.assertEqual(p["units_won_lost"], 0)
+        self.assertNotIn("game_margin", p)  # never scored as moneyline
 
     # ── #22: expanded MLB stat-keyword map (end-to-end routing regression) ────────
     # Fixture Mookie Betts: walks=1, runs=2, doubles=1, homeRuns=1, stolenBases=0.

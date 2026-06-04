@@ -668,14 +668,20 @@ class PlayerPropSource(NamedTuple):
     stat_map: dict
 
 
+def _whole_word_in(phrase: str, text: str) -> bool:
+    """
+    True if `phrase` appears in `text` on word boundaries (case-insensitive).
+    Plain substring matching silently collides with longer words — `walk` ⊂
+    "Walker", `run` ⊂ "Bruno", `hit` ⊂ "White", and (the bug this guards) team
+    last word `rays` ⊂ "Grayson". Word boundaries make `\\brays\\b` not match
+    "grayson", so a Rays game can't masquerade as Grayson Rodriguez's game.
+    """
+    return re.search(rf'\b{re.escape(phrase)}\b', text, flags=re.IGNORECASE) is not None
+
+
 def _stat_keyword_in(kw: str, text: str) -> bool:
-    """
-    Whole-word match for a stat keyword. Plain substring matching collides with
-    player surnames — `walk` ⊂ "Walker", `run` ⊂ "Bruno", `hit` ⊂ "White" — which
-    would silently resolve an UNMAPPED-stat prop (e.g. triples) against the wrong
-    stat. Word boundaries make `\\bwalk\\b` not match "walker", etc.
-    """
-    return re.search(rf'\b{re.escape(kw)}\b', text) is not None
+    """Whole-word match for a stat keyword (see _whole_word_in for the why)."""
+    return _whole_word_in(kw, text)
 
 
 def classify_bet(pick: dict) -> str:
@@ -757,12 +763,18 @@ def extract_prop(bet: str, line_num, stat_map: dict = PROP_STAT_MAP) -> Optional
         return None
     # Stat: first mapped keyword present (check multiword keys before single).
     stat_group = stat_key = None
+    matched_kw = None
     for kw in sorted(stat_map, key=len, reverse=True):
         if _stat_keyword_in(kw, low):
             stat_group, stat_key = stat_map[kw]
+            matched_kw = kw
             break
     if not stat_key:
         return None
+    # The stat keyword can appear BEFORE the side ("Aranda Total Bases Over 1.5"),
+    # which leaves it inside the player segment. Strip it (whole-word, so a stat
+    # that is a substring of a surname — walks⊂Walker — never damages the name).
+    player_cut = re.sub(rf'\b{re.escape(matched_kw)}\b', ' ', player_cut, flags=re.IGNORECASE)
     # Strip structural annotations (parentheticals/brackets, @sportsbook suffix)
     # BEFORE accent/punctuation normalization so annotated props still match.
     player = _normalize_name(clean_player_name(player_cut))
@@ -772,11 +784,18 @@ def extract_prop(bet: str, line_num, stat_map: dict = PROP_STAT_MAP) -> Optional
             "side": side, "threshold": threshold}
 
 
+# Sentinel reason returned when a rostered player recorded NO stats in ANY group
+# (a did-not-play / scratch). The caller voids the prop (stake refunded) instead of
+# leaving it open forever. Distinct from "played another role", which is left open.
+PROP_DNP = "player did not play (no stats recorded — void/refund)"
+
+
 def resolve_prop_value(box: dict, player_norm: str, stat_group: str, stat_key):
     """
     Find `player_norm` (matched on last name) across both teams in the boxscore and
     return their stat value. Returns (value, None) on success, or (None, reason) on
     failure — including a same-last-name collision, which is skipped not guessed.
+    A did-not-play returns (None, PROP_DNP) so the caller can void rather than skip.
 
     `stat_key` may be a single key (str) OR a tuple/list of component keys for a
     COMBO prop (e.g. NBA PRA = points+rebounds+assists). For a combo we SUM the
@@ -800,9 +819,15 @@ def resolve_prop_value(box: dict, player_norm: str, stat_group: str, stat_key):
         else:
             return None, f"ambiguous last name '{target_last}' ({len(matches)} players)"
     pdata = matches[0][1]
-    stats = pdata.get("stats", {}).get(stat_group, {})
+    all_stats = pdata.get("stats", {})
+    stats = all_stats.get(stat_group, {})
     if not stats:
-        return None, f"no {stat_group} stats for player (did not play that role?)"
+        # Empty requested group. If EVERY group is empty the player didn't appear
+        # (scratch/DNP) → void. If another group has data they played a different
+        # role → leave open for manual review (a real game must never be voided).
+        if not any(all_stats.values()):
+            return None, PROP_DNP
+        return None, f"no {stat_group} stats for player (played another role?)"
     # Combo prop: sum the component keys, leaving the pick OPEN if any are missing.
     if isinstance(stat_key, (tuple, list)):
         total = 0
@@ -847,7 +872,9 @@ def find_mlb_game_for_bet(date: str, bet: str) -> Optional[dict]:
         home = game["teams"]["home"]["team"]["name"]
         away = game["teams"]["away"]["team"]["name"]
         # Match on the distinctive last word of each team name (e.g. "pirates", "twins").
-        if home.split()[-1].lower() in low or away.split()[-1].lower() in low:
+        # Whole-word, not substring: "rays" must not match inside "Grayson" — a
+        # substring match grabbed the wrong game (DET@TAM) and mis-resolved the prop.
+        if _whole_word_in(home.split()[-1], low) or _whole_word_in(away.split()[-1], low):
             if "Final" not in game.get("status", {}).get("detailedState", ""):
                 return None
             return _game_result_dict(game, home.lower())
@@ -1404,6 +1431,15 @@ def cmd_auto_resolve(_args, sources=None):
                 skipped.append((p["id"], "prop: boxscore fetch failed (API blocked?) — left open"))
                 continue
             value, reason = resolve_prop_value(box, spec["player"], spec["stat_group"], spec["stat_key"])
+            if reason == PROP_DNP:
+                # Player didn't appear → void (stake refunded), don't leave open.
+                p["result"] = "void"
+                p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], "void")
+                p["final_score"] = game.final_score
+                p["prop_result"] = "DNP"
+                print(f"🚫 {p['id']}: VOID — player did not play → stake refunded")
+                resolved.append(p["id"])
+                continue
             if reason:
                 skipped.append((p["id"], f"prop: {reason}"))
                 continue
