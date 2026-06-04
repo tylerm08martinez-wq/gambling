@@ -156,7 +156,13 @@ check('all current picks.json strings classify without throwing', () => {
     assert.ok(validKinds.has(parsed.kind), `bad kind "${parsed.kind}" for: ${pick.bet}`);
     if (parsed.kind === 'prop') {
       assert.ok(parsed.player && parsed.player.length > 1, `empty player for prop: ${pick.bet}`);
-      assert.ok(parsed.statKey, `missing statKey for prop: ${pick.bet}`);
+      // Combined-stat props (e.g. "Hits+Runs+RBIs") intentionally carry combined:true
+      // and statKey:null — they degrade to the StatMuse fallback rather than grade
+      // inline (see the "combined stat" cases above). Only single-stat props must
+      // resolve a concrete statKey.
+      if (!parsed.combined) {
+        assert.ok(parsed.statKey, `missing statKey for prop: ${pick.bet}`);
+      }
     }
   }
   if (process.env.VERBOSE) console.log(`  swept ${all.length} picks`);
