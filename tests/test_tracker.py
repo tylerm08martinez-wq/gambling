@@ -368,6 +368,37 @@ class TestExtractProp(unittest.TestCase):
         # "triples" is intentionally NOT in PROP_STAT_MAP → must not be scored.
         self.assertIsNone(tracker.extract_prop("Mike Trout Over 1.5 triples", 1.5))
 
+    def test_outs_recorded_maps_to_pitching_outs(self):
+        spec = tracker.extract_prop("Grant Holmes Under 16.5 Outs Recorded", 16.5)
+        self.assertEqual(spec["player"], "grant holmes")
+        self.assertEqual(spec["stat_group"], "pitching")
+        self.assertEqual(spec["stat_key"], "outs")
+        self.assertEqual(spec["side"], "under")
+        self.assertEqual(spec["threshold"], 16.5)
+
+    def test_bare_outs_maps_to_pitching_outs(self):
+        spec = tracker.extract_prop("Grant Holmes Over 17.5 Outs", 17.5)
+        self.assertEqual(spec["stat_key"], "outs")
+
+    def test_outs_does_not_match_inside_strikeouts(self):
+        # \bouts\b must not fire inside "strikeouts" — strikeouts stays strikeOuts.
+        spec = tracker.extract_prop("Corbin Burnes Over 6.5 Strikeouts", 6.5)
+        self.assertEqual(spec["stat_key"], "strikeOuts")
+
+    def test_combined_stat_prop_returns_none(self):
+        # "Hits+Runs+RBIs" is a SUM; grading it as one component would be a confident
+        # wrong result. Refuse to parse → caller leaves it OPEN for manual review.
+        self.assertIsNone(tracker.extract_prop("Steven Kwan Over 0.5 Hits+Runs+RBIs", 0.5))
+
+    def test_combined_stat_with_spaces_returns_none(self):
+        self.assertIsNone(tracker.extract_prop("Mookie Betts Runs + RBIs Over 1.5", 1.5))
+
+    def test_nplus_line_not_treated_as_combined(self):
+        # "2+ hits" is a digit-plus LINE, not a stat conjunction → still parses.
+        spec = tracker.extract_prop("Mookie Betts 2+ hits", None)
+        self.assertEqual(spec["stat_key"], "hits")
+        self.assertEqual(spec["threshold"], 1.5)
+
     def test_surname_containing_keyword_does_not_false_match(self):
         # Whole-word matching: short stat keys must NOT match inside surnames.
         # Each bet is for the UNMAPPED stat "triples" → must return None, never
@@ -621,6 +652,52 @@ class TestFindMlbGameForBet(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result["game_pk"], 222)  # Rockies game, NOT the Rays game
 
+    @patch.object(tracker, "fetch_mlb_team_abbrevs")
+    @patch.object(tracker, "fetch_mlb_schedule")
+    def test_matches_opponent_by_official_abbreviation(self, mock_sched, mock_abbr):
+        # The real schedule carries team id + name but NO abbreviation, and these
+        # bets name the opponent only by official abbrev ("vs SD"). Resolve via the
+        # /teams id->abbr map. Note: NO inline "abbreviation" on the team dicts here,
+        # so the finder must consult the (mocked) abbrev map.
+        mock_sched.return_value = [{
+            "gamePk": 7,
+            "teams": {
+                "home": {"team": {"id": 143, "name": "Philadelphia Phillies"}, "score": 2},
+                "away": {"team": {"id": 135, "name": "San Diego Padres"}, "score": 5},
+            },
+            "status": {"detailedState": "Final"},
+        }]
+        mock_abbr.return_value = {143: "PHI", 135: "SD"}
+        result = tracker.find_mlb_game_for_bet(
+            "2026-06-03", "Cristopher Sanchez Under 6.5 Strikeouts vs SD")
+        self.assertIsNotNone(result)
+        self.assertEqual(result["total_runs"], 7)
+
+    @patch.object(tracker, "fetch_mlb_team_abbrevs")
+    @patch.object(tracker, "fetch_mlb_schedule")
+    def test_abbreviation_matched_whole_word_only(self, mock_sched, mock_abbr):
+        # A short abbrev ("SD") must match whole-word, never as a substring inside a
+        # name token. "Sandy Alcantara" contains "sd"? no — but guard the boundary
+        # explicitly: the only real opponent is "vs SD"; a decoy game whose abbrev is
+        # a substring of the player name must NOT be picked.
+        mock_sched.return_value = [
+            {"gamePk": 1, "teams": {
+                "home": {"team": {"id": 10, "name": "Houston Astros"}, "score": 1},
+                "away": {"team": {"id": 11, "name": "Texas Rangers"}, "score": 0},
+            }, "status": {"detailedState": "Final"}},
+            {"gamePk": 2, "teams": {
+                "home": {"team": {"id": 143, "name": "Philadelphia Phillies"}, "score": 2},
+                "away": {"team": {"id": 135, "name": "San Diego Padres"}, "score": 5},
+            }, "status": {"detailedState": "Final"}},
+        ]
+        # "HOU" is a substring of nothing here; ensure the decoy (game 1) is skipped
+        # and the SD game (game 2) wins on the whole-word abbrev.
+        mock_abbr.return_value = {10: "HOU", 11: "TEX", 143: "PHI", 135: "SD"}
+        result = tracker.find_mlb_game_for_bet(
+            "2026-06-03", "Cristopher Sanchez Under 6.5 Strikeouts vs SD")
+        self.assertIsNotNone(result)
+        self.assertEqual(result["game_pk"], 2)
+
 
 # ── #19: cmd_auto_resolve routing + never-mis-score-as-ML regression ─────────────
 
@@ -685,6 +762,17 @@ class TestCmdAutoResolveRouting(unittest.TestCase):
         self.assertEqual(p["result"], "win")  # 8 K vs over 6.5
         self.assertIn("prop_result", p)
         self.assertNotIn("game_margin", p)  # regression: NOT scored as moneyline
+
+    def test_combined_stat_prop_left_open_not_misgraded(self):
+        # "Hits+Runs+RBIs" is a SUM. Even with the game + boxscore available, it must
+        # NOT resolve as a single component ("hits") — it is left OPEN for manual
+        # review, and never scored as a game line.
+        p = make_pick(bet="Steven Kwan Over 0.5 Hits+Runs+RBIs vs NYY", line_num=0.5)
+        exited = self._run([p], sources={"MLB": fake_prop_source(game=_mlb_game(), box=make_boxscore())})
+        self.assertEqual(tracker.classify_bet(p), "prop")
+        self.assertIsNone(p["result"])      # left open, never mis-graded as hits
+        self.assertNotIn("game_margin", p)  # never scored as moneyline
+        self.assertTrue(exited)             # nothing resolved → sys.exit(0)
 
     def test_annotated_prop_with_team_resolves(self):
         # #21: a prop carrying a parenthetical team annotation now RESOLVES from

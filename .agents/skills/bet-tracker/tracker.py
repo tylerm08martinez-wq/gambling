@@ -525,6 +525,27 @@ def fetch_mlb_schedule(date: str) -> list:
     return games
 
 
+_TEAM_ABBR_CACHE: Optional[dict] = None
+
+
+def fetch_mlb_team_abbrevs() -> dict:
+    """Map MLB team id → official abbreviation (e.g. 147 → 'NYY', 135 → 'SD').
+
+    The schedule endpoint returns only team id + name, but picks name the opponent by
+    abbreviation ("vs SD", "vs TOR"). One cheap /teams call gives the canonical abbrev;
+    cached for the process since abbreviations are stable. Returns {} on failure, so the
+    finder degrades to name-last-word matching rather than crashing."""
+    global _TEAM_ABBR_CACHE
+    if _TEAM_ABBR_CACHE is None:
+        data = _http_get_json("https://statsapi.mlb.com/api/v1/teams?sportId=1")
+        _TEAM_ABBR_CACHE = {
+            tm["id"]: tm["abbreviation"]
+            for tm in (data or {}).get("teams", [])
+            if tm.get("id") and tm.get("abbreviation")
+        }
+    return _TEAM_ABBR_CACHE
+
+
 def _game_result_dict(game: dict, team_lower: str) -> dict:
     """Build the standard result dict for a final game, oriented to `team_lower`."""
     home = game["teams"]["home"]["team"]["name"]
@@ -578,6 +599,11 @@ PROP_STAT_MAP = {
     # (\bstrikeout\b does NOT match "strikeouts"), see _stat_keyword_in.
     "strikeouts": ("pitching", "strikeOuts"),
     "strikeout": ("pitching", "strikeOuts"),
+    # Pitcher "outs recorded" (= innings pitched × 3). Whole-word matching means
+    # \bouts\b never fires inside "strikeouts" (no boundary in "strike-outs"), and
+    # "outs recorded" is checked before bare "outs" (keys sorted longest-first).
+    "outs recorded": ("pitching", "outs"),
+    "outs": ("pitching", "outs"),
     "total bases": ("batting", "totalBases"),
     "rbi": ("batting", "rbi"),
     "hits": ("batting", "hits"),
@@ -684,6 +710,19 @@ def _stat_keyword_in(kw: str, text: str) -> bool:
     return _whole_word_in(kw, text)
 
 
+# A "+" joining stat WORDS ("Hits+Runs+RBIs", "Runs + RBIs") marks a COMBINED stat —
+# a sum of components the single-stat resolver would silently grade as just one of
+# them (a confident wrong result). The "N+" line form ("2+ Total Bases") is digit-
+# then-plus, so it does NOT match (letter required on both sides of the "+").
+_COMBINED_STAT_RE = re.compile(r'[a-z]\s*\+\s*[a-z]', re.IGNORECASE)
+
+
+def _is_combined_stat(bet: str) -> bool:
+    """True if `bet` names a combined (summed) stat the inline grader must not score
+    as a single component. Such props are left OPEN for manual review, never guessed."""
+    return bool(_COMBINED_STAT_RE.search(bet or ""))
+
+
 def classify_bet(pick: dict) -> str:
     """Return 'prop', 'total', 'rl', or 'ml'. Uses bet_type when present, else infers."""
     bt = (pick.get("bet_type") or "").lower()
@@ -770,6 +809,12 @@ def extract_prop(bet: str, line_num, stat_map: dict = PROP_STAT_MAP) -> Optional
             matched_kw = kw
             break
     if not stat_key:
+        return None
+    # Combined-stat guard: a "+" joining stat words ("Hits+Runs+RBIs") is a SUM. If the
+    # map resolved it to a proper combo (tuple stat_key, e.g. NBA PRA) we sum and resolve.
+    # But if it resolved to a SINGLE component (str), grading it would be a confident wrong
+    # result → refuse, so the caller leaves the pick OPEN for manual review.
+    if _is_combined_stat(bet) and not isinstance(stat_key, (tuple, list)):
         return None
     # The stat keyword can appear BEFORE the side ("Aranda Total Bases Over 1.5"),
     # which leaves it inside the player segment. Strip it (whole-word, so a stat
@@ -866,15 +911,29 @@ def prop_margin(value, threshold):
 
 
 def find_mlb_game_for_bet(date: str, bet: str) -> Optional[dict]:
-    """Find the final game on `date` whose home/away team name appears in `bet`. None if none/not final."""
+    """Find the final game on `date` whose home/away team appears in `bet`. None if
+    none/not final. Matches on either the team-name last word ("Pirates", "Rockies")
+    OR the official abbreviation ("vs SD", "vs TOR") — picks use both forms."""
     low = bet.lower()
+    abbrevs = None  # fetched lazily, only when a team dict lacks an inline abbreviation
     for game in fetch_mlb_schedule(date):
-        home = game["teams"]["home"]["team"]["name"]
-        away = game["teams"]["away"]["team"]["name"]
-        # Match on the distinctive last word of each team name (e.g. "pirates", "twins").
+        home_team = game["teams"]["home"]["team"]
+        away_team = game["teams"]["away"]["team"]
+        home = home_team["name"]
+        away = away_team["name"]
+        # Match keys: each team's distinctive last word + its official abbreviation.
         # Whole-word, not substring: "rays" must not match inside "Grayson" — a
         # substring match grabbed the wrong game (DET@TAM) and mis-resolved the prop.
-        if _whole_word_in(home.split()[-1], low) or _whole_word_in(away.split()[-1], low):
+        keys = [home.split()[-1], away.split()[-1]]
+        for team in (home_team, away_team):
+            abbr = team.get("abbreviation")
+            if abbr is None:                    # real schedule omits it → use the id map
+                if abbrevs is None:
+                    abbrevs = fetch_mlb_team_abbrevs()
+                abbr = abbrevs.get(team.get("id"))
+            if abbr:
+                keys.append(abbr)
+        if any(_whole_word_in(k, low) for k in keys):
             if "Final" not in game.get("status", {}).get("detailedState", ""):
                 return None
             return _game_result_dict(game, home.lower())
@@ -1420,7 +1479,13 @@ def cmd_auto_resolve(_args, sources=None):
                 continue
             spec = extract_prop(bet, line_num, src.stat_map)
             if spec is None:
-                skipped.append((p["id"], "prop: could not parse player/stat/side/threshold — resolve manually"))
+                # extract_prop refuses an un-summable combo (a "+" stat the map only
+                # resolves to a single component); give that a clear reason vs. a plain
+                # parse failure. A proper combo (NBA PRA → tuple) returns a spec and resolves.
+                reason = ("combined-stat (sum of components) — resolve manually"
+                          if _is_combined_stat(bet)
+                          else "could not parse player/stat/side/threshold — resolve manually")
+                skipped.append((p["id"], f"prop: {reason}"))
                 continue
             game = src.find_game(date, bet)
             if game is None:
