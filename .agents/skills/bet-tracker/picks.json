@@ -1464,15 +1464,15 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "4:15 PM AZ",
-    "result": null,
-    "units_won_lost": null,
+    "result": "loss",
+    "units_won_lost": -2.0,
     "closing_line": null,
     "clv": null,
-    "final_score": null,
+    "final_score": "ATL 7, TOR 3",
     "game_margin": null,
-    "line_num": 16.5,
-    "prop_result": null,
-    "prop_margin": null
+    "line_num": 16.0,
+    "prop_result": "18 outs recorded (6.0 IP)",
+    "prop_margin": 2
   },
   {
     "id": "20260603-mlb-v1-cristo-total",
