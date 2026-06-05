@@ -146,7 +146,7 @@
 
   /* Filter bar */
   .filter-bar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
-  .filter-bar select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+  .filter-bar select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; cursor: pointer; max-width: 200px; }
   .date-toggle { display: flex; gap: 2px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
   .date-toggle button { background: transparent; border: none; color: var(--muted); padding: 5px 12px; font-size: 13px; cursor: pointer; border-radius: var(--radius-sm); }
   .date-toggle button.active { background: var(--border); color: var(--text); }
@@ -389,6 +389,9 @@
   .qb-preset span { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; font-weight: 500; }
   .qb-amount-input { text-align: left; font-size: 34px; border-radius: 12px; }
   .qb-confirm-btn { position: sticky; bottom: 0; box-shadow: 0 -12px 18px rgba(22,27,34,.88); }
+  .qb-confirm-btn:disabled { background: var(--surface); border-color: var(--border); color: var(--muted); cursor: not-allowed; box-shadow: none; }
+  .qb-readonly-note { font-size: 12px; color: var(--yellow); background: rgba(210,153,34,.1); border: 1px solid rgba(210,153,34,.3); border-radius: 8px; padding: 9px 12px; margin: 8px 0 0; line-height: 1.45; }
+  .qb-readonly-note strong { color: var(--text); }
 
   /* ── Quick-bet as a centered modal on desktop (mobile keeps the bottom sheet) ── */
   @media (min-width: 601px) {
@@ -2306,8 +2309,14 @@ function renderQuickBetSheet(pickId, pick) {
     : '<div class="qb-kelly-hint" id="qb-kelly-hint" style="display:none"></div>';
   const removeClass = myBet.verified || myBet.stake ? ' show' : '';
   const escapedBet = escapeHtml(pick.bet || '');
+  const canWrite = !!getGHToken();
   const input = `<input class="qb-amount-input" id="qb-amount" type="number" inputmode="decimal" placeholder="0" min="0" step="0.01" value="${escapeHtml(String(amount))}">`;
-  const confirm = '<button class="qb-confirm-btn" onclick="confirmQuickBet()">Confirm Bet ✓</button>';
+  const confirm = canWrite
+    ? '<button class="qb-confirm-btn" onclick="confirmQuickBet()">Confirm Bet ✓</button>'
+    : '<button class="qb-confirm-btn" disabled aria-disabled="true" title="Add a GitHub token in the My Bets tab to save bets">Confirm Bet ✓</button>';
+  const readonlyNote = canWrite
+    ? ''
+    : '<div class="qb-readonly-note">🔒 Read-only — add a GitHub token in the <strong>My Bets</strong> tab to save bets.</div>';
   const remove = `<button class="qb-remove-btn${removeClass}" id="qb-remove-btn" onclick="removeQuickBet()">Remove Bet</button>`;
   const oddsInput = `<input id="qb-odds" type="number" inputmode="numeric" class="qb-amount-input" style="font-size:20px;padding:10px 12px;text-align:center" value="${escapeHtml(String(savedOdds))}">`;
 
@@ -2318,7 +2327,7 @@ function renderQuickBetSheet(pickId, pick) {
     <div class="qb-amount-label">Stake</div>
     ${input}
     <div class="qb-meta-grid"><div class="qb-meta"><div class="qb-meta-label">Odds (tap to edit)</div>${oddsInput}</div><div class="qb-meta"><div class="qb-meta-label">Book</div><div class="qb-meta-value">${escapeHtml(book)}</div></div></div>
-    ${kellyHtml}${confirm}${remove}`;
+    ${kellyHtml}${readonlyNote}${confirm}${remove}`;
 }
 
 function setQuickBetAmount(value) {
