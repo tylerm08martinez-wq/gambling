@@ -925,21 +925,37 @@ function edgeType(raw) {
     .replace(/\s*\(Signal [A-Z]\+?\)/gi, '')
     .replace(/\s*\(Dim[a-z.\s]*\)/gi, '')
     .trim();
-  if (r.startsWith('RLM') || r.startsWith('Money/ticket') || r.startsWith('Reverse line')) return 'RLM';
-  if (r.startsWith('Injury')) return 'Injury';
+  if (/^Cross.?book/i.test(r)) return 'Cross-book gap';
+  if (r.startsWith('RLM') || r.startsWith('Soft RLM') || r.startsWith('Money/ticket') || r.startsWith('Reverse line')) return 'RLM';
+  if (r.startsWith('Sharp')) return 'Sharp vs public';
+  if (r.startsWith('Injury') || r.startsWith('Return')) return 'Injury';
   if (r.startsWith('Steam')) return 'Steam';
   if (r.startsWith('ATS')) return 'ATS Trend';
   if (r.startsWith('Prop gap') || r.startsWith('Prop steam')) return 'Prop gap/steam';
   if (r.startsWith('Prop')) return 'Prop';
   if (r.startsWith('Contrarian') || r.startsWith('Underdog') || r.startsWith('Home underdog')) return 'Underdog fade';
-  if (r.startsWith('ERA') || r.startsWith('Pitching') || r.startsWith('Broken pitcher')) return 'Pitching Edge';
+  if (r.startsWith('ERA') || r.startsWith('Pitching') || r.startsWith('Pitcher') || r.startsWith('Broken pitcher')) return 'Pitching Edge';
   if (r.startsWith('Season-trend') || r.startsWith('Season trend')) return 'Season trend prop';
   if (r.startsWith('Quant convergence') || r.startsWith('Model convergence') || r.startsWith('Quant')) return 'Quant convergence';
+  if (r.startsWith('Expert')) return 'Expert convergence';
+  if (r.startsWith('Multiple')) return 'Multiple sources';
   if (r.startsWith('Plus-money') || r.startsWith('Plus money')) return 'Plus-money start';
-  if (r.startsWith('Matchup edge')) return 'Matchup edge';
+  if (r.startsWith('Matchup edge') || r.startsWith('Dual')) return 'Matchup edge';
   if (r.startsWith('Late move')) return 'Late move';
-  const sep = r.indexOf(' — ');
-  return sep > 0 ? r.slice(0, sep) : r.split(',')[0].slice(0, 24);
+  // Fallback for anything uncategorized: take the leading phrase before the
+  // first detail delimiter (em/en-dash, colon, semicolon, paren, comma), then
+  // cap at a word boundary so a label can never leak a full sentence into the
+  // dropdown / Edge column (this was producing 70+ char "options").
+  let label = r.split(/\s*[—–]\s*|[:;(,]/)[0].trim();
+  if (label.length > 26) {
+    let out = '';
+    for (const w of label.split(/\s+/)) {
+      if ((out + ' ' + w).trim().length > 26) break;
+      out = (out + ' ' + w).trim();
+    }
+    label = out || label.slice(0, 26);
+  }
+  return label || 'Other';
 }
 
 const isSettledResult = p => p.result === 'win' || p.result === 'loss' || p.result === 'push';
