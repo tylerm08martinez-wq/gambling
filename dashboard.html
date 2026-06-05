@@ -309,10 +309,13 @@
     .picks-table td:nth-child(13) { padding: 5px 4px; text-align: center; }
     .picks-table td:nth-child(13) > .bet-now-btn { display: none; }
 
-    /* Filter bar — stack to 2 per row */
-    .filter-bar { gap: 8px; }
-    .filter-bar select { flex: 1 1 calc(50% - 4px); font-size: 12px; }
-    .date-toggle { flex: 0 0 auto; }
+    /* Filter bar — clean 2-col grid. min-width:0 stops the long All Edges
+       option from forcing a select wider than the viewport, which was
+       overflowing the page and shifting everything off-center. */
+    .filter-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .filter-bar select { min-width: 0; width: 100%; font-size: 12px; }
+    .date-toggle { grid-column: 1 / -1; justify-self: start; }
+    #filter-search { grid-column: 1 / -1; min-width: 0; width: 100%; }
 
     /* Today chips — allow wrap */
     .today-bet-chip { font-size: 11px; }
@@ -386,6 +389,19 @@
   .qb-preset span { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; font-weight: 500; }
   .qb-amount-input { text-align: left; font-size: 34px; border-radius: 12px; }
   .qb-confirm-btn { position: sticky; bottom: 0; box-shadow: 0 -12px 18px rgba(22,27,34,.88); }
+
+  /* ── Quick-bet as a centered modal on desktop (mobile keeps the bottom sheet) ── */
+  @media (min-width: 601px) {
+    .qb-sheet {
+      top: 50%; bottom: auto; left: 50%; right: auto;
+      width: 420px; max-width: calc(100vw - 48px); max-height: 85vh;
+      border: 1px solid var(--border); border-radius: 16px;
+      transform: translate(-50%, -46%); opacity: 0;
+      transition: transform .2s cubic-bezier(.4,0,.2,1), opacity .2s ease;
+    }
+    .qb-sheet.open { transform: translate(-50%, -50%); opacity: 1; }
+    .qb-handle { display: none; }
+  }
 
   /* ── Today chip — interactive ────────────────────────────────── */
   .today-bet-chip { cursor: pointer; transition: background .15s, border-color .15s; }
@@ -1204,18 +1220,18 @@ function calcActualPL(pick, stake, actualOdds) {
 }
 
 function toggleVerified(pickId, btn) {
-  // On mobile (<=600px) open the quick-bet sheet instead of inline toggle.
-  if (window.innerWidth <= 600) {
-    const pick = picks.find(p => String(p.id || picks.indexOf(p)) === String(pickId)) ||
-                 picks.find((p, i) => String(i) === String(pickId));
-    if (pick) {
-      if (getActualBet(pickId).verified) {
-        undoActualBet(pickId, btn);
-      } else {
-        openQuickBetSheet(pickId, pick, btn);
-      }
-      return;
+  // Open the quick-bet sheet on all screen sizes (centered modal on desktop,
+  // bottom sheet on mobile). Falls back to the inline toggle if the pick is
+  // somehow not found.
+  const pick = picks.find(p => String(p.id || picks.indexOf(p)) === String(pickId)) ||
+               picks.find((p, i) => String(i) === String(pickId));
+  if (pick) {
+    if (getActualBet(pickId).verified) {
+      undoActualBet(pickId, btn);
+    } else {
+      openQuickBetSheet(pickId, pick, btn);
     }
+    return;
   }
   const current = getActualBet(pickId);
   const newVal = !current.verified;
@@ -2358,6 +2374,11 @@ function confirmQuickBet() {
   // Refresh badge
   const badge = document.getElementById('vbadge-' + _qbPickId);
   if (badge) badge.style.display = '';
+  // Keep the inline My Bet inputs (visible on desktop) in sync with the sheet.
+  const stakeInput = document.getElementById('stake-' + _qbPickId);
+  if (stakeInput) stakeInput.value = val || '';
+  const oddsInput = document.getElementById('odds-' + _qbPickId);
+  if (oddsInput && actualOdds != null) oddsInput.value = actualOdds;
   // Update inline P&L display
   const pick = picks.find(p => String(p.id || picks.indexOf(p)) === String(_qbPickId)) ||
                picks.find((p, i) => String(i) === String(_qbPickId));
