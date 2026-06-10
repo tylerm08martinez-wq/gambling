@@ -1544,14 +1544,14 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "4:05 PM AZ",
-    "result": null,
-    "units_won_lost": null,
+    "result": "loss",
+    "units_won_lost": -1.0,
     "closing_line": null,
     "clv": null,
-    "final_score": null,
+    "final_score": "CLE 5, NYY 4",
     "game_margin": null,
     "line_num": 0.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "0 H+R+RBI (0-for-3, 0 runs, 0 RBI)",
+    "prop_margin": 0
   }
 ]
