@@ -231,6 +231,34 @@ def calc_units_won_lost(line_str: str, units: int, result: str) -> float:
     else:
         return round((line / 100) * units, 3)
 
+
+def settle_pick(pick: dict, outcome: str, *, final_score=None, prop_result=None,
+                prop_margin=None, game_margin=None) -> float:
+    """Canonical settlement write — the single function that turns a pick into a
+    settled pick. Every resolution path (prop, total, ml/rl, and manual
+    ``cmd_resolve``) routes through here so the field set can never drift.
+
+    Always sets ``result`` and recomputes ``units_won_lost`` from the pick's own
+    ``line``/``units``. Each evidence field (``final_score``, ``prop_result``,
+    ``prop_margin``, ``game_margin``) is stamped **only when its argument is not
+    None**, so a caller that doesn't compute a field leaves any existing value
+    untouched — that's what lets ``cmd_resolve`` overwrite selectively without
+    clobbering. ``closing_line``/``clv``/``line_num`` are not settlement fields
+    and stay with their callers. Returns the computed units won/lost.
+    """
+    pick["result"] = outcome
+    pick["units_won_lost"] = calc_units_won_lost(pick["line"], pick["units"], outcome)
+    if final_score is not None:
+        pick["final_score"] = final_score
+    if prop_result is not None:
+        pick["prop_result"] = prop_result
+    if prop_margin is not None:
+        pick["prop_margin"] = prop_margin
+    if game_margin is not None:
+        pick["game_margin"] = game_margin
+    return pick["units_won_lost"]
+
+
 def needed_to_cover(line_num: float) -> int:
     """Minimum whole-number margin needed to cover a spread/RL."""
     return math.ceil(abs(line_num))
@@ -1511,11 +1539,10 @@ def cmd_auto_resolve(_args, sources=None):
             outcome = prop_outcome(value, spec["side"], spec["threshold"])
             sk = spec["stat_key"]
             stat_label = "+".join(sk) if isinstance(sk, (tuple, list)) else sk
-            p["result"] = outcome
-            p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
-            p["final_score"] = game.final_score
-            p["prop_result"] = f"{value} {stat_label}"
-            p["prop_margin"] = prop_margin(value, spec["threshold"])
+            settle_pick(p, outcome,
+                        final_score=game.final_score,
+                        prop_result=f"{value} {stat_label}",
+                        prop_margin=prop_margin(value, spec["threshold"]))
             sign = "+" if p["units_won_lost"] >= 0 else ""
             print(f"✅ {p['id']}: {outcome.upper()} — {value} {stat_label} vs {spec['side']} {spec['threshold']} → {sign}{p['units_won_lost']}u")
             resolved.append(p["id"])
@@ -1537,10 +1564,9 @@ def cmd_auto_resolve(_args, sources=None):
             total = result_data["total_runs"]
             side = "over" if re.match(r'^\s*over\b', bet.lower()) else "under"
             outcome = prop_outcome(total, side, float(line_num))
-            p["result"] = outcome
-            p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
-            p["final_score"] = result_data["final_score"]
-            p["prop_result"] = f"{total} total runs"
+            settle_pick(p, outcome,
+                        final_score=result_data["final_score"],
+                        prop_result=f"{total} total runs")
             sign = "+" if p["units_won_lost"] >= 0 else ""
             print(f"✅ {p['id']}: {outcome.upper()} — {total} runs vs {side} {line_num} → {sign}{p['units_won_lost']}u")
             resolved.append(p["id"])
@@ -1561,10 +1587,9 @@ def cmd_auto_resolve(_args, sources=None):
         else:
             outcome = determine_outcome("ml", margin, line_num)
 
-        p["result"] = outcome
-        p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
-        p["final_score"] = result_data["final_score"]
-        p["game_margin"] = margin
+        settle_pick(p, outcome,
+                    final_score=result_data["final_score"],
+                    game_margin=margin)
         # CLV skipped — no automated closing line source
 
         sign = "+" if p["units_won_lost"] >= 0 else ""
@@ -1593,8 +1618,11 @@ def cmd_resolve(args):
         print(f"❌ Pick not found: {args.id}", file=sys.stderr)
         sys.exit(1)
 
-    pick["result"] = args.outcome
-    pick["units_won_lost"] = calc_units_won_lost(pick["line"], pick["units"], args.outcome)
+    settle_pick(pick, args.outcome,
+                final_score=(args.final_score or None),
+                prop_result=(args.prop_result or None),
+                prop_margin=args.prop_margin,
+                game_margin=args.game_margin)
     if args.closing_line:
         pick["closing_line"] = args.closing_line
         try:
@@ -1602,16 +1630,8 @@ def cmd_resolve(args):
         except (ValueError, ZeroDivisionError) as e:
             print(f"⚠️  CLV calc failed ({e}); stored closing_line but clv=null", file=sys.stderr)
             pick["clv"] = None
-    if args.final_score:
-        pick["final_score"] = args.final_score
-    if args.game_margin is not None:
-        pick["game_margin"] = args.game_margin
     if args.line_num is not None:
         pick["line_num"] = args.line_num
-    if args.prop_result:
-        pick["prop_result"] = args.prop_result
-    if args.prop_margin is not None:
-        pick["prop_margin"] = args.prop_margin
 
     save_picks(picks)
     sign = "+" if pick["units_won_lost"] >= 0 else ""

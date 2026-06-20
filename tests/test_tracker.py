@@ -1234,5 +1234,68 @@ class TestBuildContextPropMargin(unittest.TestCase):
         self.assertEqual(tracker.fmt_margin(0.5), "0.5")
 
 
+class TestSettlePick(unittest.TestCase):
+    """settle_pick is the single canonical settlement write. Assert the exact
+    field set it stamps for a given outcome, and that omitted evidence fields are
+    never clobbered (the no-drift / no-overwrite contract)."""
+
+    @staticmethod
+    def _open_pick(line="-110", units=2):
+        # Mirror the cmd_log template: every settlement key pre-exists as None.
+        return {"line": line, "units": units, "result": None, "units_won_lost": None,
+                "closing_line": None, "clv": None, "final_score": None,
+                "game_margin": None, "line_num": None, "prop_result": None,
+                "prop_margin": None}
+
+    def test_win_sets_result_and_units(self):
+        p = self._open_pick("-110", 1)
+        ret = tracker.settle_pick(p, "win")
+        self.assertEqual(p["result"], "win")
+        self.assertAlmostEqual(p["units_won_lost"], round(100 / 110, 3))
+        self.assertEqual(ret, p["units_won_lost"])
+
+    def test_loss_and_push_units(self):
+        p = self._open_pick("-110", 2)
+        tracker.settle_pick(p, "loss")
+        self.assertEqual(p["units_won_lost"], -2.0)
+        p2 = self._open_pick("-110", 2)
+        tracker.settle_pick(p2, "push")
+        self.assertEqual(p2["units_won_lost"], 0.0)
+
+    def test_prop_settle_stamps_only_prop_fields(self):
+        p = self._open_pick("+118", 2)
+        tracker.settle_pick(p, "win", final_score="TB 5 - DET 3",
+                            prop_result="2 TB", prop_margin=0.5)
+        self.assertEqual(p["final_score"], "TB 5 - DET 3")
+        self.assertEqual(p["prop_result"], "2 TB")
+        self.assertEqual(p["prop_margin"], 0.5)
+        self.assertIsNone(p["game_margin"])   # not supplied -> untouched
+
+    def test_mlrl_settle_stamps_game_margin_not_prop(self):
+        p = self._open_pick("-130", 2)
+        tracker.settle_pick(p, "win", final_score="ARI 6 - LAD 3", game_margin=3)
+        self.assertEqual(p["game_margin"], 3)
+        self.assertIsNone(p["prop_result"])
+        self.assertIsNone(p["prop_margin"])
+
+    def test_omitted_fields_do_not_clobber_existing(self):
+        # A re-resolve that supplies only a corrected outcome must not wipe
+        # previously-stamped evidence.
+        p = self._open_pick("-110", 2)
+        tracker.settle_pick(p, "win", final_score="X 5 - Y 2", game_margin=3)
+        tracker.settle_pick(p, "loss")   # correction, no evidence args
+        self.assertEqual(p["result"], "loss")
+        self.assertEqual(p["units_won_lost"], -2.0)
+        self.assertEqual(p["final_score"], "X 5 - Y 2")  # preserved
+        self.assertEqual(p["game_margin"], 3)            # preserved
+
+    def test_zero_margin_is_written_not_skipped(self):
+        # 0 is a real margin; only None is treated as "not supplied".
+        p = self._open_pick("-110", 2)
+        tracker.settle_pick(p, "push", prop_margin=0, game_margin=0)
+        self.assertEqual(p["prop_margin"], 0)
+        self.assertEqual(p["game_margin"], 0)
+
+
 if __name__ == "__main__":
     unittest.main()
