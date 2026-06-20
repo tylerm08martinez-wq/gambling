@@ -68,7 +68,7 @@ Calibrate thresholds:
 - Score 6.0–6.9 losing overall → raise minimum to 7.0.
 - No settled picks → default thresholds.
 
-Read `.agents/skills/bet-tracker/betting-intel.md` for active patterns. Print a one-line context summary, e.g.:
+Read **only the Active Intelligence section** at the top of `.agents/skills/bet-tracker/betting-intel.md` (stop before the Session Log archive — it's a long append-only history and reading it wastes tokens). Print a one-line context summary, e.g.:
 `📊 Context: MLB 3-1 (75%), props 2-0 (100%) — no threshold changes | 1 pick logged today`
 
 ### 1. Prop Research — run FIRST (primary edge)
