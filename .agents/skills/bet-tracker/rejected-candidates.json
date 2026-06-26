@@ -27,5 +27,41 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260626-mlb-v1-andrew-total",
+    "date": "2026-06-26",
+    "checked_at": "2026-06-26T09:05:11",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Andrew Abbott Under 16.5 Outs Recorded vs Pirates (CIN @ PIT)",
+    "line": "+106 @ Novig",
+    "units": 2,
+    "score": 9.2,
+    "primary_edge": "Cross-book gap 1.0 unit (Novig under 16.5 vs other books at 17.5+); projection 15.99 (-0.51 vs line); 2-game under streak; plus money +106",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros API /props",
+        "fact": "Under 16.5 at Novig +106; consensus line 16.5; over line 17.5 at BetMGM",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB"
+      },
+      {
+        "source": "BettingPros projection",
+        "fact": "projected 15.99 outs (-0.51 vs line); recommends under",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB"
+      },
+      {
+        "source": "BettingPros performance",
+        "fact": "season 8-8 O/U; last 10 6-4 over; current streak 2 under",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB"
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]

@@ -1553,5 +1553,146 @@
     "line_num": 0.5,
     "prop_result": "0 H+R+RBI (0-for-3, 0 runs, 0 RBI)",
     "prop_margin": 0
+  },
+  {
+    "id": "20260626-mlb-v1-andrew-total",
+    "date": "2026-06-26",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Andrew Abbott Under 16.5 Outs Recorded vs Pirates (CIN @ PIT)",
+    "line": "+106 @ Novig",
+    "units": 2,
+    "score": 9.2,
+    "primary_edge": "Cross-book gap 1.0 unit (Novig under 16.5 vs other books at 17.5+); projection 15.99 (-0.51 vs line); 2-game under streak; plus money +106",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros API /props",
+        "fact": "Under 16.5 at Novig +106; over line 17.5 at BetMGM (1.0 cross-book gap)",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB",
+        "freshness": "2026-06-26",
+        "status": "usable"
+      },
+      {
+        "source": "BettingPros projection",
+        "fact": "projected 15.99 outs (-0.51 vs line); recommends under",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB",
+        "freshness": "2026-06-26",
+        "status": "usable"
+      },
+      {
+        "source": "BettingPros performance",
+        "fact": "season 8-8 O/U; current streak 2 under",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB",
+        "freshness": "2026-06-26",
+        "status": "usable"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:40 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260626-mlb-v1-patric-total",
+    "date": "2026-06-26",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Patrick Corbin Under 14.5 Outs Recorded vs Rangers (TEX @ TOR)",
+    "line": "+144 @ Novig",
+    "units": 2,
+    "score": 9.2,
+    "primary_edge": "Cross-book gap 1.0 unit (Novig under 14.5 vs other books at 15.5+); projection 14.16 (-0.34 vs line); 3-game under streak; +144 plus money",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros API /props",
+        "fact": "Under 14.5 at Novig +144; over line 15.5 at Fanatics (1.0 cross-book gap)",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB",
+        "freshness": "2026-06-26",
+        "status": "usable"
+      },
+      {
+        "source": "BettingPros projection",
+        "fact": "projected 14.16 outs (-0.34 vs line); recommends under",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB",
+        "freshness": "2026-06-26",
+        "status": "usable"
+      },
+      {
+        "source": "BettingPros performance",
+        "fact": "season 7-7 O/U; current streak 3 under",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB",
+        "freshness": "2026-06-26",
+        "status": "usable"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:07 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 14.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260626-mlb-v1-keider-total",
+    "date": "2026-06-26",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Keider Montero Under 16.5 Outs Recorded vs Astros (HOU @ DET)",
+    "line": "-105 @ Hard Rock",
+    "units": 1,
+    "score": 7.2,
+    "primary_edge": "Cross-book gap 1.0 unit (Hard Rock under 16.5 vs other books at 17.5+); projection 15.6 (-0.9 vs line); conflicting season trend (9-5 over) lowers confidence",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros API /props",
+        "fact": "Under 16.5 at Hard Rock -105; over line 17.5 at Underdog (1.0 cross-book gap)",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB",
+        "freshness": "2026-06-26",
+        "status": "usable"
+      },
+      {
+        "source": "BettingPros projection",
+        "fact": "projected 15.6 outs (-0.9 vs line, largest projection edge of slate); recommends under",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB",
+        "freshness": "2026-06-26",
+        "status": "usable"
+      },
+      {
+        "source": "BettingPros performance",
+        "fact": "season 9-5 over; last_10 6-4 over; streak 2 over (counter signal)",
+        "url": "https://api.bettingpros.com/v3/props?sport=MLB",
+        "freshness": "2026-06-26",
+        "status": "usable"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:40 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
