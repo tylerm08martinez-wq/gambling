@@ -1741,5 +1741,71 @@
     "line_num": 4.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260627-mlb-v1-jared-total",
+    "date": "2026-06-27",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Jared Jones Under 14.5 Recorded Outs vs CIN (PIT)",
+    "line": "+129 @ DraftKings",
+    "units": 2,
+    "score": 8.2,
+    "primary_edge": "Cross-book gap (1.0u): BetRivers Over @ 15.5 vs consensus 14.5; bet stale Under 14.5 +129 @ DK. BettingPros projection 13.77 outs and 4-of-5 unders this season (streak 3) confirm under side.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 405",
+        "category": "prop_market_data",
+        "status": "usable",
+        "freshness": "2026-06-27T16:07Z",
+        "detail": "event 98074 mkt 405 Jared Jones \u2014 under.line 14.5 @ DraftKings +129; consensus_line 14.5 consensus_odds +120; over.line 15.5 @ BetRivers +125 (gap=1.0); projection 13.77 outs, recommended_side under; season 1-4 under, streak 3 unders"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:05 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 14.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260627-mlb-v1-ryan-total",
+    "date": "2026-06-27",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Ryan Gusto Under 14.5 Recorded Outs vs STL (MIA)",
+    "line": "+120 @ Novig",
+    "units": 2,
+    "score": 8.2,
+    "primary_edge": "Cross-book gap (1.0u): BetRivers Over @ 15.5 vs consensus 14.5; bet stale Under 14.5 +120 @ Novig. BettingPros projection 13.8 outs and 5-of-5 unders this season (streak 5) confirm under side.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 405",
+        "category": "prop_market_data",
+        "status": "usable",
+        "freshness": "2026-06-27T16:07Z",
+        "detail": "event 99994 mkt 405 Ryan Gusto \u2014 under.line 14.5 @ Novig +120; consensus_line 14.5 consensus_odds +115; over.line 15.5 @ BetRivers +123 (gap=1.0); projection 13.8 outs, recommended_side under; season 0-5 under, streak 5 unders"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 14.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
