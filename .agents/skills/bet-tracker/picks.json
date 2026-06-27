@@ -1807,5 +1807,38 @@
     "line_num": 14.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260627-mlb-v2-nyy-total",
+    "date": "2026-06-27",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "NYY @ BOS Under 8.5 Runs (game total)",
+    "line": "+105 @ Hard Rock",
+    "units": 2,
+    "score": 9.35,
+    "primary_edge": "Mega steam DOWN at 9 books on game total: opening 8.5 \u2192 8 (FanDuel/DraftKings/bet365/BetMGM/Caesars/ProphetX/BetRivers + 2 others). 8 books still at opening 8.5 \u2014 bet stale UNDER 8.5. Cole pitching for NYY, no public catalyst identified. CLV unverified (Pinnacle not in feed).",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers MLB market 175",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-06-27T16:07Z",
+        "detail": "event 98347 mkt 175 NYY @ BOS total \u2014 opening_line 8.5; 9 books moved DOWN to 8 (FanDuel -105, DraftKings -103, bet365 -105, BetMGM -102, Caesars -105, ProphetX +103, BetRivers -107, book-15 -107, book-27 -102 on UNDER side); 8 books still at 8.5 stale (Hard Rock +105, theScore Bet +110, Novig +115, book-73/68/74 +113, Fanatics -120, book-39 +100). Best stale UNDER 8.5 odds at mainstream book: Hard Rock +105. Best overall: Novig +115."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:10 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
