@@ -63,5 +63,31 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260627-mlb-v1-jared-total",
+    "date": "2026-06-27",
+    "checked_at": "2026-06-27T09:07:12",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Jared Jones Under 14.5 Recorded Outs vs CIN (PIT)",
+    "line": "+129 @ DraftKings",
+    "units": 2,
+    "score": 8.2,
+    "primary_edge": "Cross-book gap (1.0u): BetRivers Over @ 15.5 vs consensus 14.5; bet stale Under 14.5 +129 @ DK. BettingPros projection 13.77 outs and 4-of-5 unders this season (streak 3) confirm under side.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 405",
+        "category": "prop_market_data",
+        "detail": "event 98074 mkt 405 Jared Jones \u2014 under.line 14.5 @ DraftKings +129, consensus_line 14.5 consensus_odds +120; over.line 15.5 @ BetRivers +125 (gap=1.0); projection 13.77 outs, recommended_side under; season 1-4 under, streak 3 unders"
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]
