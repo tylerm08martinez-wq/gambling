@@ -205,6 +205,46 @@ def fetch_offers(event_id, market_id, *, get_json=None):
     return [_normalize_offer(o) for o in data.get("offers", [])]
 
 
+def fetch_offer_ladder(event_id, market_id, *, get_json=None):
+    """Full per-player CONSENSUS line ladder for an event+market (every line, not just main).
+
+    Returns [{"player": name, "team": team, "sides": {"over": {line: odds}, "under": {line: odds}}}]
+    using BettingPros Consensus (book_id 0) — the market-wide closing price. Unlike
+    `fetch_offers` (which collapses to each book's main line), this preserves EVERY alt
+    line, so a pick's entry number can be matched for a de-vigged CLV even when the
+    displayed main line is split (e.g. Under 14.5 / Over 15.5). Empty list on failure —
+    never fabricated. Powers the realized-CLV backfill (clv_fetch); Pinnacle is absent
+    from the prop grid (#51), so the de-vigged two-way close comes from consensus.
+    """
+    get_json = get_json or _live_get_json
+    url = f"{BP_API_BASE}/offers?sport=MLB&event_id={event_id}&market_id={market_id}"
+    data = get_json(url)
+    if not data:
+        return []
+    out = []
+    for off in data.get("offers", []):
+        parts = off.get("participants") or []
+        name = parts[0].get("name") if parts else None
+        team = (parts[0].get("player") or {}).get("team") if parts else None
+        sides = {}
+        for sel in off.get("selections", []):
+            side = (sel.get("label") or "").strip().lower()
+            if side not in ("over", "under"):
+                continue
+            book0 = next((b for b in sel.get("books", []) if b.get("id") == 0), None)
+            if not book0:
+                continue
+            ladder = {}
+            for ln in book0.get("lines") or []:
+                if ln.get("line") is not None and ln.get("cost") is not None:
+                    ladder[float(ln["line"])] = int(ln["cost"])
+            if ladder:
+                sides[side] = ladder
+        if name and sides:
+            out.append({"player": name, "team": team, "sides": sides})
+    return out
+
+
 def fetch_events(sport, date, *, get_json=None):
     """Return normalized events for `sport`/`date` (empty list on failure)."""
     get_json = get_json or _live_get_json

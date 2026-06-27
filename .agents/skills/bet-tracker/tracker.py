@@ -1618,6 +1618,33 @@ def cmd_resolve(args):
     print(f"✅ {args.id}: {args.outcome.upper()} ({sign}{pick['units_won_lost']}u)")
 
 
+def cmd_backfill_clv(args):
+    """Backfill realized CLV on settled MLB player props from their BettingPros consensus
+    close (residential IP only — BettingPros 403s datacenter, ADR 0006). Matching lives in
+    clv_fetch (fetch + two-way ladder match); the de-vig + write lives in clv_backfill. A
+    pick with no matchable close stays Unmeasured (null clv) — never fabricated."""
+    # Running tracker.py as a script already puts its dir on sys.path[0]; clv_fetch also
+    # self-adds its directory on import, so a plain import resolves both siblings.
+    import clv_fetch
+    import clv_backfill
+
+    picks = load_picks()
+    closes = clv_fetch.build_closes_live(picks, tracker=sys.modules[__name__],
+                                         force=args.force, only_date=args.date or None)
+    if not closes:
+        print("ℹ️  No closing lines matched (no eligible settled props, or markets dropped post-game).")
+        return
+    n = clv_backfill.backfill_picks(picks, closes, force=args.force)
+    for p in picks:
+        if p["id"] in closes and p.get("clv") is not None:
+            print(f"  {p['id']}: close {p['closing_line']} → CLV {fmt_clv(p['clv'])}")
+    if args.apply and n:
+        save_picks(picks)
+        print(f"\n✅ Backfilled {n} pick(s) — picks.json written.")
+    else:
+        print(f"\n[dry-run] would backfill {n} pick(s). Re-run with --apply to write picks.json.")
+
+
 # ── CLI wiring ────────────────────────────────────────────────────────────────
 
 def main():
@@ -1650,6 +1677,13 @@ def main():
     log_p.add_argument("--game-time", default="",
                        help="Game start time in Arizona time, e.g. '5:10 PM' or '1:05 PM'")
 
+    bf_p = sub.add_parser("backfill-clv",
+                          help="Backfill realized CLV on settled MLB props from BettingPros consensus close (residential IP)")
+    bf_p.add_argument("--apply", action="store_true", help="write picks.json back (default: dry-run)")
+    bf_p.add_argument("--force", action="store_true", help="overwrite an existing closing_line/clv")
+    bf_p.add_argument("--date", default="", help="only backfill picks on this date (YYYY-MM-DD); "
+                      "the daily routine passes yesterday so it never rescans all history")
+
     res_p = sub.add_parser("resolve", help="Record a result for an open pick")
     res_p.add_argument("id", help="Pick ID")
     res_p.add_argument("outcome", choices=["win", "loss", "push", "void"])
@@ -1678,6 +1712,8 @@ def main():
         cmd_log(args)
     elif args.command == "resolve":
         cmd_resolve(args)
+    elif args.command == "backfill-clv":
+        cmd_backfill_clv(args)
     else:
         parser.print_help()
 
