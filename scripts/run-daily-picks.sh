@@ -64,6 +64,20 @@ fi
 
 git pull --rebase origin main 2>&1 | tee -a "$LOG"
 
+# Backfill realized CLV on YESTERDAY's now-settled player props from the BettingPros
+# consensus close. This MUST run here (residential IP) — BettingPros 403s the datacenter,
+# so it can't live in the nightly cloud resolver (ADR 0006). The nightly resolver settled
+# yesterday's picks at 11pm; their closing lines are now frozen and matchable. Idempotent:
+# only fills picks with a null closing_line, leaves un-matchable ones Unmeasured.
+YESTERDAY="$(TZ='MST7' date -v-1d +%F 2>/dev/null || TZ='MST7' date -d 'yesterday' +%F)"
+echo "ℹ️  Backfilling realized CLV for $YESTERDAY..." | tee -a "$LOG"
+if python3 "$PROJECT_DIR/.agents/skills/bet-tracker/tracker.py" \
+     backfill-clv --date "$YESTERDAY" --apply 2>&1 | tee -a "$LOG" | grep -q "Backfilled"; then
+  git add .agents/skills/bet-tracker/picks.json
+  git commit -m "chore: backfill realized CLV for $YESTERDAY" 2>&1 | tee -a "$LOG" || true
+  git push origin main 2>&1 | tee -a "$LOG" || true
+fi
+
 # The routine prompt: execute the betting skills exactly as written. Mirrors the
 # retired cloud trigger's prompt. Requires the `claude` CLI + Slack MCP on this host.
 #
