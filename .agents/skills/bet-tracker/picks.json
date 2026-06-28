@@ -1840,5 +1840,71 @@
     "line_num": 8.5,
     "prop_result": "5 total runs",
     "prop_margin": null
+  },
+  {
+    "id": "20260628-mlb-v1-chris-total",
+    "date": "2026-06-28",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Chris Sale Under 7.5 Strikeouts vs SF (ATL)",
+    "line": "+125 @ Novig",
+    "units": 2,
+    "score": 8.2,
+    "primary_edge": "Cross-book gap (1.0u): consensus line 8.5 K's vs stale 7.5 K's at Novig/FanDuel/BetMGM; bet Under 7.5 +125 @ Novig. BettingPros season trend confirms under side.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 285",
+        "category": "prop_market_data",
+        "status": "usable",
+        "freshness": "2026-06-28T16:01Z",
+        "detail": "event 98014 mkt 285 Chris Sale \u2014 consensus_line 8.5 K (over +115, under -147); stale line 7.5 K @ Novig (under +125), FanDuel (under +116), BetMGM (under +105), ProphetX (under +125), BetRivers (under +120), book-68 (under +122); gap=1.0; trend_confirmed=true; bet Under 7.5 K @ Novig +125"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:05 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 7.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260628-mlb-v1-brando-total",
+    "date": "2026-06-28",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Brandon Woodruff Under 5.5 Strikeouts vs CHC (MIL)",
+    "line": "+127 @ Novig",
+    "units": 2,
+    "score": 8.0,
+    "primary_edge": "Cross-book gap (1.0u): DraftKings Over @ 6.5 vs consensus 5.5; bet Under 5.5 +127 @ Novig (best of 7 books on under side). BettingPros season trend confirms under side.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 285",
+        "category": "prop_market_data",
+        "status": "usable",
+        "freshness": "2026-06-28T16:01Z",
+        "detail": "event 100130 mkt 285 Brandon Woodruff \u2014 consensus_line 5.5 K (over -136, under +105); DraftKings stale Over @ 6.5 (-151), under 6.5 @ +119 \u2014 gap=1.0; best Under 5.5 prices: Novig +127, Underdog +123, BetMGM/Hard Rock +120; trend_confirmed=true; bet Under 5.5 K @ Novig +127"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:10 AM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 5.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
