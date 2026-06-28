@@ -1906,5 +1906,38 @@
     "line_num": 5.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260628-mlb-v1-tyler-total",
+    "date": "2026-06-28",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Tyler Phillips Under 15.5 Recorded Outs vs STL (MIA)",
+    "line": "+100 @ Novig",
+    "units": 2,
+    "score": 8.0,
+    "primary_edge": "Cross-book gap (1.0u): consensus line 16.5 outs (over +105, under -145); stale 15.5 line at DraftKings, Novig, BetRivers. Bet Under 15.5 +100 @ Novig \u2014 captures plus money on a low-IP starter with trend support.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 405",
+        "category": "prop_market_data",
+        "status": "usable",
+        "freshness": "2026-06-28T16:01Z",
+        "detail": "event 98853 mkt 405 Tyler Phillips \u2014 consensus_line 16.5 outs (over +105, under -145); stale Under 15.5 lines: Novig +100, DraftKings -101, BetRivers -129; gap=1.0; trend_confirmed=true; bet Under 15.5 outs @ Novig +100"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:15 AM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 15.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
