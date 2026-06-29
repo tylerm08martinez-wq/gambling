@@ -1864,15 +1864,15 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "1:05 PM AZ",
-    "result": null,
-    "units_won_lost": null,
+    "result": "loss",
+    "units_won_lost": -2.0,
     "closing_line": null,
     "clv": null,
-    "final_score": null,
+    "final_score": "SF 3, ATL 2",
     "game_margin": null,
     "line_num": 7.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "10 strikeouts in 6 IP",
+    "prop_margin": 3
   },
   {
     "id": "20260628-mlb-v1-brando-total",
@@ -1897,15 +1897,15 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "11:10 AM AZ",
-    "result": null,
-    "units_won_lost": null,
+    "result": "loss",
+    "units_won_lost": -2.0,
     "closing_line": null,
     "clv": null,
-    "final_score": null,
+    "final_score": "CHC 4, MIL 3",
     "game_margin": null,
     "line_num": 5.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "6 strikeouts in 5.2 IP",
+    "prop_margin": 1
   },
   {
     "id": "20260628-mlb-v1-tyler-total",
@@ -1930,14 +1930,14 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "11:15 AM AZ",
-    "result": null,
-    "units_won_lost": null,
+    "result": "loss",
+    "units_won_lost": -2.0,
     "closing_line": null,
     "clv": null,
-    "final_score": null,
+    "final_score": "STL 2, MIA 1",
     "game_margin": null,
     "line_num": 15.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "22 outs in 7.1 IP (longest outing of 2026)",
+    "prop_margin": 7
   }
 ]
