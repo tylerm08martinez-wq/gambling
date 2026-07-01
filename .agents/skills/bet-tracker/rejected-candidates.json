@@ -89,5 +89,36 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260701-mlb-v1-troy-total",
+    "date": "2026-07-01",
+    "checked_at": "2026-07-01T09:03:19",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Troy Melton (DET) OVER 15.5 pitcher outs vs NYY",
+    "line": "over 15.5 @ Novig",
+    "units": 2,
+    "score": 9.2,
+    "primary_edge": "Cross-book gap 1.0 outs vs consensus; trend confirmed by season projection",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props",
+        "market_id": 405,
+        "event_id": 100320,
+        "side": "over",
+        "bet_line": 15.5,
+        "bet_book": "Novig",
+        "gap": 1.0,
+        "trend_confirmed": true
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]
