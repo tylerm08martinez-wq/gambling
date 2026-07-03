@@ -120,5 +120,45 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260703-mlb-v1-gavin-total",
+    "date": "2026-07-03",
+    "checked_at": "2026-07-03T09:04:57",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Gavin Williams (CLE) Under 17.5 outs recorded vs CWS",
+    "line": "+130 @ Hard Rock",
+    "units": 2,
+    "score": 8.8,
+    "primary_edge": "Cross-book price gap: Hard Rock +130 vs consensus -112 on same 17.5 line (~13% EV de-vigged)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props + prop_edge extractor",
+        "edge": "cross_book_gap",
+        "gap": 1.0,
+        "trend_confirmed": true
+      },
+      {
+        "source": "BettingPros /offers event 99240 mkt 405",
+        "line": 17.5,
+        "books": {
+          "Hard Rock": "+130",
+          "BetMGM": "+115",
+          "Fanatics": "+110",
+          "DraftKings": "-107",
+          "Caesars": "-112",
+          "Consensus": "-112"
+        },
+        "opening_line": 17.5
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]

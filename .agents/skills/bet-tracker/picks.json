@@ -2124,5 +2124,152 @@
     "line_num": 0.5,
     "prop_result": "0 hits (0-for-4)",
     "prop_margin": -1
+  },
+  {
+    "id": "20260703-mlb-v1-gavin-total",
+    "date": "2026-07-03",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Gavin Williams (CLE) Under 17.5 outs recorded vs CWS",
+    "line": "+130 @ Hard Rock",
+    "units": 2,
+    "score": 8.8,
+    "primary_edge": "Cross-book price gap: Hard Rock +130 vs consensus -112 on same 17.5 line (~13% EV de-vigged)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props + prop_edge extractor",
+        "status": "usable",
+        "freshness": "2026-07-03 morning fetch",
+        "edge": "cross_book_gap",
+        "gap": 1.0,
+        "trend_confirmed": true
+      },
+      {
+        "source": "BettingPros /offers event 99240 mkt 405",
+        "status": "usable",
+        "freshness": "2026-07-03 morning fetch",
+        "line": 17.5,
+        "books": {
+          "Hard Rock": "+130",
+          "BetMGM": "+115",
+          "Fanatics": "+110",
+          "DraftKings": "-107",
+          "Caesars": "-112",
+          "Consensus": "-112"
+        },
+        "opening_line": 17.5
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 17.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260703-mlb-v1-luis-total",
+    "date": "2026-07-03",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Luis Castillo (SEA) Under 17.5 outs recorded vs TOR",
+    "line": "-106 @ Novig",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Prop trend: extractor projection edge (EV +30%) on Castillo outs under, trend confirmed; line 17.5 uniform across books",
+    "primary_edge_type": "prop_trend",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props + prop_edge extractor",
+        "status": "usable",
+        "freshness": "2026-07-03 morning fetch",
+        "edge": "prop_trend",
+        "ev": 0.299,
+        "trend_confirmed": true,
+        "side": "under",
+        "bet_line": 17.5
+      },
+      {
+        "source": "BettingPros /offers event 99234 mkt 405",
+        "status": "usable",
+        "freshness": "2026-07-03 morning fetch",
+        "line": 17.5,
+        "books": {
+          "Novig": "-106",
+          "DraftKings": "-115",
+          "BetMGM": "-110",
+          "Hard Rock": "-115",
+          "Consensus": "-115"
+        },
+        "opening_line": 17.5
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "7:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 17.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260703-mlb-v1-jack-total",
+    "date": "2026-07-03",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Jack Perkins (ATH) Under 14.5 outs recorded vs MIA",
+    "line": "+135 @ Hard Rock",
+    "units": 1,
+    "score": 7.2,
+    "primary_edge": "Cross-book price gap: Hard Rock +135 vs consensus +111 on same 14.5 line (~3.4% EV de-vigged)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props + prop_edge extractor",
+        "status": "usable",
+        "freshness": "2026-07-03 morning fetch",
+        "edge": "cross_book_gap",
+        "gap": 1.0,
+        "trend_confirmed": true
+      },
+      {
+        "source": "BettingPros /offers event 98500 mkt 405",
+        "status": "usable",
+        "freshness": "2026-07-03 morning fetch",
+        "line": 14.5,
+        "books": {
+          "Hard Rock": "+135",
+          "Novig": "+117",
+          "DraftKings": "+115",
+          "Caesars": "+111",
+          "Consensus": "+111"
+        },
+        "opening_line": 15.5
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 14.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
