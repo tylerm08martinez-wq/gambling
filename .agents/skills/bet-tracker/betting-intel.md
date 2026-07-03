@@ -767,3 +767,20 @@ No new research performed — daily cap already used for V1.
 - First session where V2 found qualifying prop signals via the BettingPros extractor. Prior V2 sessions either found no signals or relied on RLM (manual-run-only). This establishes the cross_book_gap extractor path as the primary V2 scheduled-run signal source.
 - Vargas discard confirms: a massive line drop (1.0+ units) with trend_confirmed=false is more likely lineup news than sharp action. Apply this heuristic going forward: if gap ≥1.0 AND trend_confirmed=false AND player has minimal season data → discard as lineup-based.
 - Daily cap hit (5/5). No more picks possible today regardless of signals found.
+
+### 2026-07-03 — V1-Trends + V2-Sharp Sessions (scheduled)
+
+**V1 (3 picks, all MLB pitcher-outs unders)**:
+- Extractor surfaced 30+ cross-book gap candidates — unusually deep board. All three logged picks are outs-recorded unders where the price gap on the SAME line was the edge (Williams U17.5 +130 @ Hard Rock vs -112 consensus ≈ +13% EV de-vigged; Perkins U14.5 +135 vs +111).
+- Rejected: Anthony Kay U4.5 K — only +EV at "book-68" (not in BOOKS map, unidentifiable); at nameable books EV was negative. Rule applied: never recommend a bet at a book we can't name.
+- Rejected: batter TB props (Wilson U0.5, etc.) where /offers selections are per-player unlabeled — used /props raw rows (player-labeled) instead for V2's Langeliers.
+
+**V2 (2 picks — daily 5-cap limited, not signal-limited)**:
+- Langeliers U1.5 TB +104 @ Underdog (gap 1.0, FanDuel stale at 2.5, 8-unders-L10 trend).
+- SD@LAD U8 -104 @ ProphetX — cleanest steam play in weeks: 5 books moved 8→7.5 but ProphetX/FD/DK still hung the pre-steam 8. First scheduled-run steam pick using opening_line-vs-current from /offers (mkt 175). Royce Lewis O0.5 TB (6.9) was the cut.
+- Steam scan note: totals moved at 10+ books on 6 other games (fully-moved = chasing, discarded). The actionable pattern is 3-5 movers + majors still at open.
+
+**Tooling notes**:
+- `bettingpros.py` CLI only supports `events|props` — the `offers` subcommand referenced in both SKILL.md files does not exist; must import `fetch_offers()` in Python. Worth a SKILL/CLI patch on a manual run.
+- Game-line market IDs (from /markets): 122 = moneyline, 175 = total. Pinnacle (book 2) absent from all offers today → CLV unverified on every pick.
+- tracker validation requires each source-evidence item to carry `status:"usable"`, `source`, and `freshness` — first log attempt without them was auto-rejected.

@@ -2271,5 +2271,108 @@
     "line_num": 14.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260703-mlb-v2-shea-total",
+    "date": "2026-07-03",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Shea Langeliers (ATH) Under 1.5 total bases vs MIA",
+    "line": "+104 @ Underdog",
+    "units": 2,
+    "score": 9.7,
+    "primary_edge": "Cross-book prop gap 1.0 (FanDuel stale at 2.5 vs consensus 1.5) + trend confirmed (8 unders L10, projection 1.47)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props + prop_edge extractor",
+        "status": "usable",
+        "freshness": "2026-07-03 late-morning fetch",
+        "edge": "cross_book_gap",
+        "gap": 1.0,
+        "trend_confirmed": true,
+        "side": "under",
+        "bet_line": 1.5,
+        "bet_book": "Underdog"
+      },
+      {
+        "source": "BettingPros /props raw row mkt 293",
+        "status": "usable",
+        "freshness": "2026-07-03 late-morning fetch",
+        "under": {
+          "line": 1.5,
+          "odds": "+104",
+          "book": "Underdog"
+        },
+        "consensus": {
+          "line": 1.5,
+          "odds": "+101"
+        },
+        "stale_over": {
+          "book": "FanDuel",
+          "line": 2.5
+        },
+        "projection": 1.47,
+        "last_10": "2 over / 8 under"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 1.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260703-mlb-v2-padres-total",
+    "date": "2026-07-03",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Padres @ Dodgers Under 8 runs (King vs Ohtani)",
+    "line": "-104 @ ProphetX",
+    "units": 2,
+    "score": 9.35,
+    "primary_edge": "Mega steam: 5 books moved total 8 -> 7.5 (Hard Rock, Novig +3); entry at stale pre-steam 8 at ProphetX/FanDuel/DK \u2014 not chasing",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event 99885 mkt 175 (total)",
+        "status": "usable",
+        "freshness": "2026-07-03 late-morning fetch",
+        "opening_line": 8,
+        "moved_down": {
+          "Hard Rock": 7.5,
+          "Novig": 7.5,
+          "book-68": 7.5,
+          "book-74": 7.5,
+          "book-39": 7.5
+        },
+        "stale_at_8": {
+          "ProphetX": "-104",
+          "BetRivers": "-109",
+          "FanDuel": "-112",
+          "DraftKings": "-112"
+        },
+        "catalyst_check": "both probables (King, Ohtani) known at open \u2014 no public catalyst for the move"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "7:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
