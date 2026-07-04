@@ -2374,5 +2374,78 @@
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260704-mlb-v1-hunter-total",
+    "date": "2026-07-04",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Hunter Brown (HOU) UNDER 4.5 hits allowed vs TB",
+    "line": "+117 @ Novig",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Cross-book gap: Betr hangs over 5 (-118) vs 4.5 consensus; Novig under 4.5 +117 vs consensus +109; projection 4.3 HA, L10 7 unders",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props API (market 404 hits-allowed)",
+        "status": "usable",
+        "freshness": "fetched 2026-07-04 morning run",
+        "best_under": "4.5 +117 @ Novig",
+        "consensus": "4.5 +109",
+        "stale_book_gap": "Betr over 5 -118 vs consensus 4.5 -145 (0.5 line gap)",
+        "projection": 4.3,
+        "last_10": "3 over / 7 under",
+        "season": "1 over / 4 under"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 4.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260704-mlb-v1-drew-total",
+    "date": "2026-07-04",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Drew Rasmussen (TB) UNDER 5.5 strikeouts vs HOU",
+    "line": "+115 @ DraftKings",
+    "units": 1,
+    "score": 6.4,
+    "primary_edge": "Cross-book gap: PrizePicks hangs 6 Ks vs 5.5 consensus; DK under 5.5 +115 vs consensus +108; projection 5.37 Ks",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props API (market 285 strikeouts)",
+        "status": "usable",
+        "freshness": "fetched 2026-07-04 morning run",
+        "best_under": "5.5 +115 @ DraftKings",
+        "consensus": "5.5 +108",
+        "stale_book_gap": "PrizePicks over 6 -118 vs consensus 5.5 -141 (0.5 line gap)",
+        "projection": 5.37,
+        "last_10": "5 over / 5 under"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 5.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]

@@ -160,5 +160,36 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260704-mlb-v1-hunter-total",
+    "date": "2026-07-04",
+    "checked_at": "2026-07-04T09:04:47",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Hunter Brown (HOU) UNDER 4.5 hits allowed vs TB",
+    "line": "+117 @ Novig",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Cross-book gap: Betr hangs over 5 (-118) vs 4.5 consensus; Novig under 4.5 +117 vs consensus +109; projection 4.3 HA, L10 7 unders, season 4-of-5 under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props",
+        "market": "hits-allowed (404)",
+        "best_under": "4.5 +117 @ Novig",
+        "consensus": "4.5 +109",
+        "stale_book_gap": "Betr over 5 -118 vs consensus 4.5 -145 (0.5 line gap)",
+        "projection": 4.3,
+        "last_10": "3 over / 7 under",
+        "season": "1 over / 4 under"
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]
