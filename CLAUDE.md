@@ -1,27 +1,19 @@
 # Sports Betting — Decision Support
 
-This folder is for analyzing sports bets and building a framework for making smarter wagering decisions.
-
-## Purpose
-
-Help Tyler identify +EV (positive expected value) betting opportunities across sports using data, line movement, and situational analysis.
+Analyze sports bets; identify +EV opportunities using data, line movement, and situational analysis.
 
 ## Approach
 
-- Focus on **value**, not just picking winners — a bad line on a favorite is worse than a good line on an underdog
-- Track all bets (win/loss, odds, stake, result) **and closing line value (CLV)** — CLV is the process signal; ROI is the outcome signal; both should trend positive
-- Primary edge: **player props + cross-book line gaps** — books set props with less precision and adjust them slower than game lines
-- Secondary edge: **RLM (70%+ threshold)** and **steam moves confirmed at 3+ books simultaneously** — single-book moves are noise
-- Avoid emotional bets (favorite teams, recency bias, chasing losses)
-- **Long-run calibration targets:** 55%+ win rate on spread/total bets; 5–7% ROI over 500+ bets
+- Value over winners — a bad line on a favorite is worse than a good line on an underdog.
+- Track all bets (win/loss, odds, stake, result) **and CLV** — CLV is the process signal, ROI the outcome signal; both should trend positive.
+- Primary edge: **player props + cross-book line gaps** — books set props with less precision and adjust slower than game lines.
+- Secondary edge: **RLM (70%+ threshold)** and **steam confirmed at 3+ books simultaneously** — single-book moves are noise.
+- No emotional bets (favorite teams, recency bias, chasing losses).
+- **Long-run calibration targets:** 55%+ win rate on spread/total bets; 5–7% ROI over 500+ bets.
 
 ## Sports in Scope
 
-- NFL / College Football
-- NBA / College Basketball
-- MLB
-- NHL
-- Add others as needed
+NFL / College Football, NBA / College Basketball, MLB, NHL. Add others as needed.
 
 ## Bet Types
 
@@ -39,16 +31,16 @@ Help Tyler identify +EV (positive expected value) betting opportunities across s
 |-------|---------|
 | `/sports-betting` | V1-Trends: picks using ATS trends, expert consensus, situational angles, line movement |
 | `/sports-betting-sharp` | V2-Sharp: props + cross-book gaps first; RLM (70%+) and steam (3+ books) for game lines — high selectivity |
-| `/bet-tracker` | Log picks, record results, and compare ROI between V1 and V2 models |
+| `/bet-tracker` | Log picks, record results, compare ROI between V1 and V2 |
 
 ## Development Workflow (engineering changes)
 
-This is a **money-scoring system** — the worst bug class is silent mis-resolution (a lost bet scored as a win, or CLV computed against the wrong line). A green test suite and a clean diff can both pass while a bet is quietly scored wrong. Workflow exists to catch that.
+**Money-scoring system** — worst bug class is silent mis-resolution (lost bet scored as win, or CLV computed against the wrong line). Green tests and a clean diff can both pass while a bet is scored wrong; the workflow exists to catch that.
 
-**Tier the work — don't pay full freight on everything:**
+**Tier the work:**
 
-- **Trivial change, you're at the keyboard** (typo, one-line tweak, obvious fix): just commit. No PRD, no issue.
-- **Logic-touching OR delegated to an AFK agent**: run the full chain below. The PRD/issue is the agent's prompt — the verbosity is the price of unattended execution, and it's worth it.
+- **Trivial, at the keyboard** (typo, one-line tweak, obvious fix): just commit. No PRD, no issue.
+- **Logic-touching OR delegated to an AFK agent**: run the full chain — the PRD/issue is the agent's prompt; verbosity is the price of unattended execution.
 
 **The full chain:**
 
@@ -70,10 +62,10 @@ This is a **money-scoring system** — the worst bug class is silent mis-resolut
 **Support tools (not part of the chain):**
 
 - `/zoom-out` — run *before* `/to-prd` when about to work in unfamiliar code, so the PRD is grounded.
-- `/improve-codebase-architecture` — periodic codebase health audit (outputs an HTML report). Its recommendations *feed* `/to-prd`; run it between feature cycles, not during one.
+- `/improve-codebase-architecture` — periodic codebase health audit (HTML report); recommendations *feed* `/to-prd`; run between feature cycles, not during one.
 - `/write-a-skill` → `/skill-optimizer` — for building new skills, not code features.
 
-**Hygiene:** close or delete abandoned branches/draft PRs — the chain creates clean flow but doesn't sweep rot.
+**Hygiene:** close or delete abandoned branches/draft PRs — the chain doesn't sweep rot.
 
 ## File Paths — Critical
 
@@ -84,7 +76,7 @@ This is a **money-scoring system** — the worst bug class is silent mis-resolut
 - `SKILL.md` — skill instructions
 - `betting-intel.md` — session observations and pattern notes
 
-**Stale path (do not use):** `.claude/skills/bet-tracker/` — this is an old copy, ignore it. If `.claude/skills/bet-tracker/actual_bets.json` reappears, run:
+**Stale path (do not use):** `.claude/skills/bet-tracker/` — old copy, ignore. If `.claude/skills/bet-tracker/actual_bets.json` reappears, run:
 ```bash
 python3 ".agents/skills/bet-tracker/tracker.py" migrate-actual-bets
 ```
@@ -93,23 +85,21 @@ python3 ".agents/skills/bet-tracker/tracker.py" migrate-actual-bets
 ```text
 .agents/skills/bet-tracker/picks.json
 ```
-The dashboard reads picks through the GitHub Contents API, not `raw.githubusercontent.com`, because raw CDN responses can lag after a push. If the skill path ever changes again, update `PICKS_FILE_PATH` in `dashboard.html`.
+Dashboard reads picks via the GitHub Contents API, not `raw.githubusercontent.com` (raw CDN can lag after a push). If the skill path changes, update `PICKS_FILE_PATH` in `dashboard.html`.
 
 **My Bets GitHub path** (hard-coded in `dashboard.html`):
 ```text
 .agents/skills/bet-tracker/actual_bets.json
 ```
-The My Bets tab writes this file through the GitHub Contents API. It should be read-only without a GitHub token; do not reintroduce localStorage or `.claude` as source-of-truth fallbacks.
+My Bets tab writes this file via the GitHub Contents API. Read-only without a GitHub token; do not reintroduce localStorage or `.claude` as source-of-truth fallbacks.
 
-> **⚠️ Gotcha (burned once 2026-05-22 and again with raw CDN cache on 2026-05-25):** After any file reorganization, verify `PICKS_FILE_PATH` in `dashboard.html` still matches the active path and that the GitHub Contents API returns fresh data. A stale path or raw CDN cache makes the dashboard look out of date even after a successful push.
+> **⚠️ Gotcha (burned 2026-05-22, and again via raw CDN cache 2026-05-25):** after any file reorganization, verify `PICKS_FILE_PATH` in `dashboard.html` matches the active path and the GitHub Contents API returns fresh data. A stale path or raw CDN cache makes the dashboard look out of date even after a successful push.
 
 ## Data File
 
-All picks are stored in `.agents/skills/bet-tracker/picks.json`.
-
-This file is the single source of truth — it is read and written by:
-- `/sports-betting` and `/sports-betting-sharp` when logging new picks (pull before read, push after write)
-- The nightly auto-resolve agent (pushes results to GitHub every night at 11pm Phoenix)
+All picks live in `.agents/skills/bet-tracker/picks.json` — single source of truth, read/written by:
+- `/sports-betting` and `/sports-betting-sharp` when logging picks (pull before read, push after write)
+- Nightly auto-resolve agent (pushes results to GitHub every night at 11pm Phoenix)
 - `/bet-tracker` for stats and manual result entry (pull before read, push after write)
 - `scripts/resolve-and-push.sh` — one-command local resolution + push
 
@@ -117,12 +107,11 @@ This file is the single source of truth — it is read and written by:
 
 ## Dashboard
 
-Live dashboard (auto-deployed via GitHub Pages):
+Live (auto-deployed via GitHub Pages), fetches picks directly from GitHub, auto-refreshes every 5 min:
 ```
 https://tylerm08martinez-wq.github.io/gambling/dashboard.html
 ```
-
-The dashboard fetches picks directly from GitHub (always live, auto-refreshes every 5 min). Tabs:
+Tabs:
 - **Overview** — KPI strip, cumulative P&L, win rate by sport, bet type breakdown, score distribution
 - **V1 vs V2** — side-by-side model comparison with H2H stats and units P&L by sport
 - **Edge Breakdown** — picks and performance by edge type and sport
@@ -130,16 +119,16 @@ The dashboard fetches picks directly from GitHub (always live, auto-refreshes ev
 
 ## Key Concepts
 
-- **Closing line value (CLV):** Compare your bet line vs. the closing line (both converted to implied probability). Positive CLV = you got a better price than the market settled at = good process. Consistent positive CLV long-term means the model has real edge, regardless of short-term win/loss variance.
-- **Props + cross-book gaps:** Books set prop lines with less precision. A 0.5+ unit gap across DK / FanDuel / BetMGM means sharps have already hit one book — target the stale price before it closes.
-- **RLM threshold is 70%+ with line move confirmation:** Splits show # of bets not dollar handle — 80/20 on tickets may be 55/45 on dollars. Always require actual line movement to confirm RLM.
-- **Steam requires 3+ books simultaneously:** A line move at 1-2 books is noise. 4+ books = "mega sharp" signal.
-- **Never chase steam:** If the book already moved, you're entering at the new market price, not the edge.
-- **Late moves carry more weight:** Line moves in the final 2–3 hours before game time reflect higher limits and fresher info.
-- **Head fakes:** Sharps sometimes make small bets to move a line, then bet the other side when limits rise. A move followed by a reversal is a manipulation tactic, not a signal.
-- **Underdog/under value:** Public systematically overweights favorites and overs — sharps consistently find value on dogs and unders.
-- **Kelly Criterion:** Size bets proportionally to edge — avoid overbetting. Use fractional Kelly (half-Kelly) to reduce volatility.
-- **Bankroll:** Track as units, not dollars, to stay disciplined.
+- **CLV:** compare bet line vs. closing line (both as implied probability). Positive CLV = better price than market settled at = good process; consistent positive CLV long-term means real edge regardless of short-term variance.
+- **Props + cross-book gaps:** books set prop lines with less precision. A 0.5+ unit gap across DK / FanDuel / BetMGM means sharps already hit one book — target the stale price before it closes.
+- **RLM threshold: 70%+ with line move confirmation.** Splits show # of bets, not dollar handle — 80/20 on tickets may be 55/45 on dollars. Always require actual line movement to confirm RLM.
+- **Steam requires 3+ books simultaneously.** 1–2 books = noise; 4+ books = "mega sharp" signal.
+- **Never chase steam:** if the book already moved, you're entering at the new market price, not the edge.
+- **Late moves carry more weight:** moves in the final 2–3 hours before game time reflect higher limits and fresher info.
+- **Head fakes:** sharps make small bets to move a line, then bet the other side when limits rise. Move followed by reversal = manipulation, not signal.
+- **Underdog/under value:** public systematically overweights favorites and overs — sharps consistently find value on dogs and unders.
+- **Kelly Criterion:** size bets proportionally to edge; avoid overbetting. Use fractional Kelly (half-Kelly) to reduce volatility.
+- **Bankroll:** track as units, not dollars, to stay disciplined.
 
 ## Automation
 
@@ -148,22 +137,16 @@ The dashboard fetches picks directly from GitHub (always live, auto-refreshes ev
 | Daily Bet Picks (V1 + V2) | 9am Arizona | V1 + V2 research; log picks, commit/push to GitHub, post summary to Slack #bet-picks | **home PC** (`scripts/run-daily-picks.sh`) |
 | Nightly Bet Tracker — Auto-Resolve Picks | 11pm Arizona | Look up final scores, calculate CLV, commit results to GitHub | `trig_01SwKt54TorHpUVWSbsrnP2m` (cloud) |
 
-The **nightly auto-resolve** routine runs in Anthropic's cloud (it uses datacenter-tolerant APIs — MLB Stats + ESPN, ADR 0004/0005). The **Daily Bet Picks** routine runs on the **home PC** via a local scheduler, not the cloud: its research data (BettingPros cross-book props — the Primary Edge) is **403-blocked from datacenter IPs** (ADR 0006, 2026-06-01 acceptance test), so it must run from a residential IP. The PC must be powered/awake ~9am AZ. The old cloud trigger `trig_01SkNEk48CK981znKJPaHb47` is disabled.
+Nightly auto-resolve runs in Anthropic's cloud (datacenter-tolerant APIs — MLB Stats + ESPN, ADR 0004/0005). Daily Bet Picks runs on the **home PC** via local scheduler, not cloud: its research data (BettingPros cross-book props — the Primary Edge) is **403-blocked from datacenter IPs** (ADR 0006, 2026-06-01 acceptance test), so it must run from a residential IP. PC must be powered/awake ~9am AZ. Old cloud trigger `trig_01SkNEk48CK981znKJPaHb47` is disabled.
 
 Manage routines: https://claude.ai/code/routines
 
 ## GitHub Repo
 
-Public repo: `https://github.com/tylerm08martinez-wq/gambling`
-
-Live dashboard (auto-deployed): https://tylerm08martinez-wq.github.io/gambling/dashboard.html
-
-All picks are version-controlled here. The nightly agent resolves results and pushes to main automatically. The dashboard reads directly from GitHub — no manual sync needed.
+Public repo: `https://github.com/tylerm08martinez-wq/gambling` — all picks version-controlled; nightly agent resolves results and pushes to main automatically; dashboard reads directly from GitHub, no manual sync.
 
 ## Agent skills
-### Issue tracker
-Issues live in GitHub Issues. See docs/agents/issue-tracker.md.
-### Triage labels
-Default five-role vocabulary (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See docs/agents/triage-labels.md.
-### Domain docs
-Single-context repo — one CONTEXT.md at root, ADRs in docs/adr/. See docs/agents/domain.md.
+
+- **Issue tracker:** GitHub Issues. See docs/agents/issue-tracker.md.
+- **Triage labels:** default five-role vocabulary (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See docs/agents/triage-labels.md.
+- **Domain docs:** single-context repo — one CONTEXT.md at root, ADRs in docs/adr/. See docs/agents/domain.md.
