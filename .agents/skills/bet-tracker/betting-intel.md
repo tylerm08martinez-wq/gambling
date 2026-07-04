@@ -784,3 +784,28 @@ No new research performed — daily cap already used for V1.
 - `bettingpros.py` CLI only supports `events|props` — the `offers` subcommand referenced in both SKILL.md files does not exist; must import `fetch_offers()` in Python. Worth a SKILL/CLI patch on a manual run.
 - Game-line market IDs (from /markets): 122 = moneyline, 175 = total. Pinnacle (book 2) absent from all offers today → CLV unverified on every pick.
 - tracker validation requires each source-evidence item to carry `status:"usable"`, `source`, and `freshness` — first log attempt without them was auto-rejected.
+
+### 2026-07-04 — V1-Trends Session
+
+**Props extracted**: 62 candidates (MLB only, July) · **Picks**: 2 (avg Score 7.0)
+
+**Signal observations**:
+- Hunter Brown U4.5 hits allowed +117 @ Novig — 0.5 gap (Betr hangs O5), trend confirmed (L10 7 unders, proj 4.3). Score 7.6.
+- Drew Rasmussen U5.5 Ks +115 @ DK — 0.5 gap (PrizePicks hangs 6). Neutral L10 (5-5); edge is price/line only. Score 6.4.
+- Both picks same game (TB @ HOU) — mild correlation flagged.
+- Rejected: Bieber U15.5 outs (L15 trend 9-4 over = conflicting signals → 5.2); Holliday U1.5 SB (-1567 unbettable juice, Novig both-sides quirk); Jared Young U0.5 TB (price identical to consensus, no edge); Merrill Kelly U3.5 Ks (projection says over — extractor side conflicts with projection).
+
+**Calibration note**: settled data shows score≥8 picks hitting 47% vs 72% for score<8 — inverted calibration worth watching; no rubric rule for score tiers yet.
+
+### 2026-07-04 — V2-Sharp Session
+
+**Props**: 62 candidates · **Game lines**: 15 events scanned for steam (ML/total/RL via opening-vs-current) · **Picks**: 3
+
+**Signal observations**:
+- Bieber U15.5 outs +101 @ DK — 1.0 prop gap (Novig 16.5), projection confirms. V1 rejected same spot on L15 over-trend; V2 rubric has no trend-conflict penalty. Explicit model-divergence test.
+- CWS@CLE U7.5 +104 @ Novig — mega steam, all 16 books 8→7.5. Entry post-move but plus-money on steamed side.
+- STL@CHC U8.5 -122 @ book-73 — mega steam (15 books 8.5→8/7.5) with a genuinely stale book still hanging 8.5. Cleanest anti-chase steam entry seen so far.
+- Pinnacle (book_id 2) absent from every /offers response today — CLV unverified on all picks. If persistent, the V3/CLV pipeline loses its benchmark; watch.
+- Unmapped book ids 15, 27, 39, 63, 68, 73, 74 appearing in offers; BOOKS map in bettingpros.py may need extending (book-73 held today's stale STL/CHC line).
+
+**Patterns**: over-steams also present (PIT@WSH 10→up 15 books, MIL@ARI 9→up 14) — passed per under-value philosophy; watch whether skipped over-steams cash.
