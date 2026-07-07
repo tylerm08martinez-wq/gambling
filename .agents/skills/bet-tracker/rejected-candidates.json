@@ -191,5 +191,35 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260707-mlb-v1-noah-total",
+    "date": "2026-07-07",
+    "checked_at": "2026-07-07T09:02:58",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Noah Schultz (CWS) UNDER 14.5 outs recorded vs BOS",
+    "line": "@ Novig",
+    "units": 2,
+    "score": 8.4,
+    "primary_edge": "Cross-book prop gap: Novig posted 14.5 outs while consensus sits at 15.5 (1.0-unit gap); trend-confirmed by extractor",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market_id=405",
+        "player": "Noah Schultz",
+        "side": "under",
+        "bet_line": 14.5,
+        "gap": 1.0,
+        "bet_book": "Novig (60)",
+        "trend_confirmed": true
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]
