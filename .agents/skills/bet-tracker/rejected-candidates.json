@@ -221,5 +221,34 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260711-mlb-v1-gage-total",
+    "date": "2026-07-11",
+    "checked_at": "2026-07-11T09:05:44",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Gage Jump (ATH @ CWS) Under 16.5 outs recorded",
+    "line": "+100 @ BetMGM",
+    "units": 2,
+    "score": 8.4,
+    "primary_edge": "Cross-book prop gap: consensus outs line 16.5 across 10 books; stale Over 17.5 at DK/Betr/BetRivers/book-15; bet Under 16.5 @ BetMGM +100 (plus-money price on the correct side of the market).",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 405",
+        "detail": "Gage Jump event 98506 mkt 405 \u2014 under.line 16.5 @ BetMGM +100; consensus_line 16.5 (10 books); stale over-line 17.5 @ DraftKings/Betr/BetRivers/book-15; gap=1.0; trend_confirmed=true (extractor prop_edge.py)"
+      },
+      {
+        "source": "BettingPros /offers event 98506 mkt 405",
+        "detail": "Under 16.5 best price BetMGM +100; also Caesars -104, Novig -102, book-27 +100. Under 17.5 available DK -137 (chalk). Over 17.5 offered at DK +103, BetRivers -106, book-15 -106, Betr -118. Stale side present."
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]

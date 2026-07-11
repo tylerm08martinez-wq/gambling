@@ -2595,5 +2595,119 @@
     "line_num": 14.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260711-mlb-v1-gage-total",
+    "date": "2026-07-11",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Gage Jump (ATH @ CWS) Under 16.5 outs recorded",
+    "line": "+100 @ BetMGM",
+    "units": 2,
+    "score": 8.4,
+    "primary_edge": "Cross-book prop gap: consensus outs line 16.5 (10 books); stale Over 17.5 available at DK/Betr/BetRivers; bet Under 16.5 @ BetMGM +100 (plus-money on correct side).",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 405",
+        "status": "usable",
+        "freshness": "2026-07-11T16:05:59Z",
+        "detail": "Gage Jump event 98506 mkt 405 \u2014 extractor prop_edge.py flagged under.line 16.5 @ BetMGM (book 19); consensus_line 16.5 across 10 books; stale over-line 17.5 at DK/Betr/BetRivers/book-15; gap=1.0; trend_confirmed=true"
+      },
+      {
+        "source": "BettingPros /offers event 98506 mkt 405",
+        "status": "usable",
+        "freshness": "2026-07-11T16:05:59Z",
+        "detail": "Under 16.5 best price BetMGM +100; also book-27 +100, Novig -102, Caesars -104, Underdog/Hard Rock/Fanatics -105, theScore -110. Stale over-side: DK 17.5 +103, BetRivers/book-15 17.5 -106, Betr 17.5 -118."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:10 AM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260711-mlb-v1-logan-total",
+    "date": "2026-07-11",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Logan Gilbert (SEA @ TB) Under 17.5 outs recorded",
+    "line": "+145 @ DraftKings",
+    "units": 2,
+    "score": 8.4,
+    "primary_edge": "Cross-book prop gap: consensus outs 17.5 across 11 books; stale over-side available at BetRivers/book-15 line 18.5 +120; bet Under 17.5 @ DK +145 (plus-money on correct side).",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 405",
+        "status": "usable",
+        "freshness": "2026-07-11T16:06:09Z",
+        "detail": "Logan Gilbert event 99766 mkt 405 \u2014 extractor prop_edge.py flagged under.line 17.5 @ Underdog (36); consensus_line 17.5 across 11 books; stale over-line 18.5 at BetRivers/book-15; gap=1.0; trend_confirmed=true"
+      },
+      {
+        "source": "BettingPros /offers event 99766 mkt 405",
+        "status": "usable",
+        "freshness": "2026-07-11T16:06:09Z",
+        "detail": "Under 17.5 best price: DraftKings +145 (also BetMGM +145, Hard Rock +145, Underdog +145, book-27 +145, Novig +141, BP Consensus +140). Stale over-side: BetRivers 18.5 +120, book-15 18.5 +120."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 17.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260711-mlb-v1-peter-total",
+    "date": "2026-07-11",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Peter Lambert (HOU @ TEX) Under 16.5 outs recorded",
+    "line": "+104 @ Novig",
+    "units": 2,
+    "score": 8.4,
+    "primary_edge": "Cross-book prop gap: consensus outs line moved from opening 17.5 to 16.5 (majority of books); stale over-side 17.5 still available at BetMGM/Hard Rock/Fanatics; bet Under 16.5 @ Novig +104.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 405",
+        "status": "usable",
+        "freshness": "2026-07-11T16:06:20Z",
+        "detail": "Peter Lambert event 97989 mkt 405 \u2014 extractor prop_edge.py flagged under.line 16.5 @ Novig (60); consensus_line 16.5; opening_line 17.5 (movement toward under); stale over-line 17.5 at BetMGM/Hard Rock/Fanatics/book-27; gap=1.0; trend_confirmed=true"
+      },
+      {
+        "source": "BettingPros /offers event 97989 mkt 405",
+        "status": "usable",
+        "freshness": "2026-07-11T16:06:20Z",
+        "detail": "Under 16.5 best price: Novig +104 (also DK +102, Caesars +101, Underdog +101, Betr -118). Under 17.5 (chalk side): BetMGM/Hard Rock/Fanatics -135. Opening line was 17.5 \u2014 market has moved down 1 full unit toward under."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:05 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
