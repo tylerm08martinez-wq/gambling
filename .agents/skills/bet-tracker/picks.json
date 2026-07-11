@@ -2709,5 +2709,43 @@
     "line_num": 16.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260711-mlb-v2-kyle-total",
+    "date": "2026-07-11",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Kyle Freeland (COL @ SF) Under 16.5 outs recorded",
+    "line": "+100 @ DraftKings",
+    "units": 2,
+    "score": 9.0,
+    "primary_edge": "Signal A: cross-book prop gap 1.0 with trend_confirmed. Consensus outs 16.5 across 8 books; stale Over 17.5 available at theScore/Underdog/BetRivers/Betr/book-15/book-63. Bet Under 16.5 @ DK +100. Freeland pitching at pitcher-friendly Oracle Park.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB market 405",
+        "status": "usable",
+        "freshness": "2026-07-11T16:08:08Z",
+        "detail": "Kyle Freeland event 97963 mkt 405 \u2014 extractor prop_edge.py flagged under.line 16.5 @ DK (12); consensus_line 16.5; stale over-line 17.5 at theScore/Underdog/book-63/Betr/BetRivers/book-15; gap=1.0; trend_confirmed=true"
+      },
+      {
+        "source": "BettingPros /offers event 97963 mkt 405",
+        "status": "usable",
+        "freshness": "2026-07-11T16:08:08Z",
+        "detail": "Under 16.5 best price: DK +100; also Novig -104, Caesars -104, BetMGM/Hard Rock -105, Fanatics -110, Betr -118. Stale over-side 17.5: Underdog +103, theScore -105, BetRivers/book-15 -110, book-63 -110, Betr -118. Pinnacle absent \u2014 CLV unverified."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:05 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
