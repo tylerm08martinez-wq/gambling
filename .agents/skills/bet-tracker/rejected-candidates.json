@@ -250,5 +250,50 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260712-mlb-v1-taj-total",
+    "date": "2026-07-12",
+    "checked_at": "2026-07-12T09:03:49",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Taj Bradley (MIN vs LAA) UNDER 17.5 pitcher outs",
+    "line": "+117 @ DraftKings",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book prop gap 1.0 (best over 18.5 Underdog vs under 17.5 DK), projection 16.71 (0.79 below line), trend_confirmed under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props",
+        "market_id": 405,
+        "event_id": 97941,
+        "over": {
+          "line": 18.5,
+          "odds": 132,
+          "book": "Underdog"
+        },
+        "under": {
+          "line": 17.5,
+          "odds": 117,
+          "book": "DraftKings"
+        },
+        "consensus_line": 17.5,
+        "projection": {
+          "recommended_side": "under",
+          "value": 16.71,
+          "diff": -0.79
+        },
+        "gap": 1.0,
+        "trend_confirmed": true,
+        "perf_last_10": "4 over / 6 under"
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]

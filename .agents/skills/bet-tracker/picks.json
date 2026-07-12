@@ -2747,5 +2747,116 @@
     "line_num": 100.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260712-mlb-v1-taj-total",
+    "date": "2026-07-12",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Taj Bradley (MIN vs LAA) UNDER 17.5 pitcher outs",
+    "line": "+117 @ DraftKings",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book prop gap 1.0 (best over 18.5 Underdog vs under 17.5 DraftKings), projection 16.71 (0.79 below line), trend_confirmed under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB",
+        "status": "usable",
+        "freshness": "2026-07-12T16:04Z",
+        "category": "cross_book_line",
+        "market_id": 405,
+        "event_id": 97941,
+        "over": {
+          "line": 18.5,
+          "odds": 132,
+          "book": "Underdog"
+        },
+        "under": {
+          "line": 17.5,
+          "odds": 117,
+          "book": "DraftKings"
+        },
+        "consensus_line": 17.5,
+        "gap": 1.0
+      },
+      {
+        "source": "BettingPros /props projection",
+        "status": "usable",
+        "freshness": "2026-07-12T16:04Z",
+        "category": "model_projection",
+        "recommended_side": "under",
+        "value": 16.71,
+        "diff": -0.79
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:10 AM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 17.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260712-mlb-v1-dustin-total",
+    "date": "2026-07-12",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Dustin May (STL vs ATL) UNDER 16.5 pitcher outs",
+    "line": "+101 @ DraftKings",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Cross-book prop gap 1.0 (best over 17.5 theScore vs under 16.5 DraftKings), projection 16.32 (0.18 below line), trend_confirmed under, active 3-game under streak",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB",
+        "status": "usable",
+        "freshness": "2026-07-12T16:04Z",
+        "category": "cross_book_line",
+        "market_id": 405,
+        "event_id": 99880,
+        "over": {
+          "line": 17.5,
+          "odds": -105,
+          "book": "theScore Bet"
+        },
+        "under": {
+          "line": 16.5,
+          "odds": 101,
+          "book": "DraftKings"
+        },
+        "consensus_line": 16.5,
+        "gap": 1.0
+      },
+      {
+        "source": "BettingPros /props projection",
+        "status": "usable",
+        "freshness": "2026-07-12T16:04Z",
+        "category": "model_projection",
+        "recommended_side": "under",
+        "value": 16.32,
+        "diff": -0.18,
+        "streak": "3 unders"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:15 AM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
