@@ -809,3 +809,21 @@ No new research performed — daily cap already used for V1.
 - Unmapped book ids 15, 27, 39, 63, 68, 73, 74 appearing in offers; BOOKS map in bettingpros.py may need extending (book-73 held today's stale STL/CHC line).
 
 **Patterns**: over-steams also present (PIT@WSH 10→up 15 books, MIL@ARI 9→up 14) — passed per under-value philosophy; watch whether skipped over-steams cash.
+
+### 2026-07-16 — V1-Trends + V2-Sharp Sessions (scheduled)
+
+**Slate**: 1 MLB event only (NYM @ PHI — second-half opener off the All-Star break). Extractor: 3 candidates, all in this game.
+
+**V1 (2 picks)**:
+- Scott U14.5 outs +121 @ DK — gap 1.0 (Novig stale 15.5, consensus steamed 15.5→14.5), projection 14.37 confirms. Score 7.6, 1u. Note: DK +121 is below devig fair (~+132) — edge is the line steam, not price; kept Value at 4 accordingly.
+- Soto O1.5 TB +102 @ Novig — prop_trend, rating 4/5, EV +16.5%, projection 3.22 (diff +1.72). Score 8.8, 2u. Conflicting −2 applied (last-5 1-4 under). Watch: highest-EV prop_trend logged; prop_trend settled 3-2 V1 / 0-1 V2.
+- Rejected: Nola U4.5 K at 4.4 — model rec over (5.11) + season K-overs 15-4 = conflicting −2, price ≈ devig fair.
+
+**V2 (1 pick)**:
+- Nola U4.5 K +126 @ ProphetX — gap 0.5, DK/BetMGM stale at opening 5.5, market steamed to 4.5. Score 8.65, 2u. Explicit V1/V2 divergence test (V1 rejected same spot; V2 rubric has no trend-conflict penalty — same shape as 7/4 Bieber). Public context: Nola hasn't gone past the 5th in 4 straight starts (supports under) but 15 K in last 12 IP (supports over).
+- Game-line steam scan (mkts 122/175): total steamed 10→9/9.5 at ALL 17 books — fully moved = chasing, discarded. First-game-back slates may steam early and completely; on one-game slates expect chase-only game lines.
+- Pinnacle absent from every /offers response again (as 7/4) — CLV unverified on all three picks.
+
+**Tooling (recurring, still unpatched)**: `bettingpros.py` CLI still lacks the `offers` subcommand both SKILLs document — imported `fetch_offers()` inline again. Evidence items still require `status:"usable"` + `source` + `freshness` (first V1 log attempt auto-rejected, same as 7/3). Both worth a manual-run SKILL/CLI patch.
+
+**Whole card is one game** — three picks concentrated on NYM@PHI (correlation: Scott outs under + Soto TB over are mildly positively correlated; Nola K under independent-ish). Flagged for result review.
