@@ -2858,5 +2858,71 @@
     "line_num": 16.5,
     "prop_result": "12 pitcher outs (4 IP)",
     "prop_margin": -5
+  },
+  {
+    "id": "20260716-mlb-v1-christ-total",
+    "date": "2026-07-16",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Christian Scott (NYM @ PHI) Under 14.5 pitcher outs",
+    "line": "+121 @ DraftKings",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Cross-book prop gap: consensus outs line steamed 15.5->14.5, Novig stale at 15.5; model projects 14.37 (rec under)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros API /props + /offers (event 98206, market 405)",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-07-16 pre-game snapshot",
+        "detail": "Consensus 14.5 (under +115); Novig stale at 15.5 (over +141); gap 1.0 units; opening 15.5 steamed to 14.5; projection 14.37 outs, recommended_side=under (trend_confirmed)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 14.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260716-mlb-v1-juan-total",
+    "date": "2026-07-16",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Juan Soto (NYM @ PHI) Over 1.5 total bases",
+    "line": "+102 @ Novig",
+    "units": 2,
+    "score": 8.8,
+    "primary_edge": "Prop trend: BettingPros bet rating 4/5, +16.5% EV at Novig +102 vs consensus -110; projection 3.22 TB vs 1.5 line",
+    "primary_edge_type": "prop_trend",
+    "source_evidence": [
+      {
+        "source": "BettingPros API /props (event 98206, market 293)",
+        "category": "prop_projection",
+        "status": "usable",
+        "freshness": "2026-07-16 pre-game snapshot",
+        "detail": "Over 1.5 TB at Novig +102 vs consensus -110; EV +16.45%; bet_rating 4/5; projection 3.22 (diff +1.72); risk: last-5 trend 1-4 to the under"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 1.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]

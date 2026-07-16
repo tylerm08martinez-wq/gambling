@@ -295,5 +295,32 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260716-mlb-v1-christ-total",
+    "date": "2026-07-16",
+    "checked_at": "2026-07-16T09:09:08",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Christian Scott (NYM @ PHI) Under 14.5 pitcher outs",
+    "line": "+121 @ DraftKings",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Cross-book prop gap: consensus outs line moved 15.5->14.5, Novig stale at 15.5; model projects 14.37 (rec under)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros API /props + /offers (event 98206, market 405)",
+        "type": "cross_book_gap",
+        "detail": "Consensus 14.5 (under +115); Novig stale at 15.5 (over +141); gap 1.0 units; opening line 15.5 steamed to 14.5; projection 14.37 outs, recommended_side=under (trend_confirmed)",
+        "retrieved": "2026-07-16"
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]
