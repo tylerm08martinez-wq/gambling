@@ -322,5 +322,46 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260719-mlb-v1-sonny-total",
+    "date": "2026-07-19",
+    "checked_at": "2026-07-19T09:05:10",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Sonny Gray (BOS) Under 17.5 Outs Recorded vs TB",
+    "line": "+130 @ Hard Rock",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book gap: Hard Rock U17.5 +130 vs consensus +118; Underdog over posted at 18.5 (1.0-unit book spread); BP projection 16.59 outs (-0.91 vs line)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "bettingpros_props_api",
+        "market_id": 405,
+        "event_id": 100002,
+        "bet_book": "Hard Rock (49)",
+        "bet_line": 17.5,
+        "bet_odds": 130,
+        "consensus_line": 17.5,
+        "consensus_odds": 118,
+        "over_book_line": 18.5,
+        "gap": 1.0,
+        "projection": 16.59,
+        "projection_diff": -0.91,
+        "trend_confirmed": true
+      },
+      {
+        "source": "bettingpros_offers_api",
+        "note": "Hard Rock U17.5 +130 best price; consensus +118; DK -149 at main 15.5 ladder",
+        "risk": "Gray over 17.5 outs in 9 of last 10 starts (8-over streak)"
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]
