@@ -827,3 +827,19 @@ No new research performed — daily cap already used for V1.
 **Tooling (recurring, still unpatched)**: `bettingpros.py` CLI still lacks the `offers` subcommand both SKILLs document — imported `fetch_offers()` inline again. Evidence items still require `status:"usable"` + `source` + `freshness` (first V1 log attempt auto-rejected, same as 7/3). Both worth a manual-run SKILL/CLI patch.
 
 **Whole card is one game** — three picks concentrated on NYM@PHI (correlation: Scott outs under + Soto TB over are mildly positively correlated; Nola K under independent-ish). Flagged for result review.
+
+### 2026-07-19 — V1-Trends + V2-Sharp Sessions (scheduled)
+
+**Slate**: 16 MLB events (incl. LAD@NYY split doubleheader after Saturday rainout). Extractor: 40 candidates.
+
+**V1 (2 picks)**: Gray U17.5 outs +130 @ Hard Rock (gap 1.0, proj 16.59, conflicting −2 for 8-over streak → 7.8, 1u) · Brown U6.5 K +127 @ book-68 (gap 1.0, DK over at 7.5, 4-under streak → 7.8, 1u). Rejected: Gilbert U17.5 outs at 5.8 (proj diff only −0.1 vs 6-over streak).
+
+**V2 (2 picks)**: Gilbert U17.5 outs +132 @ DK, 9.7, 2u — third explicit V1/V2 divergence test (V1 rejected same spot same day; Bieber 7/4, Nola 7/16 precedents) · MIN@CHC U8 -124 @ ProphetX, 8.15, 2u — mega steam 16/17 books 8→7.5, ProphetX stale at opener.
+
+**Signal observations**:
+- LAD@NYY g1 total "steam" 9→7.5 (16/17) DISCARDED: Saturday rainout → split DH; move is catalyst-explained (reschedule + starter confirmation); bet365 hanging 9 is a stale pre-postponement listing, not an edge. New pattern: rescheduled/DH games produce fake mega-steam from stale openers.
+- Fully-moved totals everywhere (TB@BOS 17/17 up, SD@KC 17/17 down, DET@LAA 17/17 up) — all chase-only, discarded.
+- Pinnacle absent from every /offers response — 3rd consecutive session; CLV unverified on all 4 picks.
+- book-68 again the stale book on a logged pick (Brown K) — BOOKS map still unmapped for ids 15/27/39/63/68/73/74.
+
+**Tooling (recurring, still unpatched)**: `bettingpros.py` CLI still lacks the `offers` subcommand both SKILLs document — imported `fetch_offers()` inline again. First V1 log attempt auto-rejected for evidence shape (needs `status:"usable"` + `source` + `freshness`), same as 7/3 and 7/16. Both remain manual-run patch items.
