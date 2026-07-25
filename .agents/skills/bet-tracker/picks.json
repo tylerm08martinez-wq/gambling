@@ -98,10 +98,12 @@
     "result": "win",
     "units_won_lost": 0.73,
     "closing_line": "Over 4.5 hits at -140",
-    "clv": 0.52,
+    "clv": null,
     "final_score": "CHC 2, ATL 0",
     "prop_result": "5 hits allowed in 6 IP",
-    "prop_margin": 0.5
+    "prop_margin": 0.5,
+    "clv_pct_pts": null,
+    "clv_devig": null
   },
   {
     "id": "20260514-mlb-hoerner-2tb-v1",
@@ -179,12 +181,14 @@
     "result": "win",
     "units_won_lost": 1.1,
     "closing_line": "Mets ML +110",
-    "clv": 0.0,
+    "clv": null,
     "final_score": "NYM 6, NYY 3",
     "game_margin": 3,
     "line_num": 0.0,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": null,
+    "clv_devig": null
   },
   {
     "id": "20260517-mlb-new-ml",
@@ -200,12 +204,14 @@
     "result": "win",
     "units_won_lost": 0.862,
     "closing_line": "Mets ML -115",
-    "clv": -0.22,
+    "clv": null,
     "final_score": "NYM 7, NYY 6",
     "game_margin": 1,
     "line_num": 0.0,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": null,
+    "clv_devig": null
   },
   {
     "id": "20260517-mlb-st-ml",
@@ -242,12 +248,14 @@
     "result": "win",
     "units_won_lost": 0.794,
     "closing_line": "PHI ML -126 @ FanDuel",
-    "clv": 0.0,
+    "clv": null,
     "final_score": "PHI 5, CIN 4",
     "game_margin": 1,
     "line_num": 0.0,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": null,
+    "clv_devig": null
   },
   {
     "id": "20260518-nba-san-total",
@@ -263,12 +271,14 @@
     "result": "win",
     "units_won_lost": 0.909,
     "closing_line": "Spurs +6.5 -110",
-    "clv": 0.0,
+    "clv": null,
     "final_score": "SAS 122, OKC 115",
     "game_margin": 7,
     "line_num": 6.5,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": null,
+    "clv_devig": null
   },
   {
     "id": "20260519-mlb-cincin-ml",
@@ -284,12 +294,14 @@
     "result": "win",
     "units_won_lost": 1.2,
     "closing_line": "CIN ML +119",
-    "clv": 0.21,
+    "clv": null,
     "final_score": "CIN 4, PHI 1",
     "game_margin": 3,
     "line_num": 0.0,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": null,
+    "clv_devig": null
   },
   {
     "id": "20260520-mlb-new-ml",
@@ -310,7 +322,9 @@
     "game_margin": null,
     "line_num": 0.0,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": 0.0,
+    "clv_devig": null
   },
   {
     "id": "20260520-mlb-over-total",
@@ -331,7 +345,9 @@
     "game_margin": null,
     "line_num": 8.5,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": 0.0,
+    "clv_devig": null
   },
   {
     "id": "20260521-mlb-arizon-ml",
@@ -352,7 +368,9 @@
     "game_margin": 1,
     "line_num": 0.0,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": 7.74,
+    "clv_devig": null
   },
   {
     "id": "20260522-nba-victor-total",
@@ -457,7 +475,9 @@
     "game_margin": 3,
     "line_num": 8.5,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": -3.49,
+    "clv_devig": null
   },
   {
     "id": "20260523-mlb-under-rl",
@@ -478,7 +498,9 @@
     "game_margin": 2,
     "line_num": 7.5,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": 0.0,
+    "clv_devig": null
   },
   {
     "id": "20260523-mlb-zack-total",
@@ -499,7 +521,9 @@
     "game_margin": null,
     "line_num": 5.5,
     "prop_result": "6 strikeouts",
-    "prop_margin": 1
+    "prop_margin": 1,
+    "clv_pct_pts": 1.51,
+    "clv_devig": -3.15
   },
   {
     "id": "20260523-mlb-cle-total",
@@ -620,7 +644,9 @@
     "game_margin": -9,
     "line_num": 0.0,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": 0.55,
+    "clv_devig": null
   },
   {
     "id": "20260525-mlb-v1-trey-rl",
@@ -645,7 +671,9 @@
     "game_margin": null,
     "line_num": 5.5,
     "prop_result": "6 strikeouts (over 5.5)",
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": -0.35,
+    "clv_devig": null
   },
   {
     "id": "20260526-mlb-v2-braxto-total",
@@ -761,7 +789,9 @@
     "game_margin": 1,
     "line_num": -120.0,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": 1.98,
+    "clv_devig": null
   },
   {
     "id": "20260527-mlb-v2-cristo-total",
@@ -921,7 +951,9 @@
     "game_margin": 1,
     "line_num": 7.5,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": 2.57,
+    "clv_devig": null
   },
   {
     "id": "20260529-mlb-v1-taj-total",
@@ -983,7 +1015,9 @@
     "game_margin": null,
     "line_num": 5.5,
     "prop_result": "6 strikeOuts",
-    "prop_margin": 0
+    "prop_margin": 0,
+    "clv_pct_pts": 4.2,
+    "clv_devig": 0.61
   },
   {
     "id": "20260530-mlb-v1-bailey-total",
@@ -1209,7 +1243,9 @@
     "game_margin": null,
     "line_num": 5.5,
     "prop_result": "6 K in 5 IP",
-    "prop_margin": 1
+    "prop_margin": 1,
+    "clv_pct_pts": -1.48,
+    "clv_devig": -9.05
   },
   {
     "id": "20260601-mlb-v1-under-total",
@@ -1366,7 +1402,9 @@
     "game_margin": null,
     "line_num": 1.5,
     "prop_result": "0 totalBases",
-    "prop_margin": -1.5
+    "prop_margin": -1.5,
+    "clv_pct_pts": 1.98,
+    "clv_devig": -2.55
   },
   {
     "id": "20260602-mlb-v1-grayso-total",
@@ -1599,7 +1637,9 @@
     "game_margin": 2,
     "line_num": 16.5,
     "prop_result": "17 outs recorded (5 2/3 IP)",
-    "prop_margin": 1
+    "prop_margin": 1,
+    "clv_pct_pts": 3.84,
+    "clv_devig": -0.03
   },
   {
     "id": "20260626-mlb-v1-patric-total",
@@ -1646,7 +1686,9 @@
     "game_margin": -1,
     "line_num": 14.5,
     "prop_result": "approx 1 out recorded (pulled in 1st inning, 3-0 hole before 2nd out)",
-    "prop_margin": -14
+    "prop_margin": -14,
+    "clv_pct_pts": 12.5,
+    "clv_devig": 19.69
   },
   {
     "id": "20260626-mlb-v1-keider-total",
@@ -1693,7 +1735,9 @@
     "game_margin": 8,
     "line_num": 16.5,
     "prop_result": "21 outs recorded (7 IP)",
-    "prop_margin": 5
+    "prop_margin": 5,
+    "clv_pct_pts": 5.3,
+    "clv_devig": 2.42
   },
   {
     "id": "20260626-mlb-v2-walber-total",
@@ -1773,7 +1817,9 @@
     "game_margin": null,
     "line_num": 14.5,
     "prop_result": "14 outs",
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": 1.58,
+    "clv_devig": -3.62
   },
   {
     "id": "20260627-mlb-v1-ryan-total",
@@ -1806,7 +1852,9 @@
     "game_margin": null,
     "line_num": 14.5,
     "prop_result": "14 batters faced (0 GB fly-ball pitcher)",
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": 3.09,
+    "clv_devig": -0.86
   },
   {
     "id": "20260627-mlb-v2-nyy-total",
@@ -1872,7 +1920,9 @@
     "game_margin": null,
     "line_num": 7.5,
     "prop_result": "10 strikeouts in 6 IP",
-    "prop_margin": 3
+    "prop_margin": 3,
+    "clv_pct_pts": 2.07,
+    "clv_devig": -2.46
   },
   {
     "id": "20260628-mlb-v1-brando-total",
@@ -1905,7 +1955,9 @@
     "game_margin": null,
     "line_num": 5.5,
     "prop_result": "6 strikeouts in 5.2 IP",
-    "prop_margin": 1
+    "prop_margin": 1,
+    "clv_pct_pts": 2.46,
+    "clv_devig": 0.05
   },
   {
     "id": "20260628-mlb-v1-tyler-total",
@@ -1938,7 +1990,9 @@
     "game_margin": null,
     "line_num": 15.5,
     "prop_result": "22 outs in 7.1 IP (longest outing of 2026)",
-    "prop_margin": 7
+    "prop_margin": 7,
+    "clv_pct_pts": 3.49,
+    "clv_devig": -0.98
   },
   {
     "id": "20260701-mlb-v1-troy-total",
@@ -2172,7 +2226,9 @@
     "game_margin": null,
     "line_num": 17.5,
     "prop_result": "14 outs recorded (4.2 IP)",
-    "prop_margin": -4
+    "prop_margin": -4,
+    "clv_pct_pts": 8.21,
+    "clv_devig": 11.06
   },
   {
     "id": "20260703-mlb-v1-luis-total",
@@ -2222,7 +2278,9 @@
     "game_margin": null,
     "line_num": 17.5,
     "prop_result": "18 outs recorded (6.0 IP)",
-    "prop_margin": 1
+    "prop_margin": 1,
+    "clv_pct_pts": 2.46,
+    "clv_devig": -2.24
   },
   {
     "id": "20260703-mlb-v1-jack-total",
@@ -2270,7 +2328,9 @@
     "game_margin": null,
     "line_num": 14.5,
     "prop_result": "11 outs recorded (3.2 IP)",
-    "prop_margin": -4
+    "prop_margin": -4,
+    "clv_pct_pts": 3.74,
+    "clv_devig": 1.6
   },
   {
     "id": "20260703-mlb-v2-shea-total",
@@ -2890,7 +2950,9 @@
     "game_margin": null,
     "line_num": 14.5,
     "prop_result": "17 pitcher outs (5.2 IP, 7 K)",
-    "prop_margin": 3
+    "prop_margin": 3,
+    "clv_pct_pts": 1.26,
+    "clv_devig": -4.87
   },
   {
     "id": "20260716-mlb-v1-juan-total",
@@ -3006,7 +3068,9 @@
     "game_margin": 1,
     "line_num": 17.5,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": 2.39,
+    "clv_devig": -1.08
   },
   {
     "id": "20260719-mlb-v1-hunter-total",
@@ -3108,7 +3172,9 @@
     "game_margin": 1,
     "line_num": 17.5,
     "prop_result": null,
-    "prop_margin": null
+    "prop_margin": null,
+    "clv_pct_pts": 1.34,
+    "clv_devig": -4.0
   },
   {
     "id": "20260719-mlb-v2-twins-total",

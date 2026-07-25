@@ -1,10 +1,24 @@
 # Betting Domain Glossary
 
 ## CLV (Closing Line Value)
-The difference between your entry price and the closing line, expressed as implied probability. Positive CLV means you got a better price than the market settled at = good process. Benchmark: Pinnacle's de-vigged closing line. Consistently beating Pinnacle by 2%+ is the documented definition of a profitable edge.
+The difference between your entry price and the closing line, expressed as implied probability. Positive CLV means you got a better price than the market settled at = good process. Consistently beating the de-vigged close by 2%+ is the documented definition of a profitable edge.
+
+Recorded as **two distinct metrics that are never averaged together** (see [[De-vigged CLV]] and [[Percentage-Point CLV]]). They previously shared one `clv` field — `resolve` wrote percentage points, `backfill-clv` wrote the de-vigged ratio — and were blended into a single `avg_clv`, producing a number that was neither metric.
+
+**Benchmark caveat:** the close is sourced from **BettingPros Consensus** (`book_id` 0), not Pinnacle. Pinnacle is absent from the prop grid, so the code has always used consensus while the docs and variable names said Pinnacle. Retail consensus is a materially weaker benchmark than Pinnacle's de-vigged close; read CLV figures with that in mind.
+
+## De-vigged CLV
+`(fair_prob / entry_prob − 1) × 100`, stored as `clv_devig`. The hold-free metric and the **preferred** one: the overround is stripped from the closing market before comparison, so the book's vig cannot masquerade as edge. Requires **both sides** of the closing market — de-vig is impossible from one side, so a one-sided close leaves this `null`. This is the metric the headline CLV statistics report.
+
+## Percentage-Point CLV
+`(closing_implied_prob − entry_implied_prob) × 100`, stored as `clv_pct_pts`. Vig-inclusive, so the book's hold contaminates the signal — but computable from a **one-sided** close, which gives it materially wider coverage. Reported alongside the de-vigged figure over its own denominator, never merged into it.
+
+The `clv` field remains as a legacy mirror of whichever metric is preferred-and-available, so existing readers (dashboard, notebooks) keep working.
 
 ## Measured CLV
-A CLV value computed from Pinnacle's actual de-vigged closing line at game start. Distinct from Unmeasured CLV (`null` or placeholder `+0.00%`), where the Pinnacle close was never fetched. Most picks today have Unmeasured CLV — the Pinnacle-fetch workflow is unimplemented. Statistics over CLV should exclude Unmeasured CLV picks rather than treat them as zero.
+A CLV value computed from a real fetched close. Requires both a value under the metric being reported **and** a `closing_line` that parses as American odds. Distinct from Unmeasured CLV (`null`, or a placeholder `+0.00%` with no close fetched). Statistics over CLV exclude Unmeasured picks rather than treating them as zero.
+
+A genuine measured `0.00` (the close was fetched and the price tied it) IS measured — it counts in the denominator but did not beat the close. Six picks previously carried a hand-written `clv` of `0.0` beside unparseable free text (`'Mets ML +110'`) and were counted as Measured; the parse requirement now excludes them.
 
 ## CLV Coverage
 The percentage of settled picks with Measured CLV. ROI is not a mature trust signal until CLV Coverage is at least 90%.

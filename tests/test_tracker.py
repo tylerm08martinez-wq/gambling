@@ -84,26 +84,59 @@ class TestCalcClv(unittest.TestCase):
 
 
 class TestDetermineOutcome(unittest.TestCase):
-    # Run line
-    def test_rl_win(self):
-        self.assertEqual(tracker.determine_outcome("rl", 2, 1.5), "win")
+    # Run line / spread.
+    #
+    # `line_num` is SIGNED, as the bet reads: a -1.5 favourite is -1.5, a +1.5
+    # underdog is +1.5. It covers when margin + line_num > 0. These tests previously
+    # encoded an unsigned-favourite convention (a -1.5 fav stored as 1.5), which is
+    # why no underdog case existed anywhere in the suite — and under that convention
+    # every winning underdog graded as a LOSS.
+    def test_rl_fav_win(self):
+        self.assertEqual(tracker.determine_outcome("rl", 2, -1.5), "win")
 
-    def test_rl_loss_short(self):
-        self.assertEqual(tracker.determine_outcome("rl", 1, 1.5), "loss")
+    def test_rl_fav_loss_short(self):
+        # -1.5 favourite wins by only 1 → does not cover
+        self.assertEqual(tracker.determine_outcome("rl", 1, -1.5), "loss")
 
-    def test_rl_loss_negative_margin(self):
-        self.assertEqual(tracker.determine_outcome("rl", -1, 1.5), "loss")
+    def test_rl_fav_loss_negative_margin(self):
+        self.assertEqual(tracker.determine_outcome("rl", -1, -1.5), "loss")
 
     def test_rl_push_whole_number_line(self):
-        self.assertEqual(tracker.determine_outcome("rl", 2, 2.0), "push")
+        # -2.0 favourite wins by exactly 2 → push
+        self.assertEqual(tracker.determine_outcome("rl", 2, -2.0), "push")
 
     def test_rl_no_push_on_half_line(self):
-        # Margin exactly equal to a .5 line can't push
-        self.assertEqual(tracker.determine_outcome("rl", 1, 1.0), "push")  # whole number = push
-        self.assertNotEqual(tracker.determine_outcome("rl", 1, 1.5), "push")
+        self.assertEqual(tracker.determine_outcome("rl", 1, -1.0), "push")
+        self.assertNotEqual(tracker.determine_outcome("rl", 1, -1.5), "push")
 
     def test_rl_run_line_string(self):
-        self.assertEqual(tracker.determine_outcome("run line", 3, 1.5), "win")
+        self.assertEqual(tracker.determine_outcome("run line", 3, -1.5), "win")
+
+    # Underdog run lines — the case the old convention got backwards every time.
+    def test_rl_dog_covers_losing_by_one(self):
+        self.assertEqual(tracker.determine_outcome("rl", -1, 1.5), "win")
+
+    def test_rl_dog_covers_winning_outright(self):
+        self.assertEqual(tracker.determine_outcome("rl", 1, 1.5), "win")
+
+    def test_rl_dog_loses_by_more_than_the_line(self):
+        self.assertEqual(tracker.determine_outcome("rl", -2, 1.5), "loss")
+
+    def test_rl_dog_push_on_whole_line(self):
+        self.assertEqual(tracker.determine_outcome("rl", -2, 2.0), "push")
+
+    # Point spreads — there was no `spread` branch at all, so these fell through to
+    # the moneyline path, which ignores line_num entirely.
+    def test_spread_dog_covers_without_winning(self):
+        # Spurs +6.5 lose by 3 → covers, even though they lost the game
+        self.assertEqual(tracker.determine_outcome("spread", -3, 6.5), "win")
+
+    def test_spread_fav_wins_but_fails_to_cover(self):
+        # -7 favourite wins by 3 → loses the bet
+        self.assertEqual(tracker.determine_outcome("spread", 3, -7.0), "loss")
+
+    def test_spread_push(self):
+        self.assertEqual(tracker.determine_outcome("spread", 3, -3.0), "push")
 
     # Moneyline
     def test_ml_win(self):
@@ -1232,6 +1265,111 @@ class TestBuildContextPropMargin(unittest.TestCase):
         self.assertEqual(tracker.fmt_margin(2), "2")
         self.assertEqual(tracker.fmt_margin(2.0), "2")
         self.assertEqual(tracker.fmt_margin(0.5), "0.5")
+
+
+class TestClassifyBetRegressions(unittest.TestCase):
+    """Every case here is a real bet string from picks.json that was misrouted."""
+
+    def _c(self, bet, sport="MLB"):
+        return tracker.classify_bet({"bet": bet, "sport": sport})
+
+    def test_matchup_style_game_totals(self):
+        # 0 of 8 real game totals matched the old `^(over|under)` anchor; they fell to
+        # the moneyline path and were graded on game_margin (ADR 0004 mis-resolution).
+        for bet in ("Twins @ Cubs Under 8 (game total)",
+                    "CLE @ PHI Under 7.0 (correlated: Wheeler dominates)",
+                    "Padres @ Marlins Under 8 (game total)",
+                    "NYY @ BOS Under 8.5 Runs (game total)",
+                    "Yankees/Red Sox Over 8.5"):
+            with self.subTest(bet=bet):
+                self.assertEqual(self._c(bet), "total")
+
+    def test_game_total_naming_a_stat_keyword_is_still_a_total(self):
+        # "runs" is itself a stat keyword, so these were landing on the PROP path.
+        for bet in ("Padres @ Dodgers Under 8 runs (King vs Ohtani)",
+                    "White Sox @ Guardians UNDER 7.5 runs (Burke vs Messick)",
+                    "Cardinals @ Cubs UNDER 8.5 runs (Leahy vs Imanaga)"):
+            with self.subTest(bet=bet):
+                self.assertEqual(self._c(bet), "total")
+
+    def test_player_prop_with_trailing_matchup_stays_a_prop(self):
+        # The discriminator is WHERE the matchup separator sits. A parenthetical
+        # "(PHI vs NYM)" must not turn a player prop into a game total.
+        for bet in ("Aaron Nola (PHI vs NYM) Under 4.5 strikeouts",
+                    "Nathan Eovaldi Under 5.5 Ks vs Miami Marlins",
+                    "Grayson Rodriguez Under 5.5 Ks vs COL"):
+            with self.subTest(bet=bet):
+                self.assertEqual(self._c(bet), "prop")
+
+    def test_leading_over_under_total_still_classifies(self):
+        self.assertEqual(self._c("Under 7.5 Mets at Marlins (loanDepot park)"), "total")
+
+    def test_point_spread_gets_its_own_type(self):
+        # Previously "ml" — and the moneyline path ignores line_num, so a spread that
+        # covered without winning outright graded as a LOSS.
+        self.assertEqual(self._c("San Antonio Spurs +6.5 vs Oklahoma City Thunder", "NBA"),
+                         "spread")
+
+    def test_explicit_bet_type_wins_over_inference(self):
+        self.assertEqual(tracker.classify_bet({"bet": "anything at all", "bet_type": "spread"}),
+                         "spread")
+
+
+class TestModelAbbrev(unittest.TestCase):
+    def test_v3_no_longer_collides_with_v2(self):
+        # Was `"v1" if "v1" in model else "v2"`, so v3-value picks were stamped v2 and
+        # could share an id with a real V2 pick on the same team/date/type.
+        self.assertEqual(tracker._model_abbrev("v3-value"), "v3")
+        self.assertEqual(tracker._model_abbrev("v1-trends"), "v1")
+        self.assertEqual(tracker._model_abbrev("v2-sharp"), "v2")
+
+
+class TestMissingScoreNeverGraded(unittest.TestCase):
+    """A Final game with no score must be unresolvable, never a fabricated 0-0."""
+
+    def _game(self, home_score=None, away_score=None):
+        g = {"gamePk": 1, "status": {"detailedState": "Final"},
+             "teams": {"home": {"team": {"name": "Chicago Cubs", "abbreviation": "CHC"}},
+                       "away": {"team": {"name": "Minnesota Twins", "abbreviation": "MIN"}}}}
+        if home_score is not None:
+            g["teams"]["home"]["score"] = home_score
+        if away_score is not None:
+            g["teams"]["away"]["score"] = away_score
+        return g
+
+    def test_missing_scores_raise_rather_than_default_to_zero(self):
+        with self.assertRaises(tracker.MissingScoreError):
+            tracker._game_result_dict(self._game(), "chicago cubs")
+
+    def test_one_missing_score_still_raises(self):
+        with self.assertRaises(tracker.MissingScoreError):
+            tracker._game_result_dict(self._game(home_score=4), "chicago cubs")
+
+    def test_zero_zero_is_a_legitimate_final(self):
+        r = tracker._game_result_dict(self._game(0, 0), "chicago cubs")
+        self.assertEqual(r["margin"], 0)
+        self.assertEqual(r["total_runs"], 0)
+
+    def test_fetch_mlb_result_returns_none_instead_of_grading(self):
+        with patch.object(tracker, "fetch_mlb_schedule", return_value=[self._game()]):
+            self.assertIsNone(tracker.fetch_mlb_result("2026-07-19", "chicago cubs"))
+
+
+class TestWholeWordTeamMatching(unittest.TestCase):
+    def test_sox_does_not_match_the_wrong_team(self):
+        # Substring matching made "Sox" hit whichever of Boston/Chicago came first.
+        games = [
+            {"gamePk": 1, "status": {"detailedState": "Final"},
+             "teams": {"home": {"team": {"name": "Boston Red Sox"}, "score": 3},
+                       "away": {"team": {"name": "New York Yankees"}, "score": 1}}},
+            {"gamePk": 2, "status": {"detailedState": "Final"},
+             "teams": {"home": {"team": {"name": "Chicago White Sox"}, "score": 2},
+                       "away": {"team": {"name": "Cleveland Guardians"}, "score": 7}}},
+        ]
+        with patch.object(tracker, "fetch_mlb_schedule", return_value=games):
+            r = tracker.fetch_mlb_result("2026-07-19", "chicago white sox")
+        self.assertEqual(r["game_pk"], 2)
+        self.assertEqual(r["margin"], -5)
 
 
 if __name__ == "__main__":
