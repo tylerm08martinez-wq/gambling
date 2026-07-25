@@ -241,8 +241,25 @@ def calc_units_won_lost(line_str: str, units: int, result: str) -> float:
         return round((line / 100) * units, 3)
 
 def needed_to_cover(line_num: float) -> int:
-    """Minimum whole-number margin needed to cover a spread/RL."""
+    """Minimum whole-number margin needed to cover, for a FAVOURITE (line_num < 0).
+
+    Kept for callers that only ever deal in favourites. Handicaps are signed (see
+    determine_outcome), so prefer `cover_phrase` for anything user-facing: an
+    underdog's requirement is not a margin of victory at all, and phrasing it as one
+    printed "Needed 7+, won by -3" for a +6.5 dog that comfortably covered.
+    """
     return math.ceil(abs(line_num))
+
+
+def cover_phrase(line_num: float) -> str:
+    """Human requirement for a SIGNED handicap: '-1.5' -> 'win by 2+',
+    '+6.5' -> 'lose by 6 or less (or win)'."""
+    if line_num < 0:
+        return f"win by {math.ceil(abs(line_num))}+"
+    if line_num > 0:
+        tol = math.ceil(line_num) - 1 if float(line_num).is_integer() else math.floor(line_num)
+        return f"lose by {tol} or less (or win)"
+    return "win outright"
 
 def american_to_implied_prob(line_str: str) -> float:
     """Convert American odds (e.g. '+120', '-110', '+120 @ FanDuel') to implied probability (0–1)."""
@@ -297,7 +314,8 @@ def calc_clv(bet_line: str, closing_line: str) -> float:
     return round((american_to_implied_prob(closing_line) - american_to_implied_prob(bet_line)) * 100, 2)
 
 
-def calc_clv_devig(bet_line: str, close_two_way: dict, side: str) -> Optional[float]:
+def calc_clv_devig(bet_line: str, close_two_way: dict, side: str,
+                   market: str = "moneyline") -> Optional[float]:
     """CLV as a de-vigged RATIO in percent: (fair_prob / entry_prob - 1) * 100.
 
     The hold-free metric: `close_two_way` is {side: american_odds} for BOTH sides of
@@ -310,21 +328,19 @@ def calc_clv_devig(bet_line: str, close_two_way: dict, side: str) -> Optional[fl
     percentage points, cmd_backfill_clv wrote this), and clv_stats averaged them into
     one avg_clv, which made that number meaningless. They now live in separate fields
     and are never blended.
+
+    Delegates the actual de-vig to value_engine so there is ONE implementation of the
+    headline metric. A local copy here was always multiplicative while the engine
+    dispatches power-vs-multiplicative by market (REFERENCE.md §2), so the two would
+    have disagreed on exactly the spread/total markets where it matters most.
     """
     if not close_two_way or len(close_two_way) != 2 or side not in close_two_way:
         return None
     try:
-        s0, s1 = list(close_two_way.keys())
-        p0 = american_to_implied_prob(close_two_way[s0])
-        p1 = american_to_implied_prob(close_two_way[s1])
-        entry = american_to_implied_prob(bet_line)
-    except (ValueError, TypeError):
+        import clv_backfill
+        return clv_backfill.realized_clv(close_two_way, side, bet_line, market)
+    except Exception:
         return None
-    overround = p0 + p1
-    if overround <= 0 or entry <= 0:
-        return None
-    fair = (p0 if side == s0 else p1) / overround
-    return round((fair / entry - 1) * 100, 2)
 
 
 def parse_american(value) -> Optional[int]:
@@ -337,9 +353,16 @@ def parse_american(value) -> Optional[int]:
     if value is None or isinstance(value, bool):
         return None
     if isinstance(value, (int, float)):
-        return int(value)
-    raw = str(value).split("@")[0].strip().replace("+", "")
-    return int(raw) if re.fullmatch(r"-?\d+", raw) else None
+        odds = int(value)
+    else:
+        raw = str(value).split("@")[0].strip().replace("+", "")
+        if not re.fullmatch(r"-?\d+", raw):
+            return None
+        odds = int(raw)
+    # American odds are >= 100 in magnitude by definition. Without this, `-11` (a
+    # plausible typo for -110) passed validation and produced CLV from an implied
+    # probability of 0.09 instead of 0.52 — then counted as a genuine measured close.
+    return odds if abs(odds) >= 100 else None
 
 
 # ── Formatting ────────────────────────────────────────────────────────────────
@@ -404,14 +427,18 @@ def build_context(pick: dict) -> str:
     # ── Spread / Run Line ──
     is_spread = line_num is not None and abs(line_num) != 0 and "ml" not in bet
     if is_spread:
-        needed = needed_to_cover(line_num)
+        req = cover_phrase(line_num)
         if result == "win":
             won_by = game_margin if game_margin is not None else "?"
-            return f"{score_prefix}needed to win by {needed}+, won by {won_by} ✅"
+            return f"{score_prefix}needed to {req}, finished {won_by:+} ✅" if isinstance(won_by, int) \
+                   else f"{score_prefix}needed to {req} ✅"
         else:
-            lost_by = abs(game_margin) if game_margin is not None else "?"
-            near = " 🔥 Near miss!" if game_margin is not None and game_margin >= -(needed + 2) else ""
-            return f"{score_prefix}needed to win by {needed}+, lost by {lost_by}{near}"
+            # "how far from covering" is margin + line_num under the signed convention,
+            # which works for dogs and favourites alike.
+            short_by = (game_margin + line_num) if game_margin is not None else None
+            near = " 🔥 Near miss!" if short_by is not None and short_by >= -2 else ""
+            finished = f", finished {game_margin:+}" if game_margin is not None else ""
+            return f"{score_prefix}needed to {req}{finished}{near}"
 
     # ── Moneyline ──
     if result == "win":
@@ -440,13 +467,9 @@ def build_cover_check(pick: dict) -> str:
 
     is_spread = line_num is not None and abs(line_num) != 0 and "ml" not in bet
     if is_spread:
-        needed = needed_to_cover(line_num)
-        if result == "win":
-            won_by = game_margin if game_margin is not None else "?"
-            return f"Needed {needed}+, won by {won_by}"
-        else:
-            lost_by = abs(game_margin) if game_margin is not None else "?"
-            return f"Needed {needed}+, lost by {lost_by}"
+        req = cover_phrase(line_num)
+        finished = f"{game_margin:+}" if game_margin is not None else "?"
+        return f"Needed to {req}, finished {finished}"
 
     if result == "win":
         won_by = game_margin if game_margin is not None else "?"
@@ -671,7 +694,17 @@ def _game_result_dict(game: dict, team_lower: str) -> dict:
             f"final game {game.get('gamePk')} is missing a score "
             f"(home={home_score!r}, away={away_score!r}) — refusing to grade"
         )
-    our_is_home = team_lower in home.lower()
+    # Orient by whole-word match, consistent with the finder gate. Substring
+    # orientation silently defaulted an unmatched team to AWAY, flipping the margin
+    # sign. An ambiguous team token (e.g. bare "sox", which whole-word-matches both
+    # "Boston Red Sox" and "Chicago White Sox") must not be guessed either.
+    home_hit, away_hit = _whole_word_in(team_lower, home), _whole_word_in(team_lower, away)
+    if home_hit == away_hit:
+        raise MissingScoreError(
+            f"team {team_lower!r} matches {'both' if home_hit else 'neither'} of "
+            f"{away!r}/{home!r} — refusing to guess which side the bet is on"
+        )
+    our_is_home = home_hit
     our_score = home_score if our_is_home else away_score
     opp_score = away_score if our_is_home else home_score
     away_abbr = game["teams"]["away"]["team"].get("abbreviation", away[:3].upper())
@@ -693,23 +726,31 @@ def fetch_mlb_result(date: str, team_name: str) -> Optional[dict]:
     Returns a result dict (incl. game_pk and total_runs) or None if not found / not final.
     """
     team_lower = team_name.lower()
-    for game in fetch_mlb_schedule(date):
-        home = game["teams"]["home"]["team"]["name"]
-        away = game["teams"]["away"]["team"]["name"]
-        # Whole-word, not substring. The substring form matched "Sox" against BOTH
-        # Boston and Chicago (first one in the schedule won) and "rays" inside
-        # "G-rays-on". find_mlb_game_for_bet was hardened with _whole_word_in after
-        # that mis-resolution; this moneyline/run-line finder was missed.
-        if not _whole_word_in(team_lower, home) and not _whole_word_in(team_lower, away):
-            continue
-        if "Final" not in game.get("status", {}).get("detailedState", ""):
-            continue  # not final yet — keep scanning (doubleheader game 2 may be)
-        try:
-            return _game_result_dict(game, team_lower)
-        except MissingScoreError as e:
-            print(f"⚠️  {e}", file=sys.stderr)
-            return None
-    return None
+    # Whole-word, not substring. The substring form matched "Sox" against BOTH Boston
+    # and Chicago (first one in the schedule won) and "rays" inside "G-rays-on".
+    # find_mlb_game_for_bet was hardened with _whole_word_in after that mis-resolution;
+    # this moneyline/run-line finder was missed.
+    matches = [g for g in fetch_mlb_schedule(date)
+               if _whole_word_in(team_lower, g["teams"]["home"]["team"]["name"])
+               or _whole_word_in(team_lower, g["teams"]["away"]["team"]["name"])]
+    if not matches:
+        return None
+    # Doubleheader: the bet names only a team, so which game it refers to is genuinely
+    # unknown. Resolving against whichever finished first is a guess — and grading a
+    # bet against the wrong game is the failure class this module exists to prevent.
+    # Leave it for manual resolution instead.
+    if len(matches) > 1:
+        print(f"⚠️  {len(matches)} games for {team_name!r} on {date} (doubleheader) — "
+              f"cannot tell which the bet refers to; resolve manually", file=sys.stderr)
+        return None
+    game = matches[0]
+    if "Final" not in game.get("status", {}).get("detailedState", ""):
+        return None  # not final yet
+    try:
+        return _game_result_dict(game, team_lower)
+    except MissingScoreError as e:
+        print(f"⚠️  {e}", file=sys.stderr)
+        return None
 
 
 def fetch_mlb_boxscore(game_pk) -> Optional[dict]:
@@ -896,13 +937,28 @@ def classify_bet(pick: dict) -> str:
     stat_map = _stat_map_for_sport(pick.get("sport", ""))
     if any(_stat_keyword_in(k, low) for k in stat_map) and re.search(r'\b(over|under)\b|\d+\+', low):
         return "prop"
-    # Point spread: a signed number attached to the side, e.g. "Spurs +6.5 vs OKC",
+    # Explicit moneyline marker beats any number in the text. Without this the spread
+    # test below fires on the PRICE — "Yankees ML -150", "Mets ML +110" and
+    # "Brewers ML (-125)" all classified as spread, and since cmd_log now PERSISTS
+    # bet_type, that misclassification would have been baked into picks.json where it
+    # can never be re-inferred.
+    if re.search(r'\bml\b|\bmoneyline\b|\bmoney line\b', low):
+        return "ml"
+    # Point spread: a signed handicap attached to the side, e.g. "Spurs +6.5 vs OKC",
     # "Chiefs -3". There was no spread branch at all before, so these fell through to
     # `ml` — and determine_outcome's moneyline path ignores line_num entirely, so any
     # spread that covered without winning outright graded as a LOSS (and any favourite
     # that won without covering graded as a WIN).
-    if re.search(r'[+-]\d+(\.\d+)?\b', bet) and not re.search(r'\b(over|under)\b', low):
-        return "spread"
+    #
+    # Parentheticals are dropped so a bare parenthesised price "(-125)" isn't read as a
+    # handicap, and |value| must be < 100: real spreads/run lines are single- or
+    # low-double-digit, while American odds are >= 100 by definition. That keeps a
+    # stray unmarked price from manufacturing a spread.
+    _nopar = re.sub(r'\([^)]*\)', ' ', bet)
+    if not re.search(r'\b(over|under)\b', low):
+        for m in re.finditer(r'(?<![\w.])([+-]\d+(?:\.\d+)?)\b', _nopar):
+            if abs(float(m.group(1))) < 100:
+                return "spread"
     return "ml"
 
 
@@ -1106,8 +1162,11 @@ def find_mlb_game_for_bet(date: str, bet: str) -> Optional[dict]:
             if abbr:
                 keys.append(abbr)
         if any(_whole_word_in(k, low) for k in keys):
+            # Do NOT keep scanning past a non-final game: on a doubleheader that would
+            # silently resolve the bet against whichever game happened to finish first.
+            # The bet names only teams, so the correct game is unknowable here.
             if "Final" not in game.get("status", {}).get("detailedState", ""):
-                continue  # not final yet — keep scanning (doubleheader game 2 may be)
+                return None
             try:
                 return _game_result_dict(game, home.lower())
             except MissingScoreError as e:
@@ -1171,7 +1230,9 @@ def find_nba_game_for_bet(date: str, bet: str) -> Optional[dict]:
             by_side[c.get("homeAway")] = {
                 "name": team.get("displayName", ""),
                 "abbr": team.get("abbreviation", ""),
-                "score": c.get("score", "0"),
+                # No "0" default — same never-guess rule as the MLB path. A missing
+                # ESPN score must surface as absent, not be recorded as a real 0.
+                "score": c.get("score"),
             }
         home, away = by_side.get("home"), by_side.get("away")
         if not home or not away:
@@ -1184,9 +1245,12 @@ def find_nba_game_for_bet(date: str, bet: str) -> Optional[dict]:
         status = event.get("status", {}).get("type", {}).get("name", "")
         if status != "STATUS_FINAL":
             return None  # game not yet final
+        # Render absence as "?" rather than a fabricated 0. This string is display-only
+        # (NBA props resolve from the boxscore), so a missing score must look missing.
+        _s = lambda v: "?" if v is None else v
         return {
             "game_id": event.get("id"),
-            "final_score": f"{away['abbr']} {away['score']}, {home['abbr']} {home['score']}",
+            "final_score": f"{away['abbr']} {_s(away['score'])}, {home['abbr']} {_s(home['score'])}",
         }
     return None
 
@@ -1551,6 +1615,20 @@ def cmd_log(args):
     # the id, the stored bet_type, and the resolver can never disagree.
     btype = classify_bet({"bet": args.bet, "sport": args.sport})
     model_abbrev = _model_abbrev(args.model)
+
+    # Enforce the signed-handicap convention at the boundary. determine_outcome grades
+    # spreads/RLs as `margin + line_num > 0`, so a sign flip here silently inverts the
+    # result — the failure mode that made every winning underdog RL grade as a loss.
+    # If the bet text carries an explicit signed handicap, it must agree with line_num.
+    if btype in ("spread", "rl") and args.line_num is not None:
+        _txt = re.sub(r'\([^)]*\)', ' ', args.bet)
+        _hand = [float(m.group(1)) for m in re.finditer(r'(?<![\w.])([+-]\d+(?:\.\d+)?)\b', _txt)
+                 if abs(float(m.group(1))) < 100]
+        if _hand and (_hand[0] < 0) != (args.line_num < 0) and args.line_num != 0:
+            print(f"❌ --line-num {args.line_num:+} disagrees with the handicap in the bet "
+                  f"text ({_hand[0]:+}). line_num is SIGNED as the bet reads: -1.5 for a "
+                  f"-1.5 favourite, +6.5 for a +6.5 underdog.", file=sys.stderr)
+            sys.exit(1)
     pick_id = f"{date.replace('-','')}-{sport_abbrev}-{model_abbrev}-{team_abbrev}-{btype}"
 
     if validation_notes and not override_reason:
@@ -1737,11 +1815,16 @@ def cmd_auto_resolve(_args, sources=None):
             skipped.append((p["id"], f"game not found or not final for '{team}' on {date}"))
             continue
         margin = result_data["margin"]
-        if kind == "rl":
+        # `spread` must be routed explicitly. It used to fall into the `else` and be
+        # graded by the moneyline path, which ignores line_num entirely — so
+        # "Dodgers -1.5" winning 3-2 (margin +1) graded a WIN when the run line lost.
+        # Handicap bets are graded by determine_outcome's cover logic, never by margin
+        # sign alone.
+        if kind in ("rl", "spread"):
             if line_num is None:
-                skipped.append((p["id"], "RL pick missing line_num — resolve manually"))
+                skipped.append((p["id"], f"{kind} pick missing line_num — resolve manually"))
                 continue
-            outcome = determine_outcome("rl", margin, line_num)
+            outcome = determine_outcome(kind, margin, line_num)
         else:
             outcome = determine_outcome("ml", margin, line_num)
 

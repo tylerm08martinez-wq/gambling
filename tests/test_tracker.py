@@ -1,4 +1,7 @@
+import argparse
+import contextlib
 import importlib.util
+import io
 import sys
 import unittest
 from pathlib import Path
@@ -1313,6 +1316,109 @@ class TestClassifyBetRegressions(unittest.TestCase):
     def test_explicit_bet_type_wins_over_inference(self):
         self.assertEqual(tracker.classify_bet({"bet": "anything at all", "bet_type": "spread"}),
                          "spread")
+
+
+class TestMoneylineNotMistakenForSpread(unittest.TestCase):
+    """The spread regex fired on the PRICE, not the handicap — and cmd_log now
+    persists bet_type, so the misclassification would have been permanent."""
+
+    def _c(self, bet):
+        return tracker.classify_bet({"bet": bet, "sport": "MLB"})
+
+    def test_moneyline_with_price_in_text_stays_ml(self):
+        for bet in ("Yankees ML -150", "Mets ML +110", "Brewers ML (-125)",
+                    "Marlins ML", "PHI moneyline -126"):
+            with self.subTest(bet=bet):
+                self.assertEqual(self._c(bet), "ml")
+
+    def test_real_handicaps_still_classify_as_spread(self):
+        for bet in ("Dodgers -1.5 vs SF", "San Antonio Spurs +6.5 vs OKC", "Chiefs -3"):
+            with self.subTest(bet=bet):
+                self.assertEqual(self._c(bet), "spread")
+
+    def test_three_digit_number_alone_is_not_a_handicap(self):
+        # a bare price with no ML marker must not manufacture a spread
+        self.assertEqual(self._c("Padres -145"), "ml")
+
+
+class TestSpreadIsActuallyResolvable(unittest.TestCase):
+    """determine_outcome grew a spread branch, but cmd_auto_resolve routed only
+    prop/total/rl and dropped `spread` into the moneyline path, which ignores
+    line_num — so the branch was unreachable from the real resolver."""
+
+    def test_run_line_favourite_winning_by_one_is_a_loss(self):
+        # "Dodgers -1.5" winning 3-2 (margin +1) must LOSE, not win on margin sign
+        self.assertEqual(tracker.determine_outcome("spread", 1, -1.5), "loss")
+
+    def test_auto_resolve_routes_spread_through_cover_logic(self):
+        picks = [{"id": "t-sp", "sport": "MLB", "date": "2026-07-19", "result": None,
+                  "bet": "Dodgers -1.5 vs SF", "bet_type": "spread", "line": "-110",
+                  "units": 1, "line_num": -1.5}]
+        game = {"final_score": "SF 2, LAD 3", "margin": 1, "total_runs": 5,
+                "our_score": 3, "opp_score": 2, "game_pk": 9}
+        with patch.object(tracker, "load_picks", return_value=picks), \
+             patch.object(tracker, "save_picks"), \
+             patch.object(tracker, "extract_bet_team", return_value="dodgers"), \
+             patch.object(tracker, "fetch_mlb_result", return_value=game), \
+             contextlib.redirect_stdout(io.StringIO()):
+            tracker.cmd_auto_resolve(argparse.Namespace())
+        self.assertEqual(picks[0]["result"], "loss")
+        self.assertEqual(picks[0]["units_won_lost"], -1.0)
+
+
+class TestParseAmericanRejectsNonOdds(unittest.TestCase):
+    def test_rejects_magnitudes_below_100(self):
+        for junk in ("-11", "0", "+7", "99", "-99"):
+            with self.subTest(v=junk):
+                self.assertIsNone(tracker.parse_american(junk))
+
+    def test_accepts_real_odds(self):
+        self.assertEqual(tracker.parse_american("-110"), -110)
+        self.assertEqual(tracker.parse_american("+145"), 145)
+        self.assertEqual(tracker.parse_american("-115 @ DK"), -115)
+        self.assertEqual(tracker.parse_american(100), 100)
+
+
+class TestCoverPhraseIsSignAware(unittest.TestCase):
+    def test_favourite_phrasing(self):
+        self.assertEqual(tracker.cover_phrase(-1.5), "win by 2+")
+
+    def test_underdog_phrasing_is_not_a_margin_of_victory(self):
+        # "+6.5 dog" printed "Needed 7+, won by -3" under the abs() helpers
+        self.assertEqual(tracker.cover_phrase(6.5), "lose by 6 or less (or win)")
+
+    def test_whole_number_dog_line(self):
+        self.assertEqual(tracker.cover_phrase(2.0), "lose by 1 or less (or win)")
+
+
+class TestAmbiguousTeamNeverGuessed(unittest.TestCase):
+    def test_bare_sox_matches_both_teams_and_refuses(self):
+        game = {"gamePk": 5, "status": {"detailedState": "Final"},
+                "teams": {"home": {"team": {"name": "Boston Red Sox"}, "score": 4},
+                          "away": {"team": {"name": "Chicago White Sox"}, "score": 1}}}
+        with self.assertRaises(tracker.MissingScoreError):
+            tracker._game_result_dict(game, "sox")
+
+    def test_unambiguous_team_still_orients(self):
+        game = {"gamePk": 5, "status": {"detailedState": "Final"},
+                "teams": {"home": {"team": {"name": "Boston Red Sox"}, "score": 4},
+                          "away": {"team": {"name": "New York Yankees"}, "score": 1}}}
+        self.assertEqual(tracker._game_result_dict(game, "new york yankees")["margin"], -3)
+
+
+class TestDoubleheaderNeverGuessed(unittest.TestCase):
+    def _dh(self, second_final=True):
+        def g(pk, status, hs, aws):
+            return {"gamePk": pk, "status": {"detailedState": status},
+                    "teams": {"home": {"team": {"name": "Chicago Cubs"}, "score": hs},
+                              "away": {"team": {"name": "Minnesota Twins"}, "score": aws}}}
+        return [g(1, "In Progress", 1, 0),
+                g(2, "Final" if second_final else "In Progress", 7, 2)]
+
+    def test_two_games_same_team_resolves_neither(self):
+        with patch.object(tracker, "fetch_mlb_schedule", return_value=self._dh()), \
+             contextlib.redirect_stderr(io.StringIO()):
+            self.assertIsNone(tracker.fetch_mlb_result("2026-07-19", "chicago cubs"))
 
 
 class TestModelAbbrev(unittest.TestCase):
