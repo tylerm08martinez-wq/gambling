@@ -1619,6 +1619,18 @@ def cmd_log(args):
     # Since the type is now PERSISTED, a bad inference becomes permanent, so the source
     # is recorded alongside it: an `inferred` type is auditable after the fact, a
     # declared one is not a guess at all.
+    # `--line` is the PRICE, not the bet. On 2026-07-01 four picks were logged with the
+    # prop side in this field ('under 17.5 @ Underdog'), so their real odds were never
+    # recorded — they were later paid out at an assumed -110, and they account for
+    # +3.27u of a +4.06u book. The same rows crashed the CLV backfill for weeks
+    # (value_engine._parse_odds on 'under 17.5'). Reject at the boundary: an
+    # unrecoverable price is worse than a refused pick.
+    if parse_american(args.line) is None:
+        print(f"❌ --line {args.line!r} is not American odds. It must be the PRICE "
+              f"(e.g. '-110', '+145 @ FanDuel'), not the bet side/number — that goes "
+              f"in --bet and --line-num.", file=sys.stderr)
+        sys.exit(1)
+
     inferred = classify_bet({"bet": args.bet, "sport": args.sport})
     if getattr(args, "bet_type", None):
         btype = args.bet_type

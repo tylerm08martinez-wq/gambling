@@ -11,6 +11,12 @@
           {
             "type": "command",
             "command": "cd \"$(git rev-parse --show-toplevel)\" && out=$(git pull --rebase 2>&1); rc=$?; if [ $rc -ne 0 ]; then echo \"[gambling auto-pull] FAILED (exit $rc):\"; echo \"$out\"; elif ! echo \"$out\" | grep -qi \"already up to date\"; then echo \"[gambling auto-pull] updated:\"; echo \"$out\"; fi"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/scripts/session-health-check.sh\"",
+            "timeout": 20,
+            "statusMessage": "Checking daily-picks runner health..."
           }
         ]
       }
