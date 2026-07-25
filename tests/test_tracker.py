@@ -1421,6 +1421,48 @@ class TestDoubleheaderNeverGuessed(unittest.TestCase):
             self.assertIsNone(tracker.fetch_mlb_result("2026-07-19", "chicago cubs"))
 
 
+class TestDeclaredBetTypeBeatsInference(unittest.TestCase):
+    """Persisting bet_type turns a bad inference into permanent data, so the caller
+    can declare it and the source is recorded either way."""
+
+    def _log(self, bet, bet_type=None, sport="MLB", line_num=0.0):
+        picks = []
+        args = argparse.Namespace(
+            model="v1-trends", sport=sport, bet=bet, line="-110", units=1, score=7.0,
+            edge="", primary_edge_type="", source_evidence_json="", run_type="manual",
+            override_validation="", bet_type=bet_type, line_num=line_num, game_time="")
+        with patch.object(tracker, "load_picks", return_value=picks), \
+             patch.object(tracker, "save_picks"), \
+             contextlib.redirect_stdout(io.StringIO()), \
+             contextlib.redirect_stderr(io.StringIO()):
+            tracker.cmd_log(args)
+        return picks[0]
+
+    def test_declared_type_is_used_and_marked(self):
+        p = self._log("Twins @ Cubs Under 8 (game total)", bet_type="total")
+        self.assertEqual(p["bet_type"], "total")
+        self.assertEqual(p["bet_type_source"], "declared")
+
+    def test_declared_type_overrides_a_wrong_inference(self):
+        # inference would say "spread" for a price-bearing moneyline
+        p = self._log("Yankees ML -150", bet_type="ml")
+        self.assertEqual(p["bet_type"], "ml")
+        self.assertEqual(p["bet_type_source"], "declared")
+
+    def test_omitting_the_flag_still_works_but_is_flagged_inferred(self):
+        p = self._log("Twins @ Cubs Under 8 (game total)")
+        self.assertEqual(p["bet_type"], "total")
+        self.assertEqual(p["bet_type_source"], "inferred")
+
+    def test_declared_type_drives_the_pick_id_suffix(self):
+        p = self._log("Some Prop Under 5.5 strikeouts", bet_type="prop")
+        self.assertTrue(p["id"].endswith("-prop"), p["id"])
+
+    def test_classify_bet_honours_the_persisted_type(self):
+        p = self._log("Yankees ML -150", bet_type="ml")
+        self.assertEqual(tracker.classify_bet(p), "ml")
+
+
 class TestModelAbbrev(unittest.TestCase):
     def test_v3_no_longer_collides_with_v2(self):
         # Was `"v1" if "v1" in model else "v2"`, so v3-value picks were stamped v2 and

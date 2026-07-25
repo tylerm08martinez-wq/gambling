@@ -1613,7 +1613,26 @@ def cmd_log(args):
     # `"rl" in bet_lower` matched every bet naming the Ma-RL-ins: all four `-rl` ids in
     # picks.json are actually totals/props against Miami. Delegate to classify_bet so
     # the id, the stored bet_type, and the resolver can never disagree.
-    btype = classify_bet({"bet": args.bet, "sport": args.sport})
+    # Bet type: declared beats inferred. Inference reads LLM-written prose and has
+    # mis-graded real picks — game totals phrased "Twins @ Cubs Under 8" were graded on
+    # game margin, and a moneyline written "Yankees ML -150" classified as a spread.
+    # Since the type is now PERSISTED, a bad inference becomes permanent, so the source
+    # is recorded alongside it: an `inferred` type is auditable after the fact, a
+    # declared one is not a guess at all.
+    inferred = classify_bet({"bet": args.bet, "sport": args.sport})
+    if getattr(args, "bet_type", None):
+        btype = args.bet_type
+        bet_type_source = "declared"
+        if inferred != btype:
+            # Not fatal — the caller is authoritative — but a disagreement means the
+            # bet text reads like something else, which is worth seeing at log time.
+            print(f"ℹ️  --bet-type {btype!r} overrides inference {inferred!r} for "
+                  f"{args.bet!r}", file=sys.stderr)
+    else:
+        btype = inferred
+        bet_type_source = "inferred"
+        print(f"⚠️  no --bet-type given; inferred {btype!r} from the bet text. Pass "
+              f"--bet-type to remove the guess.", file=sys.stderr)
     model_abbrev = _model_abbrev(args.model)
 
     # Enforce the signed-handicap convention at the boundary. determine_outcome grades
@@ -1674,6 +1693,10 @@ def cmd_log(args):
         # ONLY live classifier. Persisting it at log time pins each pick's type to what
         # the logger decided, instead of re-guessing it at resolution time.
         "bet_type": btype,
+        # "declared" (caller passed --bet-type) or "inferred" (parsed from bet text).
+        # Persisting the type without this would make a guess indistinguishable from a
+        # fact once it is in picks.json.
+        "bet_type_source": bet_type_source,
         "line": args.line,
         "units": args.units,
         "score": args.score,
@@ -2018,6 +2041,12 @@ def main():
                        help="manual allows reasoned override; scheduled cannot override")
     log_p.add_argument("--override-validation", default="",
                        help="Manual override reason when validation fails")
+    log_p.add_argument("--bet-type", default=None,
+                       choices=["prop", "total", "spread", "rl", "ml"],
+                       help="Declare the bet type instead of inferring it from the bet "
+                            "text. STRONGLY preferred: inference reads LLM-written prose "
+                            "and has mis-graded real picks. Omitting it logs an inferred "
+                            "type flagged bet_type_source=inferred.")
     log_p.add_argument("--line-num", type=float, default=None,
                        help="Spread/RL number, SIGNED as the bet reads: -1.5 for a "
                             "-1.5 favourite, +6.5 for a +6.5 underdog, 0 for ML. "
