@@ -21,6 +21,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, NamedTuple
 
+
+class MissingScoreError(RuntimeError):
+    """A game reported Final but carried no usable score.
+
+    Raised rather than defaulting to 0 so an upstream schema change surfaces as
+    "unresolvable, leave the pick open" instead of a fabricated 0-0 final that
+    grades every moneyline a push and every Under a win (ADR 0004 never-guess).
+    """
+
 # Force UTF-8 output on Windows
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -232,8 +241,25 @@ def calc_units_won_lost(line_str: str, units: int, result: str) -> float:
         return round((line / 100) * units, 3)
 
 def needed_to_cover(line_num: float) -> int:
-    """Minimum whole-number margin needed to cover a spread/RL."""
+    """Minimum whole-number margin needed to cover, for a FAVOURITE (line_num < 0).
+
+    Kept for callers that only ever deal in favourites. Handicaps are signed (see
+    determine_outcome), so prefer `cover_phrase` for anything user-facing: an
+    underdog's requirement is not a margin of victory at all, and phrasing it as one
+    printed "Needed 7+, won by -3" for a +6.5 dog that comfortably covered.
+    """
     return math.ceil(abs(line_num))
+
+
+def cover_phrase(line_num: float) -> str:
+    """Human requirement for a SIGNED handicap: '-1.5' -> 'win by 2+',
+    '+6.5' -> 'lose by 6 or less (or win)'."""
+    if line_num < 0:
+        return f"win by {math.ceil(abs(line_num))}+"
+    if line_num > 0:
+        tol = math.ceil(line_num) - 1 if float(line_num).is_integer() else math.floor(line_num)
+        return f"lose by {tol} or less (or win)"
+    return "win outright"
 
 def american_to_implied_prob(line_str: str) -> float:
     """Convert American odds (e.g. '+120', '-110', '+120 @ FanDuel') to implied probability (0–1)."""
@@ -244,12 +270,29 @@ def american_to_implied_prob(line_str: str) -> float:
     return 100 / (line + 100)
 
 def determine_outcome(bet_type: str, margin: int, line_num) -> str:
-    """Pure function: derive win/push/loss from bet type, actual margin, and line threshold."""
+    """Pure function: derive win/push/loss from bet type, actual margin, and line.
+
+    `line_num` for spreads and run lines is **SIGNED, as the bet reads**: a +6.5
+    underdog is +6.5, a -1.5 favourite is -1.5. The bet covers when
+    ``margin + line_num > 0`` and pushes when it lands exactly on a whole number.
+
+    Previously this compared ``margin > line_num``, which is only correct if the
+    favourite's spread is stored *unsigned* — the convention the CLI help text
+    documented ("1.5 for -1.5 RL"). Under that scheme every winning underdog
+    graded as a LOSS (a +1.5 dog losing by 1 covers, but -1 > 1.5 is False), while
+    `needed_to_cover`/`build_context`/`build_cover_check` all independently used
+    abs(). Three conventions, one field. Signed is now the single standard, is
+    validated at log time, and matches how the bet is actually written.
+
+    Safe to change: picks.json contains no true spread or run-line pick — the four
+    `-rl` ids are totals/props misfiled by cmd_log's substring test (see there).
+    """
     bt = (bet_type or "").lower()
-    if "rl" in bt or "run line" in bt:
-        if margin > line_num:
+    if "spread" in bt or "rl" in bt.split() or "run line" in bt:
+        covered = margin + line_num
+        if covered > 0:
             return "win"
-        if margin == line_num and line_num == int(line_num):
+        if covered == 0:                    # only reachable on whole-number lines
             return "push"
         return "loss"
     # Moneyline
@@ -261,9 +304,65 @@ def determine_outcome(bet_type: str, margin: int, line_num) -> str:
 
 
 def calc_clv(bet_line: str, closing_line: str) -> float:
-    """CLV in percentage points (closing_implied_prob - bet_implied_prob) * 100.
-    Positive = you got a better price than the market settled at = good process."""
+    """CLV in percentage POINTS: (closing_implied_prob - bet_implied_prob) * 100.
+    Positive = you got a better price than the market settled at = good process.
+
+    Vig-inclusive — the book's hold is baked into both probabilities. Cheap to compute
+    from a ONE-SIDED close, which is why it stays the fallback metric. Stored as
+    `clv_pct_pts`. See calc_clv_devig for the hold-free version.
+    """
     return round((american_to_implied_prob(closing_line) - american_to_implied_prob(bet_line)) * 100, 2)
+
+
+def calc_clv_devig(bet_line: str, close_two_way: dict, side: str,
+                   market: str = "moneyline") -> Optional[float]:
+    """CLV as a de-vigged RATIO in percent: (fair_prob / entry_prob - 1) * 100.
+
+    The hold-free metric: `close_two_way` is {side: american_odds} for BOTH sides of
+    the closing market, so the overround can be stripped before comparing. Returns
+    None when the close isn't two-way or `side` is absent — de-vig is impossible from
+    one side alone, and guessing is worse than Unmeasured. Stored as `clv_devig`.
+
+    These two metrics are NOT interchangeable — the ratio form is systematically
+    larger in magnitude. They used to share the single `clv` field (cmd_resolve wrote
+    percentage points, cmd_backfill_clv wrote this), and clv_stats averaged them into
+    one avg_clv, which made that number meaningless. They now live in separate fields
+    and are never blended.
+
+    Delegates the actual de-vig to value_engine so there is ONE implementation of the
+    headline metric. A local copy here was always multiplicative while the engine
+    dispatches power-vs-multiplicative by market (REFERENCE.md §2), so the two would
+    have disagreed on exactly the spread/total markets where it matters most.
+    """
+    if not close_two_way or len(close_two_way) != 2 or side not in close_two_way:
+        return None
+    try:
+        import clv_backfill
+        return clv_backfill.realized_clv(close_two_way, side, bet_line, market)
+    except Exception:
+        return None
+
+
+def parse_american(value) -> Optional[int]:
+    """Best-effort American-odds parse; None when the value isn't odds.
+
+    `closing_line` had no format validation, so free text was written straight into
+    it — 'Mets ML +110', 'Spurs +6.5 -110', 'PHI ML -126 @ FanDuel'. Those are not
+    parseable as a price, so any CLV derived from them is not reproducible.
+    """
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        odds = int(value)
+    else:
+        raw = str(value).split("@")[0].strip().replace("+", "")
+        if not re.fullmatch(r"-?\d+", raw):
+            return None
+        odds = int(raw)
+    # American odds are >= 100 in magnitude by definition. Without this, `-11` (a
+    # plausible typo for -110) passed validation and produced CLV from an implied
+    # probability of 0.09 instead of 0.52 — then counted as a genuine measured close.
+    return odds if abs(odds) >= 100 else None
 
 
 # ── Formatting ────────────────────────────────────────────────────────────────
@@ -328,14 +427,18 @@ def build_context(pick: dict) -> str:
     # ── Spread / Run Line ──
     is_spread = line_num is not None and abs(line_num) != 0 and "ml" not in bet
     if is_spread:
-        needed = needed_to_cover(line_num)
+        req = cover_phrase(line_num)
         if result == "win":
             won_by = game_margin if game_margin is not None else "?"
-            return f"{score_prefix}needed to win by {needed}+, won by {won_by} ✅"
+            return f"{score_prefix}needed to {req}, finished {won_by:+} ✅" if isinstance(won_by, int) \
+                   else f"{score_prefix}needed to {req} ✅"
         else:
-            lost_by = abs(game_margin) if game_margin is not None else "?"
-            near = " 🔥 Near miss!" if game_margin is not None and game_margin >= -(needed + 2) else ""
-            return f"{score_prefix}needed to win by {needed}+, lost by {lost_by}{near}"
+            # "how far from covering" is margin + line_num under the signed convention,
+            # which works for dogs and favourites alike.
+            short_by = (game_margin + line_num) if game_margin is not None else None
+            near = " 🔥 Near miss!" if short_by is not None and short_by >= -2 else ""
+            finished = f", finished {game_margin:+}" if game_margin is not None else ""
+            return f"{score_prefix}needed to {req}{finished}{near}"
 
     # ── Moneyline ──
     if result == "win":
@@ -364,13 +467,9 @@ def build_cover_check(pick: dict) -> str:
 
     is_spread = line_num is not None and abs(line_num) != 0 and "ml" not in bet
     if is_spread:
-        needed = needed_to_cover(line_num)
-        if result == "win":
-            won_by = game_margin if game_margin is not None else "?"
-            return f"Needed {needed}+, won by {won_by}"
-        else:
-            lost_by = abs(game_margin) if game_margin is not None else "?"
-            return f"Needed {needed}+, lost by {lost_by}"
+        req = cover_phrase(line_num)
+        finished = f"{game_margin:+}" if game_margin is not None else "?"
+        return f"Needed to {req}, finished {finished}"
 
     if result == "win":
         won_by = game_margin if game_margin is not None else "?"
@@ -435,37 +534,69 @@ def dashboard_summaries(picks: list, models: list = MODELS) -> list:
     return rows
 
 
-def is_measured_clv(pick: dict) -> bool:
-    """Measured CLV requires a fetched Pinnacle close. Unmeasured CLV — null clv, or a
-    placeholder +0.00% with no close fetched (CONTEXT.md) — is excluded from CLV stats
-    rather than counted as zero. A genuine measured 0.00% (close fetched, price tied the
-    close) IS measured: it counts in the denominator but did not beat the close."""
-    return pick.get("clv") is not None and bool(pick.get("closing_line"))
+def clv_value(pick: dict, metric: str = "preferred") -> Optional[float]:
+    """Read one CLV metric off a pick. 'devig' | 'pct_pts' | 'preferred'.
+
+    'preferred' = de-vigged when a two-way close was available, else percentage
+    points. Callers that report an average MUST pass an explicit metric — mixing the
+    two in one mean is the bug this schema exists to prevent.
+    """
+    if metric == "devig":
+        return pick.get("clv_devig")
+    if metric == "pct_pts":
+        return pick.get("clv_pct_pts")
+    dv = pick.get("clv_devig")
+    return dv if dv is not None else pick.get("clv_pct_pts")
+
+
+def is_measured_clv(pick: dict, metric: str = "preferred") -> bool:
+    """Measured CLV requires a real fetched close AND a value under `metric`.
+
+    Now also requires `closing_line` to PARSE as American odds. It previously only
+    tested truthiness, so six picks carrying a hand-written clv of 0.0 beside
+    unparseable free text ('Mets ML +110') counted as Measured — 18% of the measured
+    denominator, dragging avg_clv toward zero. CONTEXT.md already called a placeholder
+    +0.00% Unmeasured; this makes the code agree.
+
+    A genuine measured 0.00 (close fetched, price tied the close) IS measured.
+    """
+    return clv_value(pick, metric) is not None and parse_american(pick.get("closing_line")) is not None
 
 
 def clv_stats(picks: list) -> dict:
     """CLV process metrics over Measured-CLV picks (Unmeasured excluded). The V3-Value
     model is judged by these, not short-run ROI: CLV+ rate (share that beat the close),
     average CLV, and a per-Primary-Edge-Type breakdown."""
-    measured = [p for p in picks if is_measured_clv(p)]
+    # Headline stats report the DE-VIGGED metric only. Averaging de-vig and
+    # percentage-point values together (the old behaviour) produced a number that was
+    # not either metric: the ratio form is systematically larger, so whichever writer
+    # ran more often dominated the mean. `avg_clv_pct_pts` is reported alongside, over
+    # its own denominator, so the wider-coverage fallback stays visible without
+    # contaminating the headline.
+    measured = [p for p in picks if is_measured_clv(p, "devig")]
     n = len(measured)
     by_edge: dict = {}
     for p in measured:
         et = p.get("primary_edge_type") or "(unclassified)"
         b = by_edge.setdefault(et, {"n": 0, "clv_plus": 0, "clv_sum": 0.0})
         b["n"] += 1
-        b["clv_sum"] += p["clv"]
-        if p["clv"] > 0:
+        b["clv_sum"] += p["clv_devig"]
+        if p["clv_devig"] > 0:
             b["clv_plus"] += 1
     for b in by_edge.values():
         b["avg_clv"] = b["clv_sum"] / b["n"]
         b["plus_rate"] = b["clv_plus"] / b["n"] * 100
-    clv_plus = sum(1 for p in measured if p["clv"] > 0)
+    clv_plus = sum(1 for p in measured if p["clv_devig"] > 0)
+    pct_measured = [p for p in picks if is_measured_clv(p, "pct_pts")]
     return {
         "measured": n,
         "unmeasured": len(picks) - n,
         "clv_plus_rate": (clv_plus / n * 100) if n else None,
-        "avg_clv": (sum(p["clv"] for p in measured) / n) if n else None,
+        "avg_clv": (sum(p["clv_devig"] for p in measured) / n) if n else None,
+        "metric": "devig",
+        "measured_pct_pts": len(pct_measured),
+        "avg_clv_pct_pts": (sum(p["clv_pct_pts"] for p in pct_measured) / len(pct_measured))
+                           if pct_measured else None,
         "by_edge_type": by_edge,
     }
 
@@ -550,9 +681,30 @@ def _game_result_dict(game: dict, team_lower: str) -> dict:
     """Build the standard result dict for a final game, oriented to `team_lower`."""
     home = game["teams"]["home"]["team"]["name"]
     away = game["teams"]["away"]["team"]["name"]
-    home_score = game["teams"]["home"].get("score", 0)
-    away_score = game["teams"]["away"].get("score", 0)
-    our_is_home = team_lower in home.lower()
+    # Absence must never look like 0. `.get("score", 0)` silently turned a missing
+    # score into a real 0-0 final: determine_outcome('ml', 0, ...) -> "push" and
+    # prop_outcome(0,'under',8.0) -> "win". An MLB Stats schema change or a dropped
+    # hydrate would have graded, saved and pushed an entire slate of fabricated
+    # results with no error. Raise instead; callers treat this as "not resolvable
+    # yet" and leave the pick open, per the never-guess rule (ADR 0004).
+    home_score = game["teams"]["home"].get("score")
+    away_score = game["teams"]["away"].get("score")
+    if home_score is None or away_score is None:
+        raise MissingScoreError(
+            f"final game {game.get('gamePk')} is missing a score "
+            f"(home={home_score!r}, away={away_score!r}) — refusing to grade"
+        )
+    # Orient by whole-word match, consistent with the finder gate. Substring
+    # orientation silently defaulted an unmatched team to AWAY, flipping the margin
+    # sign. An ambiguous team token (e.g. bare "sox", which whole-word-matches both
+    # "Boston Red Sox" and "Chicago White Sox") must not be guessed either.
+    home_hit, away_hit = _whole_word_in(team_lower, home), _whole_word_in(team_lower, away)
+    if home_hit == away_hit:
+        raise MissingScoreError(
+            f"team {team_lower!r} matches {'both' if home_hit else 'neither'} of "
+            f"{away!r}/{home!r} — refusing to guess which side the bet is on"
+        )
+    our_is_home = home_hit
     our_score = home_score if our_is_home else away_score
     opp_score = away_score if our_is_home else home_score
     away_abbr = game["teams"]["away"]["team"].get("abbreviation", away[:3].upper())
@@ -574,15 +726,31 @@ def fetch_mlb_result(date: str, team_name: str) -> Optional[dict]:
     Returns a result dict (incl. game_pk and total_runs) or None if not found / not final.
     """
     team_lower = team_name.lower()
-    for game in fetch_mlb_schedule(date):
-        home = game["teams"]["home"]["team"]["name"]
-        away = game["teams"]["away"]["team"]["name"]
-        if team_lower not in home.lower() and team_lower not in away.lower():
-            continue
-        if "Final" not in game.get("status", {}).get("detailedState", ""):
-            return None  # game not yet final
+    # Whole-word, not substring. The substring form matched "Sox" against BOTH Boston
+    # and Chicago (first one in the schedule won) and "rays" inside "G-rays-on".
+    # find_mlb_game_for_bet was hardened with _whole_word_in after that mis-resolution;
+    # this moneyline/run-line finder was missed.
+    matches = [g for g in fetch_mlb_schedule(date)
+               if _whole_word_in(team_lower, g["teams"]["home"]["team"]["name"])
+               or _whole_word_in(team_lower, g["teams"]["away"]["team"]["name"])]
+    if not matches:
+        return None
+    # Doubleheader: the bet names only a team, so which game it refers to is genuinely
+    # unknown. Resolving against whichever finished first is a guess — and grading a
+    # bet against the wrong game is the failure class this module exists to prevent.
+    # Leave it for manual resolution instead.
+    if len(matches) > 1:
+        print(f"⚠️  {len(matches)} games for {team_name!r} on {date} (doubleheader) — "
+              f"cannot tell which the bet refers to; resolve manually", file=sys.stderr)
+        return None
+    game = matches[0]
+    if "Final" not in game.get("status", {}).get("detailedState", ""):
+        return None  # not final yet
+    try:
         return _game_result_dict(game, team_lower)
-    return None
+    except MissingScoreError as e:
+        print(f"⚠️  {e}", file=sys.stderr)
+        return None
 
 
 def fetch_mlb_boxscore(game_pk) -> Optional[dict]:
@@ -599,6 +767,12 @@ PROP_STAT_MAP = {
     # (\bstrikeout\b does NOT match "strikeouts"), see _stat_keyword_in.
     "strikeouts": ("pitching", "strikeOuts"),
     "strikeout": ("pitching", "strikeOuts"),
+    # "Ks"/"K" shorthand. No pick in picks.json uses it today — they all spell
+    # "strikeouts" — but the V1/V2 skills write "Under 5.5 Ks" in their own prose, so
+    # the phrasing is one --bet away from classify_bet returning "ml" and the pick
+    # being graded on GAME MARGIN instead of the pitcher's K total.
+    "ks": ("pitching", "strikeOuts"),
+    "k": ("pitching", "strikeOuts"),
     # Pitcher "outs recorded" (= innings pitched × 3). Whole-word matching means
     # \bouts\b never fires inside "strikeouts" (no boundary in "strike-outs"), and
     # "outs recorded" is checked before bare "outs" (keys sorted longest-first).
@@ -724,16 +898,35 @@ def _is_combined_stat(bet: str) -> bool:
 
 
 def classify_bet(pick: dict) -> str:
-    """Return 'prop', 'total', 'rl', or 'ml'. Uses bet_type when present, else infers."""
+    """Return 'prop', 'total', 'spread', 'rl', or 'ml'. Uses bet_type when present,
+    else infers from the bet text."""
     bt = (pick.get("bet_type") or "").lower()
-    if bt in ("prop", "total", "rl", "ml"):
+    if bt in ("prop", "total", "spread", "rl", "ml"):
         return bt
     bet = pick.get("bet", "")
     low = bet.lower()
     if "rl" in low.split() or "run line" in low:
         return "rl"
-    # Game total: starts with Over/Under and has no player name before it.
+    # Game total. Anchoring on `^(over|under)` alone missed every real game total in
+    # picks.json (0 of 8 matched) — they read "Twins @ Cubs Under 8 (game total)",
+    # "Padres @ Dodgers Under 8 runs", "CLE @ PHI Under 7.0". Those fell through to
+    # the moneyline branch and were graded on game_margin, which is exactly the
+    # ADR 0004 mis-resolution class. Match a matchup-style total too, but only when
+    # no player-prop stat keyword is present so real props keep their own path.
     if re.match(r'^\s*(over|under)\b', low):
+        return "total"
+    if "game total" in low:                       # explicit marker wins outright
+        return "total"
+    # Otherwise the discriminator is WHERE the matchup separator sits relative to the
+    # Over/Under. A game total names both teams first — "Padres @ Dodgers Under 8 runs".
+    # A player prop names a person first and the matchup after — "Aaron Nola Under 4.5
+    # Ks vs NYM". A plain stat-keyword test cannot tell these apart, because "runs" is
+    # itself a stat: that is why 3 game totals were still landing on the prop path.
+    # Parentheticals are stripped first so "(King vs Ohtani)" / "(PHI vs NYM)" colour
+    # neither side.
+    _depar = re.sub(r'\([^)]*\)', ' ', low)
+    _ou = re.search(r'\b(over|under)\s*\d', _depar)
+    if _ou and re.search(r'(\s@\s|\bvs\.?\b|/)', _depar[:_ou.start()]):
         return "total"
     # Player prop: a mapped stat keyword + a side (Over/Under or N+). Use the
     # sport-appropriate stat map so NBA points props classify as prop, not ml.
@@ -744,7 +937,42 @@ def classify_bet(pick: dict) -> str:
     stat_map = _stat_map_for_sport(pick.get("sport", ""))
     if any(_stat_keyword_in(k, low) for k in stat_map) and re.search(r'\b(over|under)\b|\d+\+', low):
         return "prop"
+    # Explicit moneyline marker beats any number in the text. Without this the spread
+    # test below fires on the PRICE — "Yankees ML -150", "Mets ML +110" and
+    # "Brewers ML (-125)" all classified as spread, and since cmd_log now PERSISTS
+    # bet_type, that misclassification would have been baked into picks.json where it
+    # can never be re-inferred.
+    if re.search(r'\bml\b|\bmoneyline\b|\bmoney line\b', low):
+        return "ml"
+    # Point spread: a signed handicap attached to the side, e.g. "Spurs +6.5 vs OKC",
+    # "Chiefs -3". There was no spread branch at all before, so these fell through to
+    # `ml` — and determine_outcome's moneyline path ignores line_num entirely, so any
+    # spread that covered without winning outright graded as a LOSS (and any favourite
+    # that won without covering graded as a WIN).
+    #
+    # Parentheticals are dropped so a bare parenthesised price "(-125)" isn't read as a
+    # handicap, and |value| must be < 100: real spreads/run lines are single- or
+    # low-double-digit, while American odds are >= 100 by definition. That keeps a
+    # stray unmarked price from manufacturing a spread.
+    _nopar = re.sub(r'\([^)]*\)', ' ', bet)
+    if not re.search(r'\b(over|under)\b', low):
+        for m in re.finditer(r'(?<![\w.])([+-]\d+(?:\.\d+)?)\b', _nopar):
+            if abs(float(m.group(1))) < 100:
+                return "spread"
     return "ml"
+
+
+def _model_abbrev(model: str) -> str:
+    """Model tag for the pick id: 'v1-trends' -> 'v1', 'v3-value' -> 'v3'.
+
+    Was `"v1" if "v1" in model else "v2"`, which stamped V3-Value picks as **v2**.
+    Since the id is {date}-{sport}-{model}-{team}-{btype}, a V2 and a V3 pick on the
+    same team/date/type collided on one id — and cmd_resolve takes the *first* match
+    while clv_backfill keys by id, so the wrong pick got resolved and the CLV landed
+    on the wrong row. Latent only because V3 is gated off (ADR 0007).
+    """
+    m = re.search(r'\bv(\d+)\b', (model or "").lower())
+    return f"v{m.group(1)}" if m else "v1"
 
 
 def clean_player_name(s: str) -> str:
@@ -934,9 +1162,16 @@ def find_mlb_game_for_bet(date: str, bet: str) -> Optional[dict]:
             if abbr:
                 keys.append(abbr)
         if any(_whole_word_in(k, low) for k in keys):
+            # Do NOT keep scanning past a non-final game: on a doubleheader that would
+            # silently resolve the bet against whichever game happened to finish first.
+            # The bet names only teams, so the correct game is unknowable here.
             if "Final" not in game.get("status", {}).get("detailedState", ""):
                 return None
-            return _game_result_dict(game, home.lower())
+            try:
+                return _game_result_dict(game, home.lower())
+            except MissingScoreError as e:
+                print(f"⚠️  {e}", file=sys.stderr)
+                return None
     return None
 
 
@@ -995,7 +1230,9 @@ def find_nba_game_for_bet(date: str, bet: str) -> Optional[dict]:
             by_side[c.get("homeAway")] = {
                 "name": team.get("displayName", ""),
                 "abbr": team.get("abbreviation", ""),
-                "score": c.get("score", "0"),
+                # No "0" default — same never-guess rule as the MLB path. A missing
+                # ESPN score must surface as absent, not be recorded as a real 0.
+                "score": c.get("score"),
             }
         home, away = by_side.get("home"), by_side.get("away")
         if not home or not away:
@@ -1008,9 +1245,12 @@ def find_nba_game_for_bet(date: str, bet: str) -> Optional[dict]:
         status = event.get("status", {}).get("type", {}).get("name", "")
         if status != "STATUS_FINAL":
             return None  # game not yet final
+        # Render absence as "?" rather than a fabricated 0. This string is display-only
+        # (NBA props resolve from the boxscore), so a missing score must look missing.
+        _s = lambda v: "?" if v is None else v
         return {
             "game_id": event.get("id"),
-            "final_score": f"{away['abbr']} {away['score']}, {home['abbr']} {home['score']}",
+            "final_score": f"{away['abbr']} {_s(away['score'])}, {home['abbr']} {_s(home['score'])}",
         }
     return None
 
@@ -1369,16 +1609,45 @@ def cmd_log(args):
     sport_abbrev = re.sub(r"[^a-z]", "", args.sport.lower())[:3]
     team_raw = re.split(r"[\s\-\+]", args.bet)[0].lower()
     team_abbrev = re.sub(r"[^a-z]", "", team_raw)[:6]
-    bet_lower = args.bet.lower()
-    if "ml" in bet_lower:
-        btype = "ml"
-    elif "rl" in bet_lower or "run line" in bet_lower:
-        btype = "rl"
-    elif "over" in bet_lower or "under" in bet_lower:
-        btype = "total"
+    # Bet type for the id AND for persistence. This used to be substring tests, so
+    # `"rl" in bet_lower` matched every bet naming the Ma-RL-ins: all four `-rl` ids in
+    # picks.json are actually totals/props against Miami. Delegate to classify_bet so
+    # the id, the stored bet_type, and the resolver can never disagree.
+    # Bet type: declared beats inferred. Inference reads LLM-written prose and has
+    # mis-graded real picks — game totals phrased "Twins @ Cubs Under 8" were graded on
+    # game margin, and a moneyline written "Yankees ML -150" classified as a spread.
+    # Since the type is now PERSISTED, a bad inference becomes permanent, so the source
+    # is recorded alongside it: an `inferred` type is auditable after the fact, a
+    # declared one is not a guess at all.
+    inferred = classify_bet({"bet": args.bet, "sport": args.sport})
+    if getattr(args, "bet_type", None):
+        btype = args.bet_type
+        bet_type_source = "declared"
+        if inferred != btype:
+            # Not fatal — the caller is authoritative — but a disagreement means the
+            # bet text reads like something else, which is worth seeing at log time.
+            print(f"ℹ️  --bet-type {btype!r} overrides inference {inferred!r} for "
+                  f"{args.bet!r}", file=sys.stderr)
     else:
-        btype = "spread"
-    model_abbrev = "v1" if "v1" in args.model.lower() else "v2"
+        btype = inferred
+        bet_type_source = "inferred"
+        print(f"⚠️  no --bet-type given; inferred {btype!r} from the bet text. Pass "
+              f"--bet-type to remove the guess.", file=sys.stderr)
+    model_abbrev = _model_abbrev(args.model)
+
+    # Enforce the signed-handicap convention at the boundary. determine_outcome grades
+    # spreads/RLs as `margin + line_num > 0`, so a sign flip here silently inverts the
+    # result — the failure mode that made every winning underdog RL grade as a loss.
+    # If the bet text carries an explicit signed handicap, it must agree with line_num.
+    if btype in ("spread", "rl") and args.line_num is not None:
+        _txt = re.sub(r'\([^)]*\)', ' ', args.bet)
+        _hand = [float(m.group(1)) for m in re.finditer(r'(?<![\w.])([+-]\d+(?:\.\d+)?)\b', _txt)
+                 if abs(float(m.group(1))) < 100]
+        if _hand and (_hand[0] < 0) != (args.line_num < 0) and args.line_num != 0:
+            print(f"❌ --line-num {args.line_num:+} disagrees with the handicap in the bet "
+                  f"text ({_hand[0]:+}). line_num is SIGNED as the bet reads: -1.5 for a "
+                  f"-1.5 favourite, +6.5 for a +6.5 underdog.", file=sys.stderr)
+            sys.exit(1)
     pick_id = f"{date.replace('-','')}-{sport_abbrev}-{model_abbrev}-{team_abbrev}-{btype}"
 
     if validation_notes and not override_reason:
@@ -1418,6 +1687,16 @@ def cmd_log(args):
         "model": args.model,
         "sport": args.sport,
         "bet": args.bet,
+        # ADR 0004 specifies classifying "using the bet_type field when present,
+        # inferring from bet text otherwise" — but cmd_log never wrote the field, so
+        # only 6 of 87 picks had it (all hand-added) and fragile text inference was the
+        # ONLY live classifier. Persisting it at log time pins each pick's type to what
+        # the logger decided, instead of re-guessing it at resolution time.
+        "bet_type": btype,
+        # "declared" (caller passed --bet-type) or "inferred" (parsed from bet text).
+        # Persisting the type without this would make a guess indistinguishable from a
+        # fact once it is in picks.json.
+        "bet_type_source": bet_type_source,
         "line": args.line,
         "units": args.units,
         "score": args.score,
@@ -1430,7 +1709,13 @@ def cmd_log(args):
         "result": None,
         "units_won_lost": None,
         "closing_line": None,
+        # Two CLV metrics, never blended. clv_devig (hold-free, needs a two-way close)
+        # is preferred; clv_pct_pts (vig-inclusive, works from one side) is the
+        # wider-coverage fallback. `clv` mirrors whichever is preferred+available and
+        # exists only so older readers (dashboard, notebooks) keep working.
         "clv": None,
+        "clv_devig": None,
+        "clv_pct_pts": None,
         "final_score": None,
         "game_margin": None,
         "line_num": args.line_num,
@@ -1553,11 +1838,16 @@ def cmd_auto_resolve(_args, sources=None):
             skipped.append((p["id"], f"game not found or not final for '{team}' on {date}"))
             continue
         margin = result_data["margin"]
-        if kind == "rl":
+        # `spread` must be routed explicitly. It used to fall into the `else` and be
+        # graded by the moneyline path, which ignores line_num entirely — so
+        # "Dodgers -1.5" winning 3-2 (margin +1) graded a WIN when the run line lost.
+        # Handicap bets are graded by determine_outcome's cover logic, never by margin
+        # sign alone.
+        if kind in ("rl", "spread"):
             if line_num is None:
-                skipped.append((p["id"], "RL pick missing line_num — resolve manually"))
+                skipped.append((p["id"], f"{kind} pick missing line_num — resolve manually"))
                 continue
-            outcome = determine_outcome("rl", margin, line_num)
+            outcome = determine_outcome(kind, margin, line_num)
         else:
             outcome = determine_outcome("ml", margin, line_num)
 
@@ -1596,12 +1886,22 @@ def cmd_resolve(args):
     pick["result"] = args.outcome
     pick["units_won_lost"] = calc_units_won_lost(pick["line"], pick["units"], args.outcome)
     if args.closing_line:
+        # Validate before storing. closing_line had no format check, so free text
+        # ('Mets ML +110') was accepted and then counted as a measured close.
+        if parse_american(args.closing_line) is None:
+            print(f"❌ --closing-line {args.closing_line!r} is not American odds "
+                  f"(expected e.g. -110, +145). Refusing to store an unparseable close.",
+                  file=sys.stderr)
+            sys.exit(1)
         pick["closing_line"] = args.closing_line
         try:
-            pick["clv"] = calc_clv(pick["line"], args.closing_line)
+            # One-sided close → percentage points only. cmd_backfill_clv fills
+            # clv_devig when it has both sides of the market.
+            pick["clv_pct_pts"] = calc_clv(pick["line"], args.closing_line)
         except (ValueError, ZeroDivisionError) as e:
             print(f"⚠️  CLV calc failed ({e}); stored closing_line but clv=null", file=sys.stderr)
-            pick["clv"] = None
+            pick["clv_pct_pts"] = None
+        pick["clv"] = clv_value(pick)
     if args.final_score:
         pick["final_score"] = args.final_score
     if args.game_margin is not None:
@@ -1645,6 +1945,71 @@ def cmd_backfill_clv(args):
         print(f"\n[dry-run] would backfill {n} pick(s). Re-run with --apply to write picks.json.")
 
 
+def cmd_migrate_clv_schema(args):
+    """One-shot: split the legacy single `clv` field into clv_devig + clv_pct_pts.
+
+    The legacy field holds values written under TWO incompatible conventions —
+    cmd_resolve wrote percentage points, cmd_backfill_clv wrote a de-vigged ratio —
+    with nothing recording which. Rather than trust the stored number, this recomputes
+    percentage-point CLV from each pick's own (line, closing_line), which is fully
+    reproducible. Picks whose closing_line is not parseable American odds (the six
+    hand-written 0.0 placeholders) are reset to Unmeasured.
+
+    clv_devig is NOT reconstructed: de-vig needs both sides of the closing market and
+    only the bet side was ever stored. Those values return on the next backfill run.
+    Dry-run by default; --apply writes.
+    """
+    picks = load_picks()
+    recomputed = demoted = skipped = 0
+    rows = []
+    for p in picks:
+        legacy = p.get("clv")
+        if legacy is None and p.get("closing_line") is None:
+            skipped += 1
+            continue
+        close = parse_american(p.get("closing_line"))
+        if close is None:
+            rows.append((p["id"], p.get("closing_line"), legacy, None, "→ Unmeasured (unparseable close)"))
+            p["clv_pct_pts"] = None
+            p["clv_devig"] = None
+            p["clv"] = None
+            demoted += 1
+            continue
+        try:
+            pct = calc_clv(p["line"], p["closing_line"])
+        except (ValueError, ZeroDivisionError, TypeError):
+            rows.append((p["id"], p.get("closing_line"), legacy, None, "→ Unmeasured (unparseable entry line)"))
+            p["clv_pct_pts"] = p["clv_devig"] = p["clv"] = None
+            demoted += 1
+            continue
+        # Recover which writer produced the legacy value. cmd_resolve computed it as
+        # calc_clv(line, closing_line), so a legacy value that still reproduces exactly
+        # is percentage points; one that does NOT is the backfill's de-vigged ratio.
+        # Keeping those in clv_devig preserves de-vig coverage instead of zeroing it
+        # until the next backfill re-fetches two-way closes.
+        was_devig = legacy is not None and abs(legacy - pct) >= 0.005
+        note = "  (legacy de-vig preserved → clv_devig)" if was_devig else ""
+        rows.append((p["id"], p.get("closing_line"), legacy, pct, note))
+        p["clv_pct_pts"] = pct
+        if was_devig:
+            p["clv_devig"] = legacy
+        else:
+            p.setdefault("clv_devig", None)
+        p["clv"] = clv_value(p)
+        recomputed += 1
+
+    for pid, close, legacy, pct, note in rows:
+        lg = "null" if legacy is None else f"{legacy:+.2f}"
+        nw = "null" if pct is None else f"{pct:+.2f}"
+        print(f"  {pid[:34]:36} close={str(close)[:16]:18} {lg:>8} → {nw:>8}{note}")
+    print(f"\n  recomputed: {recomputed}   demoted to Unmeasured: {demoted}   untouched: {skipped}")
+    if args.apply:
+        save_picks(picks)
+        print("✅ picks.json written.")
+    else:
+        print("[dry-run] re-run with --apply to write picks.json.")
+
+
 # ── CLI wiring ────────────────────────────────────────────────────────────────
 
 def main():
@@ -1655,6 +2020,10 @@ def main():
     sub.add_parser("open", help="Print open picks as JSON")
     sub.add_parser("auto-resolve", help="Auto-resolve open MLB picks via MLB Stats API")
     sub.add_parser("migrate-actual-bets", help="Merge stale .claude My Bets data into .agents")
+
+    mig_p = sub.add_parser("migrate-clv-schema",
+                           help="One-shot: split legacy `clv` into clv_devig + clv_pct_pts")
+    mig_p.add_argument("--apply", action="store_true", help="Write picks.json (default: dry-run)")
 
     log_p = sub.add_parser("log", help="Log a new pick")
     log_p.add_argument("--model", required=True, choices=[m["id"] for m in MODELS])
@@ -1672,8 +2041,16 @@ def main():
                        help="manual allows reasoned override; scheduled cannot override")
     log_p.add_argument("--override-validation", default="",
                        help="Manual override reason when validation fails")
+    log_p.add_argument("--bet-type", default=None,
+                       choices=["prop", "total", "spread", "rl", "ml"],
+                       help="Declare the bet type instead of inferring it from the bet "
+                            "text. STRONGLY preferred: inference reads LLM-written prose "
+                            "and has mis-graded real picks. Omitting it logs an inferred "
+                            "type flagged bet_type_source=inferred.")
     log_p.add_argument("--line-num", type=float, default=None,
-                       help="Spread/RL number (e.g. 1.5 for -1.5 RL, 0 for ML)")
+                       help="Spread/RL number, SIGNED as the bet reads: -1.5 for a "
+                            "-1.5 favourite, +6.5 for a +6.5 underdog, 0 for ML. "
+                            "For a total, the total (e.g. 8.5).")
     log_p.add_argument("--game-time", default="",
                        help="Game start time in Arizona time, e.g. '5:10 PM' or '1:05 PM'")
 
@@ -1706,6 +2083,8 @@ def main():
         cmd_open(args)
     elif args.command == "auto-resolve":
         cmd_auto_resolve(args)
+    elif args.command == "migrate-clv-schema":
+        cmd_migrate_clv_schema(args)
     elif args.command == "migrate-actual-bets":
         cmd_migrate_actual_bets(args)
     elif args.command == "log":

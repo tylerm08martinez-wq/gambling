@@ -184,10 +184,20 @@ python3 ".agents/skills/bet-tracker/tracker.py" log \
   --edge "<human-readable primary edge>" \
   --primary-edge-type <canonical_edge_type> \
   --source-evidence-json '<json list of usable current source evidence>' \
-  --line-num <spread_or_total_number_or_0> \
+  --bet-type <prop|total|spread|rl|ml> \
+  --line-num <signed_handicap_or_total_or_0> \
   --game-time "<H:MM AM/PM AZ>" \
   --run-type manual
 ```
+
+**`--bet-type` is required in practice.** Without it the tracker infers the type from
+your bet prose, and that inference has mis-graded real picks: a game total written
+`"Twins @ Cubs Under 8"` was graded on game margin, and `"Yankees ML -150"` classified
+as a spread. The type is persisted, so a bad inference is permanent. Declare it.
+
+**`--line-num` is SIGNED, as the bet reads** — `-1.5` for a `-1.5` favourite, `+6.5`
+for a `+6.5` underdog, the total for a total (e.g. `8.5`), `0` for a moneyline. A sign
+that contradicts the handicap in `--bet` is rejected at log time.
 
 Use `--run-type scheduled` for unattended runs. Scheduled runs must include `--primary-edge-type` and `--source-evidence-json`; candidates missing either are skipped or recorded as rejected, never hand-written into `picks.json`.
 

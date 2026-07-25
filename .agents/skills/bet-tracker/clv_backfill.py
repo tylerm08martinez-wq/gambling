@@ -70,11 +70,25 @@ def backfill_pick(pick: dict, close_info, force: bool = False) -> bool:
     market = close_info.get("market") or pick.get("bet_type") or "moneyline"
     if not side or side not in close:
         return False
-    clv = realized_clv(close, side, pick.get("line"), market)
-    if clv is None:
+    devig = realized_clv(close, side, pick.get("line"), market)
+
+    # Percentage-point CLV alongside the de-vigged value. This writer used to store its
+    # de-vigged ratio in the SAME `clv` field that cmd_resolve filled with percentage
+    # points, and clv_stats averaged the two together — so avg_clv was neither metric.
+    # Both are now written to their own field and never blended.
+    pct_pts = None
+    try:
+        entry = ve.american_to_prob(_entry_odds(pick.get("line")))
+        pct_pts = round((ve.american_to_prob(close[side]) - entry) * 100, 2)
+    except (ve.OddsParseError, ZeroDivisionError):
+        pct_pts = None
+
+    if devig is None and pct_pts is None:
         return False
-    pick["closing_line"] = str(close[side])   # Pinnacle's closing price on the bet side
-    pick["clv"] = round(clv, 2)
+    pick["closing_line"] = str(close[side])   # closing price on the bet side
+    pick["clv_devig"] = round(devig, 2) if devig is not None else None
+    pick["clv_pct_pts"] = pct_pts
+    pick["clv"] = pick["clv_devig"] if pick["clv_devig"] is not None else pct_pts
     return True
 
 
