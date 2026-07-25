@@ -42,9 +42,15 @@ def realized_clv(pinnacle_close: dict, side: str, entry_line, market: str = "mon
     if not pinnacle_close or len(pinnacle_close) != 2 or side not in pinnacle_close:
         return None
     s0, s1 = list(pinnacle_close.keys())
-    fair0, fair1 = ve.fair_two_way(pinnacle_close[s0], pinnacle_close[s1], market)
+    # Unparseable odds (free-text `line`/`closing_line` values predating validation)
+    # leave the pick Unmeasured rather than aborting the caller's whole run.
+    try:
+        fair0, fair1 = ve.fair_two_way(pinnacle_close[s0], pinnacle_close[s1], market)
+        entry_prob = ve.american_to_prob(_entry_odds(entry_line))
+    except ve.OddsParseError:
+        return None
     fair = {s0: fair0, s1: fair1}
-    return ve.projected_clv(fair[side], ve.american_to_prob(_entry_odds(entry_line))) * 100.0
+    return ve.projected_clv(fair[side], entry_prob) * 100.0
 
 
 def backfill_pick(pick: dict, close_info, force: bool = False) -> bool:

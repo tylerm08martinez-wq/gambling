@@ -290,11 +290,33 @@ def _is_prop(market: str) -> bool:
     return "prop" in (market or "").strip().lower()
 
 
+class OddsParseError(ValueError):
+    """Raised when a value cannot be read as American odds.
+
+    Subclasses ValueError so pre-existing `except ValueError` callers keep working.
+    Exists so callers that legitimately encounter junk (e.g. the CLV backfill reading
+    free-text `line` fields written before validation existed) can catch *this*
+    specifically and skip the row, instead of blanket-catching ValueError and
+    masking a real arithmetic bug.
+    """
+
+
 def _parse_odds(v) -> int:
-    """'+120' / '-118' / 120 / -118 -> int."""
+    """'+120' / '-118' / 120 / -118 -> int.
+
+    Raises OddsParseError on anything else. Guarded because a single malformed
+    `line`/`closing_line` in picks.json used to abort the entire daily run: this
+    crashed on 'under 17.5' and '' under `set -e` in run-daily-picks.sh, killing
+    pick generation before the agent was even invoked (dead 2026-06-03 → 07-25).
+    """
+    if isinstance(v, bool):                      # bool is an int subclass; never odds
+        raise OddsParseError(f"cannot parse odds from bool: {v!r}")
     if isinstance(v, (int, float)):
         return int(v)
-    return int(str(v).strip().replace("+", ""))
+    s = str(v).strip().replace("+", "")
+    if not re.fullmatch(r"-?\d+", s):
+        raise OddsParseError(f"cannot parse American odds from {v!r}")
+    return int(s)
 
 
 _BEST_RE = re.compile(r"^\s*([+-]?\d+)\s*(?:\(([^)]+)\))?\s*$")

@@ -21,17 +21,42 @@ STAMP="$PROJECT_DIR/scripts/.last-run-date"
 # Mechanism, in order of robustness:
 #   1. Slack incoming webhook (plain curl, no deps) — put the URL in
 #      ~/.config/bet-picks/slack-webhook (one line, outside the repo, never commit it).
-#   2. Fallback: claude -p Slack MCP post — works for feed/push failures, but NOT if
-#      claude itself is the thing that broke. That's why the webhook is preferred.
+#      The only channel that reaches you off-machine.
+#   2. Windows toast — no secret required, but only visible at this console.
+#   3. scripts/.LAST-RUN-FAILED sentinel — always written; cleared on next success.
+# NOTE (2026-07-25): the old fallback here was `claude -p` posting to Slack. That is
+# useless by construction — `claude` is the single most likely thing to be broken, and
+# on 2026-06-03 it was: the CLI began failing with "Credit balance is too low" and the
+# alert path died with it. 48 consecutive failed runs went unreported for 53 days.
+# Every channel below is therefore independent of the claude binary.
 notify_failure() {
   local msg="$1"
+  local delivered=0
+
+  # 1. Slack incoming webhook — preferred; the only channel that reaches you off-machine.
   local hook_file="$HOME/.config/bet-picks/slack-webhook"
-  if [ -f "$hook_file" ]; then
-    curl -s -X POST -H 'Content-type: application/json' \
-      --data "{\"text\":\"$msg\"}" "$(cat "$hook_file")" >/dev/null 2>&1 && return 0
+  if [ -s "$hook_file" ]; then
+    curl -sf -m 15 -X POST -H 'Content-type: application/json' \
+      --data "{\"text\":$(printf '%s' "$msg" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')}" \
+      "$(tr -d '[:space:]' < "$hook_file")" >/dev/null 2>&1 && delivered=1
   fi
-  claude -p "Post exactly this message to the #bet-picks Slack channel and nothing else: $msg" \
-    --dangerously-skip-permissions >/dev/null 2>&1 || true
+
+  # 2. Windows toast — visible on this host without any secret to configure.
+  powershell.exe -NoProfile -Command "
+    [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType=WindowsRuntime] > \$null
+    \$t=[Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent(
+         [Windows.UI.Notifications.ToastTemplateType]::ToastText02)
+    \$t.GetElementsByTagName('text').Item(0).AppendChild(\$t.CreateTextNode('Daily Bet Picks FAILED')) > \$null
+    \$t.GetElementsByTagName('text').Item(1).AppendChild(\$t.CreateTextNode('$(printf '%s' "$msg" | tr -d "'" | cut -c1-160)')) > \$null
+    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Daily Bet Picks').Show(
+      [Windows.UI.Notifications.ToastNotification]::new(\$t))
+  " >/dev/null 2>&1 && delivered=1
+
+  # 3. Sentinel file — last resort, always works, and gives any later run/dashboard
+  #    something durable to read. Cleared on the next successful run.
+  printf '%s\n' "$msg" > "$PROJECT_DIR/scripts/.LAST-RUN-FAILED"
+
+  [ "$delivered" -eq 1 ] || echo "⚠️  all remote alert channels failed; wrote scripts/.LAST-RUN-FAILED" | tee -a "$LOG"
 }
 on_exit() {
   local rc=$?
@@ -75,7 +100,12 @@ if python3 "$PROJECT_DIR/.agents/skills/bet-tracker/tracker.py" \
      backfill-clv --date "$YESTERDAY" --apply 2>&1 | tee -a "$LOG" | grep -q "Backfilled"; then
   git add .agents/skills/bet-tracker/picks.json
   git commit -m "chore: backfill realized CLV for $YESTERDAY" 2>&1 | tee -a "$LOG" || true
-  git push origin main 2>&1 | tee -a "$LOG" || true
+  # Push failures used to be swallowed by `|| true`, which stranded the 2026-07-16 and
+  # 2026-07-19 CLV commits on local main for over a week while the dashboard — which
+  # reads origin/main via the GitHub Contents API — served stale CLV. Alert instead.
+  if ! git push origin main 2>&1 | tee -a "$LOG"; then
+    notify_failure "⚠️ Daily Bet Picks: CLV backfill for $YESTERDAY committed locally but PUSH FAILED on $(hostname). Dashboard is serving stale CLV until this is pushed."
+  fi
 fi
 
 # The routine prompt: execute the betting skills exactly as written. Mirrors the
@@ -113,5 +143,30 @@ PROMPT="${PROMPT_HEAD}${V3_STEP}${PROMPT_TAIL}"
 # their own guardrails (never hand-edit picks.json, fail-loud, tracker-only commits).
 claude -p "$PROMPT" --dangerously-skip-permissions 2>&1 | tee -a "$LOG"
 
+# --- Success heartbeat ------------------------------------------------------
+# Without this, "0 picks today" (a valid outcome), "the agent crashed", and "the PC
+# was asleep" are indistinguishable from outside the log — which is how 48 failed runs
+# hid for 53 days. A run that reaches here genuinely completed, so record proof:
+# a machine-readable status file, and clear the failure sentinel.
+UNPUSHED="$(git rev-list --count origin/main..main 2>/dev/null || echo '?')"
+PICKS_TODAY="$(python3 -c "
+import json
+try:
+    d=json.load(open('.agents/skills/bet-tracker/picks.json'))
+    p=d['picks'] if isinstance(d,dict) and 'picks' in d else d
+    print(sum(1 for x in p if str(x.get('date',''))[:10]=='$TODAY'))
+except Exception:
+    print('?')
+" 2>/dev/null || echo '?')"
+
+rm -f "$PROJECT_DIR/scripts/.LAST-RUN-FAILED"
+cat > "$PROJECT_DIR/scripts/.last-run-status.json" <<JSON
+{"date":"$TODAY","completed_at":"$(date '+%Y-%m-%dT%H:%M:%S%z')","host":"$(hostname)","status":"ok","picks_logged":"$PICKS_TODAY","unpushed_commits":"$UNPUSHED"}
+JSON
+
+if [ "$UNPUSHED" != "0" ] && [ "$UNPUSHED" != "?" ]; then
+  notify_failure "⚠️ Daily Bet Picks completed on $(hostname) but $UNPUSHED commit(s) are UNPUSHED — dashboard will serve stale data."
+fi
+
 echo "$TODAY" > "$STAMP"
-echo "=== done $(date '+%H:%M %Z') ===" | tee -a "$LOG"
+echo "=== done $(date '+%H:%M %Z') — picks_logged=$PICKS_TODAY unpushed=$UNPUSHED ===" | tee -a "$LOG"
