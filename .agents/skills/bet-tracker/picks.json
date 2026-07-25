@@ -3158,5 +3158,59 @@
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260725-mlb-v2-padres-rl",
+    "date": "2026-07-25",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Padres @ Marlins Under 8 (game total)",
+    "line": "-103 @ ProphetX",
+    "units": 2,
+    "score": 9.35,
+    "primary_edge": "Mega steam: 16 of 17 books moved off opening 8.5 downward; 8 still available while sharp books sit at 7.5",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "bettingpros_offers_api",
+        "status": "usable",
+        "freshness": "2026-07-25T16:20Z (pregame, fetched this run)",
+        "category": "line_movement_data",
+        "market_id": 175,
+        "event_id": 99963,
+        "opening_line": 8.5,
+        "books_moved": 16,
+        "books_total": 17,
+        "direction": "down",
+        "current_lines": [
+          7.5,
+          8,
+          8.5
+        ],
+        "stale_book": "ProphetX (38)",
+        "bet_line": 8,
+        "bet_odds": -103,
+        "detail": "Open 8.5; 9 books now 7.5, 7 at 8, 1 at 8.5. Entry at 8 is a half-run better than the leading edge. Pinnacle absent from board -> CLV unverified."
+      },
+      {
+        "source": "WebSearch (SI/Bleacher Nation/FOX Sports previews)",
+        "status": "usable",
+        "freshness": "2026-07-25",
+        "category": "catalyst_check",
+        "detail": "JP Sears vs Eury Perez as scheduled, no scratch reported; loanDepot Park is a dome so weather cannot explain the move."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
