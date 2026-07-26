@@ -3431,5 +3431,114 @@
     "line_num": 17.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260726-mlb-v2-luinde-prop",
+    "date": "2026-07-26",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Luinder Avila (KC) Under 14.5 outs recorded at DET",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+138 @ Novig",
+    "units": 1,
+    "score": 9.7,
+    "primary_edge": "Signal A cross-book prop gap 1.0: Novig prices Under 14.5 outs at +138 vs consensus +122 on the same line (42.0% vs 45.0% implied); over side sits at -160, and projection 14.07 outs confirms the under side of the gap",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /props MLB (market 405 outs-recorded)",
+        "status": "usable",
+        "freshness": "2026-07-26 16:04 UTC, pregame",
+        "detail": "under 14.5 @ +138 book 60 Novig vs consensus 14.5 @ +122; best over 15.5 @ +120 theScore"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers ladder event 100079 market 405",
+        "status": "usable",
+        "freshness": "2026-07-26 16:12 UTC",
+        "detail": "consensus ladder over 14.5 @ -160 / under 14.5 @ +122 \u2014 Novig +138 is the outlier price on the same number"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros projection",
+        "status": "usable",
+        "freshness": "2026-07-26 16:04 UTC",
+        "detail": "recommended_side under, value 14.07, diff -0.43, trend_confirmed true"
+      },
+      {
+        "category": "clv_benchmark",
+        "source": "BettingPros /offers event 100079",
+        "status": "unusable",
+        "freshness": "2026-07-26 16:12 UTC",
+        "detail": "Pinnacle (book_id 2) absent from offers feed \u2014 CLV unverified; consensus de-vig fair under 42.3% vs entry 42.0%, edge +0.3pt"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:40 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 14.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260726-mlb-v2-athlet-total",
+    "date": "2026-07-26",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Athletics @ Twins Under 10",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-107 @ ProphetX",
+    "units": 1,
+    "score": 9.0,
+    "primary_edge": "Signal C+ steam: total opened 10 and moved down to 9.5 at 9 of 17 books \u2014 theScore, Hard Rock, Novig, BetRivers and the 74/68/75/39 feed (counted as one source = 5 independent movers). Retail cluster still hangs 10; ProphetX -107 is the best stale under price. No injury/lineup catalyst found",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers event 99099 market 175 (total)",
+        "status": "usable",
+        "freshness": "2026-07-26 16:12 UTC, pregame",
+        "detail": "opening_line 10 -> 9.5 at theScore -125/HardRock -120/Novig -113/BetRivers -113/book-74/68/75/39; 8 books still at 10 (FanDuel, DraftKings, Caesars, BetMGM, Fanatics, ProphetX, book-27, bet365)"
+      },
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /offers event 99099 market 175",
+        "status": "usable",
+        "freshness": "2026-07-26 16:12 UTC",
+        "detail": "best under 10 price is ProphetX -107; field is -114 to -115 at FanDuel/DraftKings/Caesars/BetMGM/Fanatics/bet365"
+      },
+      {
+        "category": "clv_benchmark",
+        "source": "BettingPros /offers event 99099",
+        "status": "unusable",
+        "freshness": "2026-07-26 16:12 UTC",
+        "detail": "Pinnacle (book_id 2) absent from offers feed \u2014 CLV unverified. Consensus de-vig fair under 51.0% vs entry 51.7%: entry does NOT beat the stale consensus on price; thesis is the number, expecting a 9.5 close so Under 10 beats the closing line by half a run"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:10 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 10.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
