@@ -142,7 +142,13 @@ Pinnacle is available in the offers feed (`book_id` 2). For a qualifying signal:
 
 **CLV adjustment (after score):** beats Pinnacle fair ≥2% → no change · 1–2% → −0.5u · does not beat → cap 1u · unverified → note in output.
 
-**Score ranges — use the midpoint** ("9–10" → 9.5). **Unit sizing:** ≥8.0 → 2u · 6.0–7.9 → 1u. **Hard cap 2u.**
+**Score ranges — use the midpoint** ("9–10" → 9.5).
+
+**Unit sizing: FLAT 1u on every pick. Hard cap 1u.** Score gates whether to bet, never
+how much. Suspended tiered sizing on 2026-07-25: across 81 graded picks the score ran
+backwards (2u picks 46.3%, 1u picks 62.5%, r = −0.163, p=0.18 — not significant, but
+no evidence the score is *positively* predictive either, and sizing on it cost ~6.5u
+versus flat). Restore only if score correlates positively with de-vig CLV.
 
 ### 7. Output
 

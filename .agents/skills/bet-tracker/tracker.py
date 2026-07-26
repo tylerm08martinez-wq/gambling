@@ -1940,9 +1940,23 @@ def cmd_backfill_clv(args):
     import clv_fetch
     import clv_backfill
 
+    import close_capture
+
     picks = load_picks()
-    closes = clv_fetch.build_closes_live(picks, tracker=sys.modules[__name__],
-                                         force=args.force, only_date=args.date or None)
+    # Captured-at-the-close snapshots win over a post-hoc fetch. A snapshot taken minutes
+    # before first pitch is a real closing line with a recorded timestamp; the live
+    # fallback is whatever the endpoint happens to serve now, of unknown vintage, and is
+    # usually gone entirely once the game is over.
+    snaps = close_capture.load_snapshots()
+    closes = {pid: s for pid, s in snaps.items()
+              if args.date is None or args.date == "" or
+              next((p.get("date") for p in picks if p.get("id") == pid), None) == args.date}
+    if closes:
+        print(f"ℹ️  Using {len(closes)} captured closing snapshot(s).")
+    live = clv_fetch.build_closes_live(picks, tracker=sys.modules[__name__],
+                                       force=args.force, only_date=args.date or None)
+    for pid, info in live.items():
+        closes.setdefault(pid, info)          # never overwrite a captured close
     if not closes:
         print("ℹ️  No closing lines matched (no eligible settled props, or markets dropped post-game).")
         return
@@ -1955,6 +1969,39 @@ def cmd_backfill_clv(args):
         print(f"\n✅ Backfilled {n} pick(s) — picks.json written.")
     else:
         print(f"\n[dry-run] would backfill {n} pick(s). Re-run with --apply to write picks.json.")
+
+
+def cmd_capture_closes(args):
+    """Snapshot the two-way market for picks about to start (residential IP only).
+
+    Run this on a short schedule through the day — each pass captures whatever is inside
+    its window, keeping the snapshot closest to first pitch. This is what makes CLV
+    measurable: backfilling after the game finds the market gone (22% coverage) and,
+    when it finds anything, cannot tell a true close from a stale line.
+    """
+    import close_capture
+
+    picks = load_picks()
+    snaps, report = close_capture.capture_live(picks, window_minutes=args.window_minutes)
+
+    captured = [r for r in report if r[1] == "captured"]
+    errors = [r for r in report if r[1] == "error"]
+    for pid, status, detail in captured:
+        print(f"  📸 {pid}: {detail}")
+    for pid, status, detail in errors:
+        print(f"  ⚠️  {pid}: {detail}", file=sys.stderr)
+    if args.verbose:
+        for pid, status, detail in report:
+            if status in ("skip", "keep"):
+                print(f"  ·  {pid}: {status} — {detail}")
+
+    if not captured:
+        print(f"ℹ️  No picks inside the {args.window_minutes}m capture window.")
+    if args.apply and captured:
+        close_capture.save_snapshots(snaps)
+        print(f"\n✅ Captured {len(captured)} close(s) → {close_capture.SNAPSHOT_FILE}")
+    elif captured:
+        print(f"\n[dry-run] would capture {len(captured)}. Re-run with --apply to write.")
 
 
 def cmd_migrate_clv_schema(args):
@@ -2033,6 +2080,13 @@ def main():
     sub.add_parser("auto-resolve", help="Auto-resolve open MLB picks via MLB Stats API")
     sub.add_parser("migrate-actual-bets", help="Merge stale .claude My Bets data into .agents")
 
+    cap_p = sub.add_parser("capture-closes",
+                           help="Snapshot two-way closes for picks about to start (residential IP)")
+    cap_p.add_argument("--window-minutes", type=int, default=45,
+                       help="Capture picks starting within this many minutes (default 45)")
+    cap_p.add_argument("--apply", action="store_true", help="Write closing_lines.json (default: dry-run)")
+    cap_p.add_argument("--verbose", action="store_true", help="Show skipped picks and why")
+
     mig_p = sub.add_parser("migrate-clv-schema",
                            help="One-shot: split legacy `clv` into clv_devig + clv_pct_pts")
     mig_p.add_argument("--apply", action="store_true", help="Write picks.json (default: dry-run)")
@@ -2095,6 +2149,8 @@ def main():
         cmd_open(args)
     elif args.command == "auto-resolve":
         cmd_auto_resolve(args)
+    elif args.command == "capture-closes":
+        cmd_capture_closes(args)
     elif args.command == "migrate-clv-schema":
         cmd_migrate_clv_schema(args)
     elif args.command == "migrate-actual-bets":

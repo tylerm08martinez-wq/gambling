@@ -32,6 +32,14 @@ if [ -f "$SENTINEL" ]; then
   exit 0
 fi
 
+# Closing-line capture failing is quieter than a failed picks run but corrodes the
+# thing the whole project is judged by: without captured closes, CLV coverage decays
+# back toward the 22% that made ROI uninterpretable in the first place.
+if [ -f "scripts/.CAPTURE-FAILED" ]; then
+  echo "⚠️  [gambling] CLOSING-LINE CAPTURE FAILING"
+  echo "   $(head -c 250 scripts/.CAPTURE-FAILED)"
+fi
+
 # 2. No heartbeat at all, or a stale one. Distinguishes "never completed since the
 #    heartbeat was added" from "completed, but not recently".
 if [ ! -f "$STATUS" ]; then

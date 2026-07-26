@@ -126,8 +126,18 @@ Cap at 10.
 
 **Overall = Confidence × 0.6 + Value × 0.4. Recommend only if ≥ 6.0.**
 
-**Unit sizing:** Score ≥ 8.0 → 2u · Score 6.0–7.9 → 1u · Below 6.0 → no pick.
-**Hard cap: 2u maximum per pick. No exceptions.**
+**Unit sizing: FLAT 1u on every pick.** Score still gates whether to bet at all
+(below 6.0 → no pick), but it must not size the bet.
+
+Score-based sizing was suspended on 2026-07-25 because the score is not yet shown to
+be positively predictive — measured over 81 graded picks it ran *backwards*: 2u picks
+(mean score 8.72) went 46.3%, 1u picks (mean score 6.84) went 62.5%, r(score, win) =
+−0.163. That is not significant (p=0.18), so the claim is not "high scores lose" — it
+is that there is no evidence they win more, and sizing on an unproven signal cost
+about 6.5 units against flat staking. Restore tiered sizing only if score correlates
+positively with de-vig CLV over a meaningful sample.
+
+**Hard cap: 1u per pick while flat staking is in force.**
 
 ### 4b. Output
 

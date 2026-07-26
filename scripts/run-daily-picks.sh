@@ -98,7 +98,10 @@ YESTERDAY="$(TZ='MST7' date -v-1d +%F 2>/dev/null || TZ='MST7' date -d 'yesterda
 echo "ℹ️  Backfilling realized CLV for $YESTERDAY..." | tee -a "$LOG"
 if python3 "$PROJECT_DIR/.agents/skills/bet-tracker/tracker.py" \
      backfill-clv --date "$YESTERDAY" --apply 2>&1 | tee -a "$LOG" | grep -q "Backfilled"; then
-  git add .agents/skills/bet-tracker/picks.json
+  # closing_lines.json rides along: capture-closes writes it locally every ~15 min but
+  # deliberately doesn't commit (that cadence would be commit spam), so this is where
+  # the captured closes get durably recorded alongside the CLV they produced.
+  git add .agents/skills/bet-tracker/picks.json .agents/skills/bet-tracker/closing_lines.json
   git commit -m "chore: backfill realized CLV for $YESTERDAY" 2>&1 | tee -a "$LOG" || true
   # Push failures used to be swallowed by `|| true`, which stranded the 2026-07-16 and
   # 2026-07-19 CLV commits on local main for over a week while the dashboard — which

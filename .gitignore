@@ -15,3 +15,5 @@ scripts/.run-daily-picks.log
 scripts/.last-run-date
 scripts/.last-run-status.json
 scripts/.LAST-RUN-FAILED
+scripts/.capture-closes.log
+scripts/.CAPTURE-FAILED
