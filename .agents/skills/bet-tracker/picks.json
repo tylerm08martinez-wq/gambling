@@ -3278,5 +3278,158 @@
     "line_num": 8.0,
     "prop_result": "9 total runs",
     "prop_margin": null
+  },
+  {
+    "id": "20260726-mlb-v1-frambe-prop",
+    "date": "2026-07-26",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Framber Valdez (DET) Over 16.5 outs recorded vs KC",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-113 @ Novig",
+    "units": 1,
+    "score": 9.2,
+    "primary_edge": "Cross-book gap: Novig hangs Over 16.5 outs at -113 while consensus line is 17.5 at -180 \u2014 a full out below market at near-even money; BettingPros projection 17.55 outs (+1.05 over the Novig line), season 12-8 over",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /props MLB (market 405 outs-recorded)",
+        "status": "usable",
+        "freshness": "2026-07-26 16:04 UTC, pregame",
+        "detail": "best over 16.5 @ -113 book 60 Novig vs consensus_line 17.5 @ -200/-180"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros projection",
+        "status": "usable",
+        "freshness": "2026-07-26 16:04 UTC",
+        "detail": "recommended_side over, value 17.55, diff +1.05"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers ladder event 100079 market 405",
+        "status": "usable",
+        "freshness": "2026-07-26 16:05 UTC",
+        "detail": "consensus ladder over 18.5 @ +119 / under 18.0 @ +130 \u2014 market line sits 1-2 outs above the Novig 16.5"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:40 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260726-mlb-v1-andrew-prop",
+    "date": "2026-07-26",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Andrew Abbott (CIN) Under 16.5 outs recorded at STL",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+104 @ Novig",
+    "units": 1,
+    "score": 6.4,
+    "primary_edge": "Cross-book price gap on the same line: Novig prices Under 16.5 outs at +104 while consensus is -107 (49.0% vs 51.7% implied, ~2.7pt edge); BettingPros projection 16.05 outs favors the under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /props MLB (market 405 outs-recorded)",
+        "status": "usable",
+        "freshness": "2026-07-26 16:04 UTC, pregame",
+        "detail": "under 16.5 @ +104 book 60 Novig vs consensus 16.5 @ -107; best over 17.5 @ -105 theScore"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers ladder event 99929 market 405",
+        "status": "usable",
+        "freshness": "2026-07-26 16:05 UTC",
+        "detail": "consensus ladder over 16.5 @ -127 / under 16.5 @ -107 \u2014 confirms Novig +104 is the outlier price on the same line"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros projection",
+        "status": "usable",
+        "freshness": "2026-07-26 16:04 UTC",
+        "detail": "recommended_side under, value 16.05, diff -0.45; season 10-11 over/under, L10 5-5"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:15 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260726-mlb-v1-logan-prop",
+    "date": "2026-07-26",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Logan Gilbert (SEA) Under 17.5 outs recorded at TEX",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+141 @ Novig",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "Cross-book price gap on the same line: Novig prices Under 17.5 outs at +141 vs consensus +119 (41.5% vs 45.7% implied, ~4.2pt edge). Projection 17.43 is neutral and recent form leans over \u2014 priced-edge play only",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /props MLB (market 405 outs-recorded)",
+        "status": "usable",
+        "freshness": "2026-07-26 16:04 UTC, pregame",
+        "detail": "under 17.5 @ +141 book 60 Novig vs consensus 17.5 @ +119"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers ladder event 98139 market 405",
+        "status": "usable",
+        "freshness": "2026-07-26 16:05 UTC",
+        "detail": "consensus ladder over 17.5 @ -159 / under 17.5 @ +119 \u2014 same line, Novig +141 is the outlier"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros projection",
+        "status": "usable",
+        "freshness": "2026-07-26 16:04 UTC",
+        "detail": "recommended_side under, value 17.43, diff -0.07 (neutral); L10 8-2 over, season 13-7 over \u2014 conflicting signal, -2 applied"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:35 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 17.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
