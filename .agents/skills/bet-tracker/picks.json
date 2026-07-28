@@ -3540,5 +3540,63 @@
     "line_num": 10.0,
     "prop_result": "19 total runs",
     "prop_margin": 9
+  },
+  {
+    "id": "20260728-mlb-v1-aaron-prop",
+    "date": "2026-07-28",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Aaron Nola (PHI) Under 16.5 outs recorded at MIA",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-104 @ Novig",
+    "units": 1,
+    "score": 8.4,
+    "primary_edge": "Cross-book price gap: Novig -104 vs consensus -119 on the same 16.5 outs line (15c), confirmed by projection (16.08 outs) and season/L10 under trend",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "status": "usable",
+        "source": "BettingPros /offers event 98728 market 405 (outs-recorded)",
+        "freshness": "2026-07-28T09:1x MST, pre-game (first pitch 3:40 PM AZ)",
+        "observed": "Under 16.5 cross-book: Novig -104 (best), Caesars -113, theScore/Underdog -115, Betr -118, DraftKings -119, Consensus -119, book-63 -125; opening line 16.5 both sides"
+      },
+      {
+        "category": "model_projection",
+        "status": "usable",
+        "source": "BettingPros /props MLB projection",
+        "freshness": "2026-07-28 same-day pull",
+        "observed": "recommended_side=under, projected 16.08 outs vs 16.5 line (diff -0.42)"
+      },
+      {
+        "category": "prop_trend",
+        "status": "usable",
+        "source": "BettingPros /props MLB performance splits",
+        "freshness": "2026-07-28 same-day pull",
+        "observed": "Nola outs-recorded L10 8-2 under, season 15-6 under"
+      },
+      {
+        "category": "confirmation",
+        "status": "usable",
+        "source": "BettingPros /events MLB 2026-07-28",
+        "freshness": "2026-07-28 same-day pull",
+        "observed": "event 98728 PHI @ MIA scheduled 2026-07-28 22:40:00 UTC; probable SP visitor Aaron Nola, home Sandy Alcantara"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]

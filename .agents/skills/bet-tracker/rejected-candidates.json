@@ -363,5 +363,50 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260728-mlb-v1-aaron-prop",
+    "date": "2026-07-28",
+    "checked_at": "2026-07-28T09:05:29",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Aaron Nola (PHI) Under 16.5 outs recorded at MIA",
+    "line": "-104 @ Novig",
+    "units": 1,
+    "score": 8.4,
+    "primary_edge": "Cross-book price gap: Novig -104 vs consensus -119 on the same 16.5 outs line (15c), confirmed by projection (16.08 outs) and season/L10 under trend",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event 98728 market 405 (outs-recorded)",
+        "observed": "Under 16.5 cross-book: Novig -104 (best), Caesars -113, theScore/Underdog -115, Betr -118, DraftKings -119, Consensus -119, book-63 -125; opening line 16.5 both sides",
+        "type": "cross_book_gap",
+        "captured": "2026-07-28"
+      },
+      {
+        "source": "BettingPros /props MLB projection",
+        "observed": "recommended_side=under, projected 16.08 outs vs 16.5 line (diff -0.42)",
+        "type": "model_projection",
+        "captured": "2026-07-28"
+      },
+      {
+        "source": "BettingPros /props MLB performance splits",
+        "observed": "Nola outs-recorded L10 8-2 under, season 15-6 under",
+        "type": "prop_trend",
+        "captured": "2026-07-28"
+      },
+      {
+        "source": "BettingPros /events MLB 2026-07-28",
+        "observed": "event 98728 PHI @ MIA scheduled 2026-07-28 22:40:00 UTC; probable SP visitor Aaron Nola, home Sandy Alcantara",
+        "type": "confirmation",
+        "captured": "2026-07-28"
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]
