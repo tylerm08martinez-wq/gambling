@@ -3598,5 +3598,121 @@
     "line_num": 16.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260728-mlb-v2-yankee-total",
+    "date": "2026-07-28",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Yankees @ White Sox Under 8",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-105 @ BetRivers",
+    "units": 1,
+    "score": 9.35,
+    "primary_edge": "Mega steam: 7 books moved the total 8 -> 7.5 (under side); BetRivers/book-15 still hang the opening 8, so entry is the pre-steam number with push protection at 8",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "status": "usable",
+        "source": "BettingPros /offers event 99534 market 175 (game total), opening_line 8",
+        "freshness": "2026-07-28 morning MST, pre-game (first pitch 4:40 PM AZ)",
+        "observed": "7 books moved off opening 8 to 7.5 same direction: theScore Bet, Hard Rock, Novig, book-68, book-74, book-39, book-75 (mega steam, 4+). Books still at opening 8: BetRivers U-105, book-15 U-105, ProphetX U-106, DraftKings/BetMGM/Caesars/Fanatics/book-27/bet365 U-115, FanDuel U-110"
+      },
+      {
+        "category": "cross_book_odds",
+        "status": "usable",
+        "source": "BettingPros /offers event 99534 market 175",
+        "freshness": "2026-07-28 same-day pull",
+        "observed": "Best under 8 price BetRivers -105 (tied book-15 -105); de-vig fair for under 7.5 at the moved books 46.5-48.0%, which after push credit at exactly 8 runs implies fair under 8 near 53.6% vs entry 51.2% -> roughly +2pp positive CLV"
+      },
+      {
+        "category": "benchmark",
+        "status": "usable",
+        "source": "BettingPros /offers Pinnacle (book_id 2) availability check",
+        "freshness": "2026-07-28 same-day pull",
+        "observed": "Pinnacle absent from every /offers response again (5th consecutive session) - CLV benchmarked against de-vigged full-book consensus instead"
+      },
+      {
+        "category": "confirmation",
+        "status": "usable",
+        "source": "BettingPros /events MLB 2026-07-28",
+        "freshness": "2026-07-28 same-day pull",
+        "observed": "event 99534 NYY @ CWS scheduled 2026-07-28 23:40:00 UTC; probable SP visitor Gerrit Cole, home Anthony Kay; no rainout/doubleheader flag, no lineup catalyst found for the move"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260728-mlb-v2-brando-prop",
+    "date": "2026-07-28",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Brandon Pfaadt (ARI) Under 3.5 strikeouts at PIT",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+138 @ ProphetX",
+    "units": 1,
+    "score": 8.65,
+    "primary_edge": "Cross-book gap: ProphetX +138 (and book-68 +138) on under 3.5 K vs consensus +114 - 24 cents over consensus, and +2.0pp above de-vigged fair",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "status": "usable",
+        "source": "BettingPros /offers event 99302 market 285 (strikeouts), opening 3.5 both sides",
+        "freshness": "2026-07-28 morning MST, pre-game (first pitch 3:40 PM AZ)",
+        "observed": "Under 3.5 cross-book: ProphetX +138 and book-68 +138 (best), Novig +135, Underdog +129, BetMGM/Hard Rock/book-27 +125, Caesars +121, Fanatics +120, DraftKings +118, FanDuel/Consensus +114, book-39 +105. PrizePicks/Betr hang the alt at 4, BetRivers/book-15 at 4.5"
+      },
+      {
+        "category": "clv_check",
+        "status": "usable",
+        "source": "De-vig of BettingPros consensus 3.5 two-way (over -146 / under +114, hold 106.1%)",
+        "freshness": "2026-07-28 same-day pull",
+        "observed": "Fair under 3.5 = 44.05% (approx +127); entry +138 = 42.02% implied -> +2.03pp positive CLV. Two independent books at +138 (exchange ProphetX and retail book-68), so not purely an exchange-structure artifact"
+      },
+      {
+        "category": "benchmark",
+        "status": "usable",
+        "source": "BettingPros /offers Pinnacle (book_id 2) availability check",
+        "freshness": "2026-07-28 same-day pull",
+        "observed": "Pinnacle absent from /offers (5th consecutive session) - CLV benchmarked against de-vigged full-book consensus"
+      },
+      {
+        "category": "confirmation",
+        "status": "usable",
+        "source": "BettingPros /events MLB 2026-07-28",
+        "freshness": "2026-07-28 same-day pull",
+        "observed": "event 99302 ARI @ PIT scheduled 2026-07-28 22:40:00 UTC; probable SP visitor Brandon Pfaadt, home Bubba Chandler. Counter-signal noted: BettingPros projection recommends over (4.48 K) and season K-overs 6-2 - V2 rubric applies no trend-conflict penalty (documented V1/V2 divergence test, cf. Bieber 7/4, Nola 7/16, Gilbert 7/19)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 3.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
