@@ -3714,5 +3714,137 @@
     "line_num": 3.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260801-mlb-v1-esmerl-prop",
+    "date": "2026-08-01",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Esmerlyn Valdez (PIT) Under 0.5 Home Runs vs CIN",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-300 @ Novig",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Cross-book price gap: Novig -300 vs BettingPros consensus -450 at the same 0.5 HR line; de-vigged consensus fair = 76.6% vs -300 implied 75.0% (+2.2% EV). Season under 29-13, last-10 under 9-1, model recommends under.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /props MLB (market 299 home-runs, event 99263)",
+        "status": "usable",
+        "freshness": "2026-08-01 fetched live pre-game",
+        "detail": "Novig -300 vs consensus -450 at 0.5; de-vig two-way vig 6.8%"
+      },
+      {
+        "category": "prop_trend_data",
+        "source": "BettingPros prop performance splits",
+        "status": "usable",
+        "freshness": "2026-08-01 season-to-date",
+        "detail": "season under 29-13, last-10 under 9-1, projection recommends under"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:40 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260801-mlb-v1-tyler-prop",
+    "date": "2026-08-01",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Tyler Mahle (SF) Under 3.5 Strikeouts @ SD",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+144 @ Novig",
+    "units": 1,
+    "score": 6.8,
+    "primary_edge": "Cross-book price gap: Novig +144 vs consensus +119 at the same 3.5 K line; de-vigged consensus fair for the under = 43.1% vs +144 implied 41.0% (+5.1% EV). Best price of any book surfaced.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /props MLB (market 285 strikeouts, event 98281)",
+        "status": "usable",
+        "freshness": "2026-08-01 fetched live pre-game",
+        "detail": "Novig +144 vs consensus +119 at 3.5; de-vig two-way vig 6.0%"
+      },
+      {
+        "category": "lineup_data",
+        "source": "BettingPros /events MLB 2026-08-01",
+        "status": "usable",
+        "freshness": "2026-08-01 probable pitchers",
+        "detail": "Mahle confirmed probable SP for SF @ SD"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:40 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 3.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260801-mlb-v1-parker-prop",
+    "date": "2026-08-01",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Parker Messick (CLE) Under 4.5 Strikeouts vs ARI",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+134 @ FanDuel",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "Cross-book price gap: FanDuel +134 vs consensus +112 at the same 4.5 K line; de-vigged consensus fair for the under = 44.2% vs +134 implied 42.7% (+3.3% EV). Major-book price, not an exchange.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /props MLB (market 285 strikeouts, event 99213)",
+        "status": "usable",
+        "freshness": "2026-08-01 fetched live pre-game",
+        "detail": "FanDuel +134 vs consensus +112 at 4.5; de-vig two-way vig 6.8%"
+      },
+      {
+        "category": "lineup_data",
+        "source": "BettingPros /events MLB 2026-08-01",
+        "status": "usable",
+        "freshness": "2026-08-01 probable pitchers",
+        "detail": "Messick confirmed probable SP for CLE vs ARI"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:15 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 4.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
