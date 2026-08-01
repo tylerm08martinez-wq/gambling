@@ -3846,5 +3846,93 @@
     "line_num": 4.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260801-mlb-v2-kansas-total",
+    "date": "2026-08-01",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Kansas City Royals @ Colorado Rockies Under 12 (game total)",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-115 @ Caesars",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Mega steam with a stale opener: total opened 12 and 14 of 18 books moved down to 11.5 (money on the under), while FanDuel (12/-118), Caesars (12/-115) and bet365 (12/-115) still hang the opening 12. Anti-chase entry \u2014 a half run better than the steamed market. No public catalyst; both starters (Feltner/Lorenzen) confirmed.",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers MLB market 175 (total), event 98381",
+        "status": "usable",
+        "freshness": "2026-08-01 fetched live pre-game",
+        "detail": "opening_line 12; 14/18 books currently 11.5; FanDuel/Caesars/bet365 still at 12"
+      },
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /offers per-book snapshot",
+        "status": "usable",
+        "freshness": "2026-08-01 fetched live pre-game",
+        "detail": "best stale under: Caesars 12 @ -115 (bet365 -115, FanDuel -118); consensus 11.5 @ -107. Pinnacle absent from feed \u2014 CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 12.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260801-mlb-v2-jac-prop",
+    "date": "2026-08-01",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Jac Caglianone (KC) Under 1.5 Total Bases @ COL",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+120 @ Novig",
+    "units": 1,
+    "score": 8.65,
+    "primary_edge": "Cross-book prop gap: extractor flags a 0.5-unit gap (books split 1.5/2.5) and Novig is stale in price at +120 vs consensus +105 on the same 1.5 line. De-vigged consensus fair for the under = 46.8% vs +120 implied 45.5% = +2.9% EV. Season 63 unders / 39 overs, last-10 7-3 under.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /props MLB (market 293 total-bases, event 98381)",
+        "status": "usable",
+        "freshness": "2026-08-01 fetched live pre-game",
+        "detail": "Novig +120 vs consensus +105 at 1.5; de-vig two-way vig 4.3%; extractor gap 0.5"
+      },
+      {
+        "category": "prop_trend_data",
+        "source": "BettingPros prop performance splits",
+        "status": "usable",
+        "freshness": "2026-08-01 season-to-date",
+        "detail": "season under 63-39, last-10 under 7-3"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 1.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
