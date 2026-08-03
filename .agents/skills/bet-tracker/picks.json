@@ -3934,5 +3934,131 @@
     "line_num": 1.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260803-mlb-v1-jackso-prop",
+    "date": "2026-08-03",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Jackson Merrill (SD) Over 1.5 Total Bases @ ARI (Pfaadt)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+127 @ Kalshi",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book price gap: Kalshi +127 vs 12-book median-devig fair 45.6% (+3.5% EV); BettingPros projection 1.67 TB recommends over; LHB vs RHP Pfaadt at Chase Field, 2-game over streak",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /offers event 99778 market 293 (12 non-DFS books)",
+        "status": "usable",
+        "freshness": "2026-08-03T09:30 MST"
+      },
+      {
+        "category": "projection",
+        "source": "BettingPros /props MLB projection value 1.67 rec=over",
+        "status": "usable",
+        "freshness": "2026-08-03T09:30 MST"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:40 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 1.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260803-mlb-v1-yordan-prop",
+    "date": "2026-08-03",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Yordan Alvarez (HOU) Over 1.5 Total Bases vs TOR (Bieber)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+104 @ Kalshi",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Cross-book price gap: Kalshi +104 vs 12-book median-devig fair 50.3% (+2.6% EV); BettingPros projection 2.8 TB (1.3 above line) recommends over; LHB vs RHP Bieber, 3-game over streak",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /offers event 100253 market 293 (12 non-DFS books)",
+        "status": "usable",
+        "freshness": "2026-08-03T09:30 MST"
+      },
+      {
+        "category": "projection",
+        "source": "BettingPros /props MLB projection value 2.8 rec=over",
+        "status": "usable",
+        "freshness": "2026-08-03T09:30 MST"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 1.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260803-mlb-v1-lamont-prop",
+    "date": "2026-08-03",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "LaMonte Wade Jr. (HOU) Over 0.5 Total Bases vs TOR (Bieber)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+115 @ Fanatics",
+    "units": 1,
+    "score": 7.4,
+    "primary_edge": "Cross-book price gap: Fanatics +115 vs 7-book median-devig fair 49.0% (+5.3% EV, largest verified on board); BettingPros projection 1.03 TB recommends over; LHB vs RHP Bieber, 3-game over streak. Risk: part-time role, lineup unconfirmed",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /offers event 100253 market 293 (7 non-DFS books)",
+        "status": "usable",
+        "freshness": "2026-08-03T09:30 MST"
+      },
+      {
+        "category": "projection",
+        "source": "BettingPros /props MLB projection value 1.03 rec=over",
+        "status": "usable",
+        "freshness": "2026-08-03T09:30 MST"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
