@@ -4060,5 +4060,83 @@
     "line_num": 0.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260803-mlb-v2-lad-total",
+    "date": "2026-08-03",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "LAD @ CHC Under 8.5 (game total)",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-120 @ Hard Rock",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Mega steam: 15 of 17 books moved off the 8.5 opener (9 to 8, 6 to 7.5); Hard Rock and theScore Bet still hanging 8.5. Catalyst is wind blowing in from left-center at Wrigley \u2014 the stale books have not priced it yet, so the 8.5 rung is the anti-chase entry. CLV unverified (Pinnacle absent from /offers, 5th consecutive session)",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers event 98344 market 175 \u2014 opening_line 8.5, 15/17 non-DFS books currently below opener",
+        "status": "usable",
+        "freshness": "2026-08-03T09:40 MST"
+      },
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /offers \u2014 Hard Rock U8.5 -120, theScore Bet U8.5 -125 vs field at 8/7.5",
+        "status": "usable",
+        "freshness": "2026-08-03T09:40 MST"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:05 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260803-mlb-v2-junior-prop",
+    "date": "2026-08-03",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Junior Caminero (TB) Over 2.5 Total Bases @ COL (Lorenzen)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+140 @ theScore Bet",
+    "units": 1,
+    "score": 8.3,
+    "primary_edge": "Cross-book price gap: theScore Bet +140 vs DraftKings +122 / Caesars +117 / FanDuel +115; 9-book median de-vig fair 43.7% = +4.8% EV. Coors Field, power bat vs RHP Lorenzen. CLV unverified (Pinnacle absent from /offers)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /offers event 99084 market 293 \u2014 2.5 rung, 9 non-DFS books, theScore Bet +140 outlier vs field +115/+122",
+        "status": "usable",
+        "freshness": "2026-08-03T09:40 MST"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:40 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 2.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
