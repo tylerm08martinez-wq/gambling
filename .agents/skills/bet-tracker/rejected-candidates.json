@@ -408,5 +408,52 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260813-mlb-v2-ranger-total",
+    "date": "2026-08-13",
+    "checked_at": "2026-08-13T09:06:28",
+    "run_type": "scheduled",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Rangers @ Angels Under 8 (full game total)",
+    "line": "-125 @ ProphetX",
+    "units": 1,
+    "score": 8.2,
+    "primary_edge": "Mega steam: 17 of 18 books moved the total off the 8 opener down to 7.5 (sharp money on the Under); ProphetX still stale at the opening 8, so entry is the pre-move number, not a chase",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event_id=99862 market_id=175",
+        "observed_at": "2026-08-13T09:00:00-07:00",
+        "opening_line": 8,
+        "current_consensus_line": 7.5,
+        "books_moved_off_opening": 17,
+        "books_total": 18,
+        "stale_book": "ProphetX",
+        "stale_line": 8,
+        "stale_odds": -125,
+        "consensus_current": {
+          "over_7.5": -105,
+          "under_7.5": -115
+        }
+      },
+      {
+        "source": "de-vig calc",
+        "fair_under_8_nonpush": 0.5772,
+        "entry_implied": 0.5556,
+        "edge_pct": 2.16,
+        "p_total_equals_8_assumed": 0.115
+      },
+      {
+        "source": "WebSearch catalyst check",
+        "note": "Angel Stadium 75F, 8mph wind blowing OUT (over-favorable) yet total moved DOWN; no pitching change (Quantrill vs Klassen as scheduled) - no public catalyst explains the move"
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]
