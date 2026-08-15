@@ -4203,5 +4203,93 @@
     "line_num": -125.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260815-mlb-v2-white-total",
+    "date": "2026-08-15",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "White Sox @ Tigers Under 8 (game total)",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-105 @ ProphetX",
+    "units": 1,
+    "score": 9.4,
+    "primary_edge": "Mega steam: 13 books moved the total off the 8 opener down to 7.5 (consensus 7.5); ProphetX stale at the pre-move 8 with the best juice",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "status": "usable",
+        "source": "BettingPros /offers event_id=98404 market_id=175",
+        "freshness": "2026-08-15T09:49:00-07:00",
+        "observed": "opening_line 8.0; 13 books now 7.5 (DK -102, FD +100, MGM -105, Caesars -105, bet365 +100, theScore +100, HardRock +105, Novig +108, book-74/68/75/39/27); 4 stale at 8 (ProphetX -105, Fanatics -115, BetRivers -117, book-15 -117); consensus 7.5 @ -105"
+      },
+      {
+        "category": "catalyst_check",
+        "status": "usable",
+        "source": "web search: Comerica Park weather + probables/lineup news",
+        "freshness": "2026-08-15T09:47:00-07:00",
+        "observed": "81F overcast, SE wind 5-10mph; probables Anthony Kay (CWS) vs Troy Melton (DET) unchanged; no same-day scratch or lineup news explaining the down move"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:10 AM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260815-mlb-v2-marlin-total",
+    "date": "2026-08-15",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Marlins @ Reds Under 9.5 (game total)",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-115 @ Hard Rock",
+    "units": 1,
+    "score": 8.4,
+    "primary_edge": "Mega steam: 8 books moved the total off the 9.5 opener down to 9 (consensus 9); Hard Rock stale at the pre-move 9.5, and the move ran against the wind-out-to-RF over narrative",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "status": "usable",
+        "source": "BettingPros /offers event_id=99400 market_id=175",
+        "freshness": "2026-08-15T09:52:00-07:00",
+        "observed": "opening_line 9.5; 8 books moved to 9 (DK +101, Caesars +100, MGM +100, BetRivers +100, bet365 +100, ProphetX +109, book-15/27); 9 stale at 9.5 (HardRock -115, book-75 -113, Novig -117, book-74/68 -117, theScore -120, Fanatics -120, FD -124, book-39 -125); consensus moved to 9 @ +100"
+      },
+      {
+        "category": "catalyst_check",
+        "status": "usable",
+        "source": "web search: Great American Ball Park weather + probables",
+        "freshness": "2026-08-15T09:47:00-07:00",
+        "observed": "87F, 0% precip, 5mph wind blowing out to RF (a mild OVER factor the line moved against); probables Ryan Gusto (MIA) vs Brady Singer (CIN) unchanged; no scratch or lineup catalyst for the down move"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:40 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 9.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]

@@ -455,5 +455,36 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260815-mlb-v2-white-total",
+    "date": "2026-08-15",
+    "checked_at": "2026-08-15T09:50:26",
+    "run_type": "scheduled",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "White Sox @ Tigers Under 8 (game total)",
+    "line": "-105 @ ProphetX",
+    "units": 1,
+    "score": 9.4,
+    "primary_edge": "Mega steam: 13 books moved the total off the 8 opener down to 7.5 (consensus 7.5); ProphetX stale at the pre-move 8 with the best juice",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event 98404 market 175",
+        "observed": "opening_line 8.0; 13 books currently at 7.5 (DK -102, FD +100, MGM -105, Caesars -105, bet365 +100, theScore +100, HardRock +105, Novig +108, book-74/68/75/39/27); 4 books stale at 8 (ProphetX -105, Fanatics -115, BetRivers -117, book-15 -117); consensus 7.5 @ -105",
+        "retrieved": "2026-08-15T09:49-07:00"
+      },
+      {
+        "source": "Weather/lineup catalyst check (web)",
+        "observed": "Comerica Park 81F overcast, SE wind 5-10mph; probables Anthony Kay (CWS) vs Troy Melton (DET) unchanged; no same-day scratch or lineup news explaining the down move",
+        "retrieved": "2026-08-15T09:47-07:00"
+      }
+    ],
+    "rejection_reason": "scheduled run missing usable source evidence with source and freshness",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled run missing usable source evidence with source and freshness"
+    ]
   }
 ]
