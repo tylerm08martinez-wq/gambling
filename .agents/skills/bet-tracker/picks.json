@@ -4291,5 +4291,49 @@
     "line_num": 9.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260816-mlb-v2-red-total",
+    "date": "2026-08-16",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Red Sox @ Pirates Under 8.5 Runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-113 @ Novig",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Mega steam: 10 of 16 books moved the total 8.5 -> 8/7.5; Novig, Hard Rock, bet365, theScore still hanging the 8.5 opener \u2014 anti-chase entry a half-run better than the moved market",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers event 98094 market 175 (totals)",
+        "status": "usable",
+        "freshness": "fetched 2026-08-16 10:20 AZ, pre-game",
+        "detail": "opening_line 8.5; consensus now 8 @ -107; 10/16 books moved down (FanDuel/DraftKings/Caesars/BetMGM/Fanatics/BetRivers to 8, ProphetX to 7.5); Novig -113, Hard Rock -115, bet365 -120, theScore -125 still at 8.5"
+      },
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /offers cross-book snapshot, 16 books",
+        "status": "usable",
+        "freshness": "fetched 2026-08-16 10:20 AZ",
+        "detail": "best stale price Novig U8.5 -113; de-vig fair U8.5 = 54.4% vs entry 53.1% = +1.31pp CLV. Pinnacle absent from feed (recurring) so consensus de-vig used as benchmark"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:35 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
