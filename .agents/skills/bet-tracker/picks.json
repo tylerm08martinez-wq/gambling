@@ -4335,5 +4335,137 @@
     "line_num": 8.5,
     "prop_result": "11 total runs",
     "prop_margin": null
+  },
+  {
+    "id": "20260822-mlb-v2-cardin-total",
+    "date": "2026-08-22",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Cardinals @ Phillies Under 9",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-106 @ ProphetX",
+    "units": 1,
+    "score": 9.35,
+    "primary_edge": "Steam: total opened 9, 7 of 15 books moved down to 8.5 (theScore, Novig, BetRivers, bk15/39/68/75) while 8 retail books still hang 9 \u2014 taking the stale higher number, not chasing the move",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers event 98331 market 175",
+        "status": "usable",
+        "freshness": "2026-08-22 live pull, opening_line created 2026-08-21 18:30 UTC",
+        "detail": "OPEN 9 -110; moved to 8.5: theScore/Novig/BetRivers/bk15/bk39/bk68/bk75; still 9: FanDuel -122, DraftKings -114, Caesars -115, BetMGM -115, Fanatics -115, ProphetX -106, bk27 -115, bet365 -115"
+      },
+      {
+        "category": "event_data",
+        "source": "BettingPros /events MLB 2026-08-22",
+        "status": "usable",
+        "freshness": "2026-08-22 live pull",
+        "detail": "STL@PHI scheduled 2026-08-22 22:05 UTC; P: Quinn Mathews vs Andrew Painter"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:05 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 9.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260822-mlb-v2-rays-total",
+    "date": "2026-08-22",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Rays @ Orioles Under 8",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-105 @ ProphetX",
+    "units": 1,
+    "score": 9.35,
+    "primary_edge": "Steam: total opened 8, 7 of 15 books moved down to 7.5 (theScore, Novig, BetRivers, bk15/39/68/75) while 8 retail books still hang 8 \u2014 entering at the stale higher number",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers event 99040 market 175",
+        "status": "usable",
+        "freshness": "2026-08-22 live pull, opening_line created 2026-08-21 18:30 UTC",
+        "detail": "OPEN 8 -105; moved to 7.5: theScore/Novig/BetRivers/bk15/bk39/bk68/bk75; still 8: FanDuel -114, DraftKings -114, Caesars -120, BetMGM -115, Fanatics -115, ProphetX -105, bk27 -115, bet365 -115"
+      },
+      {
+        "category": "event_data",
+        "source": "BettingPros /events MLB 2026-08-22",
+        "status": "usable",
+        "freshness": "2026-08-22 live pull",
+        "detail": "TB@BAL scheduled 2026-08-22 23:05 UTC; P: Shane McClanahan vs Brandon Young"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:05 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260822-mlb-v2-angels-total",
+    "date": "2026-08-22",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Angels @ Rangers Over 8",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-110 @ BetRivers",
+    "units": 1,
+    "score": 9.35,
+    "primary_edge": "Steam: total opened 8, 6 of 15 books moved up to 8.5 (theScore, ProphetX, Novig, bk39/68/75) while retail still hangs 8 \u2014 taking the stale lower number on the over",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers event 98746 market 175",
+        "status": "usable",
+        "freshness": "2026-08-22 live pull, opening_line created 2026-08-21 18:30 UTC",
+        "detail": "OPEN 8 -115; moved to 8.5: theScore/ProphetX/Novig/bk39/bk68/bk75; still 8: FanDuel -115, DraftKings -114, BetMGM -115, Caesars -115, Fanatics -115, BetRivers -110, bk15 -110, bk27 -115, bet365 -115"
+      },
+      {
+        "category": "event_data",
+        "source": "BettingPros /events MLB 2026-08-22",
+        "status": "usable",
+        "freshness": "2026-08-22 live pull",
+        "detail": "LAA@TEX scheduled 2026-08-22 23:05 UTC; P: Ryan Johnson vs Cody Bradford"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:05 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
