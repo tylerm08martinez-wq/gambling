@@ -87,7 +87,13 @@ if ! python3 "$PROJECT_DIR/.agents/skills/bet-tracker/bettingpros.py" props MLB 
   exit 1
 fi
 
-git pull --rebase origin main 2>&1 | tee -a "$LOG"
+# --autostash is load-bearing, not defensive: capture-closes.sh deliberately
+# leaves closing_lines.json uncommitted (see its header), and the CLV backfill
+# below dirties picks.json. This pull therefore ALWAYS runs against a dirty
+# tree by design. Without --autostash it aborts with "cannot pull with rebase:
+# You have unstaged changes" and takes the whole run with it - which is exactly
+# what happened every day from 2026-07-27 to 2026-08-21.
+git pull --rebase --autostash origin main 2>&1 | tee -a "$LOG"
 
 # Backfill realized CLV on YESTERDAY's now-settled player props from the BettingPros
 # consensus close. This MUST run here (residential IP) — BettingPros 403s the datacenter,
