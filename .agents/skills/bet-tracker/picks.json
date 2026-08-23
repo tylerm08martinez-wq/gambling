@@ -4467,5 +4467,53 @@
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260823-mlb-v2-carlos-prop",
+    "date": "2026-08-23",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Carlos Rodon (NYY) Under 4.5 strikeouts vs TOR",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+112 @ Underdog",
+    "units": 1,
+    "score": 9.7,
+    "primary_edge": "Cross-book prop gap 1.0: market moved 5.5 -> 4.5 at 13 books, BetMGM/book-27 stale at 5.5; best under-4.5 price +112 (Underdog) vs consensus -110. De-vig consensus fair under = 49.0%, entry implied 47.2% = +3.9% EV. Projection 4.31 K agrees with the under side (trend_confirmed).",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers event 98563 market 285 (strikeouts) \u2014 opening_line 5.5, 13 books currently 4.5, BetMGM/book-27 stale at 5.5",
+        "status": "usable",
+        "freshness": "2026-08-23 live pull, pregame"
+      },
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /offers cross-book under 4.5: Underdog +112, BetRivers +110, book-15 +110, ProphetX +102, Novig +102, consensus -110",
+        "status": "usable",
+        "freshness": "2026-08-23 live pull, pregame"
+      },
+      {
+        "category": "projection_data",
+        "source": "BettingPros /props projection: 4.31 K, recommended_side=under, diff -0.19",
+        "status": "usable",
+        "freshness": "2026-08-23 live pull, pregame"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:35 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 4.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
