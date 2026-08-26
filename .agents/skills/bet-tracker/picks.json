@@ -4515,5 +4515,93 @@
     "line_num": 4.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260826-mlb-v1-jake-prop",
+    "date": "2026-08-26",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Jake Rogers (CWS) Under 0.5 Total Bases vs TEX",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-118 @ Betr",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Cross-book prop gap: best available total-bases line sits at 1.5 vs 0.5 consensus (1.0-unit gap) -> under is the stale side; Betr -118 beats -125 consensus; BettingPros projection 0.41 TB, season 17-33 to the under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_prop_odds",
+        "source": "BettingPros /props MLB (market 293, event 99276)",
+        "freshness": "2026-08-26 pregame snapshot",
+        "status": "usable",
+        "detail": "best over line 1.5 @ book-60 vs consensus 0.5; best under 0.5 -118 @ Betr vs consensus -125"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros projection",
+        "freshness": "2026-08-26",
+        "status": "usable",
+        "detail": "recommended_side=under, value 0.41, diff -0.09; season 17-33 under, L10 4-6 under"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260826-mlb-v1-sean-prop",
+    "date": "2026-08-26",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Sean Burke (CWS) Under 5.5 Strikeouts vs TEX",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+127 @ book-68",
+    "units": 1,
+    "score": 7.2,
+    "primary_edge": "Cross-book prop gap: best available strikeout line hung at 6.5 vs 5.5 consensus (1.0-unit gap) -> under is the stale side; +127 vs +112 consensus is a ~3pt price edge on plus money; BettingPros projects 5.29 K",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_prop_odds",
+        "source": "BettingPros /props MLB (market 285, event 99276)",
+        "freshness": "2026-08-26 pregame snapshot",
+        "status": "usable",
+        "detail": "best over 6.5 +135 @ theScore vs consensus 5.5 -150; best under 5.5 +127 @ book-68 vs consensus +112"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros projection",
+        "freshness": "2026-08-26",
+        "status": "usable",
+        "detail": "recommended_side=under, value 5.29, diff -0.21; season split 11-11, L10 6-4 over (counter-signal)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 5.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
