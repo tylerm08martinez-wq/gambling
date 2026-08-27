@@ -4714,5 +4714,93 @@
     "line_num": 4.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260827-mlb-v2-kc-total",
+    "date": "2026-08-27",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "KC @ TOR Under 8.5 runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-110 @ Hard Rock",
+    "units": 1,
+    "score": 9.35,
+    "primary_edge": "Mega steam: total opened 8.5 and moved DOWN at 5 books (DK 8, Caesars 8, BetMGM 8, ProphetX 7.5, book-27 8) with zero books moving up; Hard Rock still stale at the opening 8.5 @ -110, so entry is the pre-steam number, not a chase",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers event 98545 market 175 (Total Runs)",
+        "status": "usable",
+        "freshness": "2026-08-27 fetched live",
+        "detail": "opening_line 8.5; 5 books moved down (DraftKings 8, Caesars 8, BetMGM 8, ProphetX 7.5, book-27 8), 0 books moved up; stale at 8.5: Hard Rock -110, Novig -113, book-75 -111, BetRivers -115"
+      },
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /offers 17-book snapshot",
+        "status": "usable",
+        "freshness": "2026-08-27 fetched live",
+        "detail": "best stale under 8.5 price Hard Rock -110; Pinnacle (book_id 2) absent from feed so CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:07 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260827-mlb-v2-hou-total",
+    "date": "2026-08-27",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "HOU @ NYY Over 8 runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-108 @ BetRivers",
+    "units": 1,
+    "score": 9.35,
+    "primary_edge": "Mega steam: total opened 8 and moved UP to 8.5 at 7 books (theScore, Hard Rock, Novig, book-68, book-39, book-75, bet365) with zero books moving down; BetRivers still stale at the opening 8 @ -108, capturing the half-run before the move",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers event 99901 market 175 (Total Runs)",
+        "status": "usable",
+        "freshness": "2026-08-27 fetched live",
+        "detail": "opening_line 8; 7 books moved up to 8.5 (theScore, Hard Rock, Novig, book-68, book-39, book-75, bet365), 0 books moved down; stale at 8: BetRivers -108, book-15 -108, ProphetX -109, FanDuel -115"
+      },
+      {
+        "category": "cross_book_odds",
+        "source": "BettingPros /offers 17-book snapshot",
+        "status": "usable",
+        "freshness": "2026-08-27 fetched live",
+        "detail": "best stale over 8 price BetRivers -108; Pinnacle (book_id 2) absent from feed so CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:05 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
