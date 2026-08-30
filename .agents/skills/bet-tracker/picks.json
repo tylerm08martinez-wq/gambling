@@ -4802,5 +4802,61 @@
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260830-mlb-v1-tyler-prop",
+    "date": "2026-08-30",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Tyler Glasnow (LAD) Over 16.5 Outs Recorded vs DET",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-118 @ BetMGM",
+    "units": 1,
+    "score": 7.4,
+    "primary_edge": "Cross-book gap: BetMGM posts Over 16.5 outs at -118 while the market ladder's best over is 17.5 @ -125 \u2014 a full point better line at a cheaper price; BP projection 17.22 outs (+0.72 vs line)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props (MLB 2026-08-30)",
+        "status": "usable",
+        "freshness": "fetched 2026-08-30T16:05:29Z (live, ~1.5h pregame)",
+        "market_id": 405,
+        "event_id": 98229,
+        "player": "Tyler Glasnow",
+        "side": "over",
+        "bet_line": 16.5,
+        "bet_book": "BetMGM",
+        "bet_odds": -118,
+        "consensus_line": 17,
+        "consensus_odds": -118,
+        "projection": 17.22,
+        "projection_diff": 0.72,
+        "perf_last10": "o5-u3",
+        "perf_season": "o5-u2"
+      },
+      {
+        "source": "BettingPros /offers ladder (event 98229, market 405 outs-recorded)",
+        "status": "usable",
+        "freshness": "fetched 2026-08-30T16:05:29Z (live)",
+        "market_best_over": "17.5 @ -125",
+        "market_best_under": "17.0 @ -140",
+        "note": "BetMGM Over 16.5 @ -118 is a full point better and 7c cheaper than the ladder's best over"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:40 AM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
