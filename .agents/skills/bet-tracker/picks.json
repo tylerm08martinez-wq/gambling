@@ -4858,5 +4858,143 @@
     "line_num": 16.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260830-mlb-v2-bal-total",
+    "date": "2026-08-30",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "BAL @ ATH Under 10.5 total runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-110 @ Hard Rock",
+    "units": 1,
+    "score": 9.35,
+    "primary_edge": "Mega steam DOWN: total opened 10.5, 9 of 17 books moved off the open (8 to 10.0, ProphetX to 9.5), zero moved up. Hard Rock still hangs the stale 10.5 under at -110 \u2014 a half point better than the moved market for ~5c. No weather or lineup catalyst.",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers (event 99474, market 175 game total)",
+        "status": "usable",
+        "freshness": "fetched 2026-08-30T16:10:03Z (live, ~4h pregame)",
+        "opening_line": 10.5,
+        "books_moved_down": "8 of 17 to 10.0, ProphetX to 9.5 \u2014 9 books off open, none up",
+        "stale_books": "Hard Rock U10.5 -110, Novig -111, bk75 -111, BetRivers -112, bk68 -113, theScore -120, bk39 -120",
+        "market_now": "U10.0 -105 at FanDuel/DK/BetMGM/Fanatics/bet365/Caesars",
+        "pinnacle": "absent from offers feed \u2014 CLV unverified"
+      },
+      {
+        "source": "Rotowire/Covers MLB weather 2026-08-30 (Sutter Health Park)",
+        "status": "usable",
+        "freshness": "checked 2026-08-30T16:10:03Z",
+        "note": "81F, 0% precip, SSW wind 3mph \u2014 no weather catalyst explains the downward move"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:05 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 10.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260830-mlb-v2-sea-total",
+    "date": "2026-08-30",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "SEA @ TOR Under 8.5 total runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-130 @ ProphetX",
+    "units": 1,
+    "score": 8.15,
+    "primary_edge": "Mega steam DOWN: total opened 8.5 and 16 of 17 books moved off it (9 all the way to 7.5), none up. ProphetX is the lone stale book still posting 8.5 \u2014 a full point better than the 7.5 books, half a point better than the 8.0 consensus.",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers (event 98187, market 175 game total)",
+        "status": "usable",
+        "freshness": "fetched 2026-08-30T16:10:03Z (live, ~1.5h pregame)",
+        "opening_line": 8.5,
+        "books_moved_down": "16 of 17 \u2014 9 books to 7.5, 7 books to 8.0; only ProphetX still at 8.5",
+        "stale_books": "ProphetX U8.5 -130",
+        "market_now": "U8.0 -107 consensus; U7.5 +105 at theScore/Hard Rock",
+        "pinnacle": "absent from offers feed \u2014 CLV unverified"
+      },
+      {
+        "source": "MLB weather check 2026-08-30 (Rogers Centre, retractable roof)",
+        "status": "usable",
+        "freshness": "checked 2026-08-30T16:10:03Z",
+        "note": "no weather or lineup catalyst surfaced for the full-point downward move"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:37 AM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260830-mlb-v2-sd-total",
+    "date": "2026-08-30",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "SD @ TB Under 7.5 total runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-122 @ Novig",
+    "units": 1,
+    "score": 8.15,
+    "primary_edge": "Mega steam DOWN: total opened 7.5, 10 of 17 books moved to 7.0 with none moving up. Novig still hangs the stale 7.5 under at -122 \u2014 half a point better than the moved market for 17c, in a dome where no weather catalyst exists.",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers (event 98357, market 175 game total)",
+        "status": "usable",
+        "freshness": "fetched 2026-08-30T16:10:03Z (live, ~1.5h pregame)",
+        "opening_line": 7.5,
+        "books_moved_down": "10 of 17 to 7.0, zero moved up",
+        "stale_books": "Novig U7.5 -122, bk75 -125, ProphetX -127, bk68 -127, Hard Rock -130, theScore -135, bk39 -145",
+        "market_now": "U7.0 -105 at FanDuel/DK/Caesars/Fanatics",
+        "pinnacle": "absent from offers feed \u2014 CLV unverified"
+      },
+      {
+        "source": "MLB weather check 2026-08-30 (Tropicana Field)",
+        "status": "usable",
+        "freshness": "checked 2026-08-30T16:10:03Z",
+        "note": "dome \u2014 weather cannot explain the move, so the down-steam is money not news"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:40 AM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 7.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
