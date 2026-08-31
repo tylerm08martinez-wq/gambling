@@ -5084,5 +5084,158 @@
     "line_num": 16.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260831-mlb-v2-seattl-total",
+    "date": "2026-08-31",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Seattle Mariners @ Boston Red Sox Under 8",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-115 @ Caesars",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Mega steam on the under: total opened 8 and 11 of 18 books have moved to 7.5, with no injury/lineup catalyst. Caesars/BetRivers/BetMGM/ProphetX still hang the opener at 8 \u2014 entry is a half-run better than the steamed market, not a chase",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event 99348-equivalent SEA@BOS market 175 (total runs)",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "opening_line 8; 11/18 books now 7.5 (FD 7.5-122/+100, DK 7.5, bet365 7.5, consensus 7.5); stale at 8: Caesars U8 -115, BetRivers U8 -115, ProphetX U8 -117, BetMGM U8 -130"
+      },
+      {
+        "source": "BettingPros /events MLB 2026-08-31",
+        "category": "schedule",
+        "status": "usable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "SEA@BOS scheduled 2026-08-31 22:45 UTC; SP George Kirby vs Payton Tolle"
+      },
+      {
+        "source": "BettingPros /offers Pinnacle check",
+        "category": "clv_benchmark",
+        "status": "unavailable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "book_id 2 absent from offers feed \u2014 CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:45 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260831-mlb-v2-new-total",
+    "date": "2026-08-31",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "New York Yankees @ Los Angeles Angels Under 8.5",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-115 @ Hard Rock",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Mega steam on the under: total opened 8.5 and 8 of 16 books have moved to 8 (FanDuel/DK/Caesars/BetMGM/bet365 all 8), no public catalyst. Hard Rock still hangs 8.5 at -115 \u2014 a half run better than the steamed number for 10 cents",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers NYY@LAA market 175 (total runs)",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "opening_line 8.5; 8/16 books now 8 (consensus 8-110, FD 8, DK 8, bet365 8); stale at 8.5: Hard Rock U8.5 -115, book-75 -115, BetRivers -117, book-68 -117, Novig -120"
+      },
+      {
+        "source": "BettingPros /events MLB 2026-08-31",
+        "category": "schedule",
+        "status": "usable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "NYY@LAA scheduled 2026-09-01 01:38 UTC; SP Elmer Rodriguez vs Walbert Urena"
+      },
+      {
+        "source": "BettingPros /offers Pinnacle check",
+        "category": "clv_benchmark",
+        "status": "unavailable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "book_id 2 absent from offers feed \u2014 CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:38 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260831-mlb-v2-anthon-prop",
+    "date": "2026-08-31",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Anthony Kay (CWS) Under 4.5 Hits Allowed vs HOU",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+127 @ Novig",
+    "units": 1,
+    "score": 8.65,
+    "primary_edge": "Cross-book prop gap: Novig prices U4.5 hits allowed at +127 while consensus is +105 \u2014 4.7 pts of implied-prob value, the largest same-line price gap on today's board, with a 0.5-unit gap to the best over line",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB (market 404 hits allowed)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "Novig U4.5 +127 vs consensus U4.5 +105; gap 0.5 to best over line; projection 5.11 recommends over (model divergence noted, no trend bonus applied)"
+      },
+      {
+        "source": "BettingPros /events MLB 2026-08-31",
+        "category": "schedule",
+        "status": "usable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "event 99262 CWS@HOU scheduled 2026-09-01 00:10 UTC"
+      },
+      {
+        "source": "BettingPros /offers Pinnacle check",
+        "category": "clv_benchmark",
+        "status": "unavailable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "book_id 2 absent from prop grid \u2014 CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 4.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
