@@ -4996,5 +4996,93 @@
     "line_num": -122.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260831-mlb-v1-michae-prop",
+    "date": "2026-08-31",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Michael King (SD) Under 5.5 Strikeouts vs CIN",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+111 @ Novig",
+    "units": 1,
+    "score": 8.0,
+    "primary_edge": "Cross-book prop gap: Novig U5.5 K at +111 vs consensus -105 (3.8 pts of implied-prob value); best-line 5.5 sits 1.0 K below the 6.5 alt, model projection 5.45 confirms the under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB (market 285 strikeouts)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "Novig U5.5 +111 vs consensus U5.5 -105; over best 6.5 +106; projection 5.45 recommended_side=under"
+      },
+      {
+        "source": "BettingPros /events MLB 2026-08-31",
+        "category": "schedule",
+        "status": "usable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "event 98510 SD@CIN scheduled 2026-08-31 22:40 UTC"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 5.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260831-mlb-v1-peter-prop",
+    "date": "2026-08-31",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Peter Lambert (HOU) Under 16.5 Outs Recorded vs CWS",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+100 @ Novig",
+    "units": 1,
+    "score": 7.2,
+    "primary_edge": "Cross-book prop gap: Novig U16.5 outs at +100 vs consensus -110 (2.4 pts of implied value); BetMGM hangs the over at 17.5, a full out above consensus, and the model projects 16.23 outs \u2014 under side",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props MLB (market 405 outs recorded)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "Novig U16.5 +100 vs consensus U16.5 -110; BetMGM over 17.5 +100; projection 16.23 recommended_side=under"
+      },
+      {
+        "source": "BettingPros /events MLB 2026-08-31",
+        "category": "schedule",
+        "status": "usable",
+        "freshness": "2026-08-31 pregame pull",
+        "detail": "event 99262 CWS@HOU scheduled 2026-09-01 00:10 UTC"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
