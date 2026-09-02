@@ -5237,5 +5237,158 @@
     "line_num": 4.5,
     "prop_result": "6 H allowed",
     "prop_margin": null
+  },
+  {
+    "id": "20260902-mlb-v1-reid-prop",
+    "date": "2026-09-02",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Reid Detmers (LAA) Over 1.5 earned runs allowed vs NYY",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-149 @ DraftKings",
+    "units": 1,
+    "score": 8.6,
+    "primary_edge": "Cross-book gap: 8 books hold 1.5 while consensus sits at 2.0 and BetMGM/Fanatics/bk-27 post 2.5 \u2014 DK's 1.5 is the lowest bar available; BettingPros projects 2.45 ER (diff +0.95, rec over)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event=98101 market=290",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-09-02T16:04:30Z",
+        "detail": "DraftKings Over 1.5 -149 vs consensus line 2.0 @ +125; 12 books surveyed"
+      },
+      {
+        "source": "BettingPros /props projection",
+        "category": "model_projection",
+        "status": "usable",
+        "freshness": "2026-09-02T16:07:00Z",
+        "detail": "projection 2.45 ER, diff +0.95, recommended_side over"
+      },
+      {
+        "source": "BettingPros /events event=98101 probables",
+        "category": "lineup_confirmation",
+        "status": "usable",
+        "freshness": "2026-09-02T16:04:00Z",
+        "detail": "Reid Detmers confirmed LAA home probable starter"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:38 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 1.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260902-mlb-v1-brad-prop",
+    "date": "2026-09-02",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Brad Lord (WSH) Over 0.5 earned runs allowed vs ATL",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-179 @ Underdog",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Prop trend with market confirmation: BettingPros bet_rating 5, EV +37.9%, projects 2.16 ER vs a 0.5 line (diff +1.66); Underdog -179 is the best of 7 books vs consensus -185",
+    "primary_edge_type": "prop_trend",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props market=290 Brad Lord",
+        "category": "model_projection",
+        "status": "usable",
+        "freshness": "2026-09-02T16:07:00Z",
+        "detail": "bet_rating 5, expected_value 0.379, projection 2.16 ER, diff +1.66, recommended_side over"
+      },
+      {
+        "source": "BettingPros /offers event=99246 market=290",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-09-02T16:05:29Z",
+        "detail": "Underdog Over 0.5 -179 best price of 7 books; consensus -185"
+      },
+      {
+        "source": "BettingPros /events event=99246 probables",
+        "category": "lineup_confirmation",
+        "status": "usable",
+        "freshness": "2026-09-02T16:04:00Z",
+        "detail": "Brad Lord confirmed WSH home probable starter"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:05 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260902-mlb-v1-cam-prop",
+    "date": "2026-09-02",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Cam Schlittler (NYY) Under 7.5 strikeouts at LAA",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+115 @ BetMGM",
+    "units": 1,
+    "score": 6.6,
+    "primary_edge": "Prop trend with best-price confirmation: BettingPros projects 7.05 K vs a 7.5 line (rec under); BetMGM +115 tops consensus +110 across a clean 16-book market all holding 7.5",
+    "primary_edge_type": "prop_trend",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props market=285 Cam Schlittler",
+        "category": "model_projection",
+        "status": "usable",
+        "freshness": "2026-09-02T16:07:00Z",
+        "detail": "projection 7.05 K, diff -0.45, recommended_side under"
+      },
+      {
+        "source": "BettingPros /offers event=98101 market=285",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-09-02T16:06:55Z",
+        "detail": "BetMGM Under 7.5 +115 vs consensus +110; 16 books all at 7.5"
+      },
+      {
+        "source": "BettingPros /events event=98101 probables",
+        "category": "lineup_confirmation",
+        "status": "usable",
+        "freshness": "2026-09-02T16:04:00Z",
+        "detail": "Cam Schlittler confirmed NYY visiting probable starter"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:38 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 7.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
