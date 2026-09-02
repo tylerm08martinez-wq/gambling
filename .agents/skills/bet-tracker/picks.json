@@ -5390,5 +5390,56 @@
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260902-mlb-v2-athlet-total",
+    "date": "2026-09-02",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Athletics @ Rangers Under 8",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-120 @ Caesars",
+    "units": 1,
+    "score": 7.45,
+    "primary_edge": "Mega steam, anti-chase entry: 12 of 16 books moved the total 8 -> 7.5 with zero moving up; Caesars/bet365/BetMGM/bk-27 still hang the opening 8, so the under is available at the pre-steam number. Dome game (Globe Life Field) so no weather catalyst explains the move",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event=98574 market=175",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-09-02T16:09:22Z",
+        "detail": "opening 8; 12/16 books moved DOWN to 7.5, 0 moved UP, 4 stale at 8 (Caesars -120, bet365 -120, BetMGM -125, bk-27 -125)"
+      },
+      {
+        "source": "BettingPros /events event=98574",
+        "category": "matchup_context",
+        "status": "usable",
+        "freshness": "2026-09-02T16:04:00Z",
+        "detail": "ATH @ TEX 18:35 UTC; probables Jacob Lopez (ATH) / Cody Bradford (TEX); indoor venue, no weather catalyst"
+      },
+      {
+        "source": "BettingPros /offers Pinnacle check",
+        "category": "clv_benchmark",
+        "status": "unavailable",
+        "freshness": "2026-09-02T16:09:22Z",
+        "detail": "Pinnacle (book_id 2) absent from offers feed - CLV unverified, per recurring pattern since 2026-07-04"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:35 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
