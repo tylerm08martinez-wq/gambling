@@ -5441,5 +5441,151 @@
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260903-mlb-v2-tarik-prop",
+    "date": "2026-09-03",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Tarik Skubal (LAD) Under 7.5 Strikeouts vs St. Louis Cardinals",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+117 @ Kalshi",
+    "units": 1,
+    "score": 9.7,
+    "primary_edge": "Cross-book prop gap 1.0: consensus/BetMGM hold Under 7.5 at -105 while Kalshi offers +117 and Hard Rock/Fanatics/BetRivers/SugarHouse all offer +115; BettingPros projection 6.75 (diff -0.75) confirms the under side; season K-prop record 8 over / 13 under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_odds_data",
+        "source": "BettingPros /props API (market 285, event 97950)",
+        "status": "usable",
+        "freshness": "2026-09-03 09:05 AZ, same-day pre-game",
+        "detail": "extractor cross_book_gap gap=1.0, side=under, bet_line=7.5, bet_book=68 (Kalshi), trend_confirmed=true"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers API cross-book ladder (market 285, event 97950)",
+        "status": "usable",
+        "freshness": "2026-09-03 09:05 AZ, same-day pre-game",
+        "detail": "Under 7.5 ladder: Kalshi +117, HardRock/Fanatics/BetRivers/SugarHouse +115, Caesars +110, Novig/ProphetX +108, Fliff +100, BetMGM -105, consensus -105. Opening line 8.5; FanDuel/DK/theScore/Underdog still at 8.5."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "7:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 7.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260903-mlb-v2-athlet-total",
+    "date": "2026-09-03",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Athletics @ Seattle Mariners Under 7.5 Total Runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-117 @ Novig",
+    "units": 1,
+    "score": 8.05,
+    "primary_edge": "Mega steam on the under: total opened 7.5 and 11 of 16 books have moved down to 7, while 6 books still hang the stale 7.5 opener. Anti-chase entry takes the pre-steam number (Under 7.5) rather than the moved market price (Under 7 -105). No public catalyst: 56F, light winds, morning rain clears pre-game, retractable roof available; no injury or lineup news.",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers API (market 175 total, event 99298)",
+        "status": "usable",
+        "freshness": "2026-09-03 09:15 AZ, same-day pre-game",
+        "detail": "opening_line 7.5; moved to 7 at FanDuel/DK/Caesars/BetMGM/Fanatics/ProphetX/BetRivers/bet365/book-15/book-27 (11 incl consensus); still at 7.5: theScore, HardRock, Novig, Kalshi, book-75, Fliff. Direction = down = under steam."
+      },
+      {
+        "category": "stale_price_data",
+        "source": "BettingPros /offers Under ladder (market 175, event 99298)",
+        "status": "usable",
+        "freshness": "2026-09-03 09:15 AZ, same-day pre-game",
+        "detail": "Under 7.5 stale prices: Novig -117, Kalshi -122, book-75 -122, HardRock -130, theScore -135, Fliff -135. Moved market Under 7 at -104/-105. Half-run of line value acquired for ~12c."
+      },
+      {
+        "category": "catalyst_check",
+        "source": "DKNetwork MLB weather 2026-09-03 + Fubo/MLB.com game preview",
+        "status": "usable",
+        "freshness": "2026-09-03, same-day",
+        "detail": "56F cool evening, light winds, roof available, morning rain clears well before first pitch; Perkins vs Kade Anderson confirmed as probables; no injury/lineup catalyst explaining the move."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:40 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 7.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260903-mlb-v2-st-total",
+    "date": "2026-09-03",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "St. Louis Cardinals @ Los Angeles Dodgers Under 8 Total Runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-115 @ BetMGM",
+    "units": 1,
+    "score": 8.05,
+    "primary_edge": "Steam on the under: total opened 8 and 8 of 16 books have moved down to 7.5, while 8 books still hang the stale 8 opener. Anti-chase entry takes the pre-steam Under 8 (-115) rather than the moved Under 7.5 (+100) - a half-run better for ~15c. No public catalyst: 74F at Dodger Stadium, Skubal vs Mathews confirmed, no injury or lineup news.",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers API (market 175 total, event 97950)",
+        "status": "usable",
+        "freshness": "2026-09-03 09:15 AZ, same-day pre-game",
+        "detail": "opening_line 8; moved to 7.5 at FanDuel/Caesars/theScore/HardRock/Novig/Kalshi/Fliff/book-75 (8 books); still at 8: DK, BetMGM, Fanatics, ProphetX, BetRivers, bet365, book-15, book-27. Direction = down = under steam."
+      },
+      {
+        "category": "stale_price_data",
+        "source": "BettingPros /offers Under ladder (market 175, event 97950)",
+        "status": "usable",
+        "freshness": "2026-09-03 09:15 AZ, same-day pre-game",
+        "detail": "Under 8 stale prices: ProphetX -113, BetMGM/Fanatics/book-27 -115, DK -119, bet365 -120, BetRivers/book-15 -122. Moved market Under 7.5 at +100 to -104. Half-run acquired for ~15c vs ~22c fair."
+      },
+      {
+        "category": "catalyst_check",
+        "source": "Bleacher Nation injury report + True Blue LA preview 2026-09-03",
+        "status": "usable",
+        "freshness": "2026-09-03, same-day",
+        "detail": "74F Los Angeles, Skubal (LAD) vs Quinn Mathews (STL) confirmed probables, no injury or lineup catalyst explaining the move."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "7:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
