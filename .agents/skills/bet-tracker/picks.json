@@ -5587,5 +5587,63 @@
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260905-mlb-v1-matthe-prop",
+    "date": "2026-09-05",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Matthew Liberatore (STL) Under 16.5 Outs Recorded at COL",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+103 @ DraftKings",
+    "units": 1,
+    "score": 6.4,
+    "primary_edge": "Cross-book gap: DraftKings Under 16.5 outs at +103 vs BettingPros consensus -115 at the same 16.5 line (~4 pts implied); Caesars still hanging Over 17.5 (+113) \u2014 market steamed 17.5\u219216.5. BP projection 15.57 outs (-0.93 vs line) confirms under; 4-11 under L15. Coors Field, 7.27 ERA over last 5 starts, fly-ball profile.",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_gap",
+        "source": "BettingPros /props (MLB, 2026-09-05), market 405 outs recorded, event 98195",
+        "status": "usable",
+        "freshness": "2026-09-05 09:20 AZ, same-day pre-game",
+        "market_id": 405,
+        "event_id": 98195,
+        "player": "Matthew Liberatore",
+        "side": "under",
+        "bet_line": 16.5,
+        "bet_book": "DraftKings",
+        "bet_odds": 103,
+        "consensus_line": 16.5,
+        "consensus_odds": -115,
+        "over_best": "Caesars 17.5 @ +113",
+        "projection": 15.57,
+        "projection_diff": -0.93,
+        "trend_confirmed": true,
+        "last_15": "4 over / 11 under",
+        "detail": "DK Under 16.5 +103 beats consensus -115 at the same line; extractor gap 1.0 (over 17.5 at Caesars vs consensus 16.5)"
+      },
+      {
+        "category": "catalyst_check",
+        "source": "Mile High Sports preview + Baseball-Reference preview 2026-09-05",
+        "status": "usable",
+        "freshness": "2026-09-05, same-day",
+        "detail": "Liberatore 5-13, 5.41 ERA, 1.47 WHIP, 7.27 ERA over last five starts, fly-ball profile at Coors; opposing SP Mason Adams (2 career starts). Supports early hook; no injury/lineup catalyst contradicting the under."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
