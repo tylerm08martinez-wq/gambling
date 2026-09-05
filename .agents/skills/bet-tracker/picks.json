@@ -5827,5 +5827,63 @@
     "line_num": 16.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260905-mlb-v2-st-total",
+    "date": "2026-09-05",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "St. Louis Cardinals @ Colorado Rockies Under 11 Total Runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-111 @ ProphetX",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Mega steam: 11 of 16 books moved total 11 -> 10.5 (BetMGM/theScore/HardRock/Fanatics/Novig/BetRivers/book-15/book-27/book-39/book-68/book-75); ProphetX still hangs opener 11 at -111 (FanDuel -118, DK -120, Caesars -125, bet365 -115 also at 11); consensus 11/-105. No lineup/pitching catalyst (Liberatore vs Mason Adams as listed).",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers API (market 175 total, event 98195)",
+        "status": "usable",
+        "freshness": "2026-09-05 11:00 AZ, same-day pre-game",
+        "detail": "opening_line 11; under 10.5 now at BetMGM 100, theScore +105, Hard Rock 100, Fanatics 100, Novig +108, book-68 +108, book-39 100, book-75 +108, BetRivers -105, book-15 -105, book-27 100 (11 books); still 11: ProphetX -111, FanDuel -118, DraftKings -120, Caesars -125, bet365 -115; consensus 11/-105",
+        "books_moved": 11,
+        "books_total": 16,
+        "direction": "down",
+        "steam_tier": "mega",
+        "stale_book": "ProphetX",
+        "entry": "Under 11 -111",
+        "pinnacle": "absent from offers - CLV unverified",
+        "correlation_note": "V1 logged Liberatore U16.5 outs same game earlier today - mild negative correlation (early exit raises runs)"
+      },
+      {
+        "category": "line_shopping",
+        "source": "BettingPros /offers (event 98195, market 175)",
+        "status": "usable",
+        "freshness": "2026-09-05 11:00 AZ",
+        "under_11": {
+          "ProphetX": -111,
+          "bet365": -115,
+          "FanDuel": -118,
+          "DraftKings": -120,
+          "Caesars": -125
+        }
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 11.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
