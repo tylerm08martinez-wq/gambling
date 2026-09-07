@@ -529,5 +529,73 @@
     "validation_notes": [
       "scheduled run missing usable source evidence with source and freshness"
     ]
+  },
+  {
+    "id": "20260907-mlb-v2-atlant-total",
+    "date": "2026-09-07",
+    "checked_at": "2026-09-07T10:37:40",
+    "run_type": "scheduled",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Atlanta Braves @ Philadelphia Phillies Under 8 Total Runs",
+    "line": "-110 @ FanDuel",
+    "units": 1,
+    "score": 8.65,
+    "primary_edge": "Mega under steam, anti-chase entry: total opened 8 (-110/-110); 9 of 16 books (theScore, Hard Rock, Novig, ProphetX, book-68, book-39, book-75, BetRivers, book-15) moved down to 7.5 (Under 7.5 +100 to +110), zero moved up; FanDuel/Caesars/BetMGM/bet365/book-27 still hang the 8 opener at -110. ML moved the same way on PHI (-155 open to -170/-195 at 15/15) without a catalyst: clear weather, injuries offset, no lineup news; Holmes short outing last time was a weather delay, not injury. Steam signal downgraded -1 (V2 steam 10-19, 34%); MLB threshold raised to 7.0 (42% on 52); Pinnacle absent so CLV unverified.",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers API (market 175 total, event 98611)",
+        "status": "usable",
+        "freshness": "2026-09-07 09:35 AZ, same-day pre-game (first pitch 10:05 AM AZ)",
+        "opening_line": 8,
+        "opening_odds": "-110/-110",
+        "books_moved_down": 9,
+        "books_moved_up": 0,
+        "books_total": 16,
+        "direction": "down",
+        "steam_tier": "mega",
+        "detail": "moved to 7.5: theScore -130/+110, Hard Rock -125/+105, Novig -113/+108, ProphetX -113/+107, book-68 -113/+108, book-39 -125/+100, book-75 -113/+108, BetRivers -117/-103, book-15 -117/-103; still 8: FanDuel -110/-110, DraftKings -108/-112, Caesars -110, BetMGM -110, Fanatics -105/-115, book-27 -110, bet365 -110; consensus 8 -110"
+      },
+      {
+        "category": "stale_price_data",
+        "source": "BettingPros /offers Under ladder (market 175, event 98611)",
+        "status": "usable",
+        "freshness": "2026-09-07 09:35 AZ, same-day pre-game",
+        "stale_book": "FanDuel",
+        "bet_odds": -110,
+        "under_8": {
+          "FanDuel": -110,
+          "Caesars": -110,
+          "BetMGM": -110,
+          "bet365": -110,
+          "book-27": -110,
+          "DraftKings": -112,
+          "Fanatics": -115
+        },
+        "moved_market_under_7_5": "+100 to +110 (devig fair U7.5 ~47.5%)",
+        "pinnacle": "absent from offers - CLV unverified"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers API (market 122 ML, event 98611)",
+        "status": "usable",
+        "freshness": "2026-09-07 09:40 AZ, same-day pre-game",
+        "detail": "PHI ML opened -155 (Fanatics), now -170 to -195 at 15/15 books (Caesars -190, BetMGM -190, Hard Rock -195, ProphetX -172); ATL +130 open -> +150/+170. Same-direction sharp action on the favorite + under."
+      },
+      {
+        "category": "catalyst_check",
+        "source": "Covers.com + Predictem ATL@PHI previews 2026-09-07; TheSpread weather note",
+        "status": "usable",
+        "freshness": "2026-09-07, same-day",
+        "detail": "No injury/lineup/weather catalyst for the move: clear, high-70s, 5-6 mph wind, 0% rain; ATL out Strider/R.Lopez/Suarez/Wentz vs PHI out Banks/Keller/Kilian (offsetting); Luzardo 4-0 2.28 ERA last 7, Holmes last start 3 scoreless IP cut by weather delay (not injury). Both previews independently on the under (Covers U7.5, Predictem U8)."
+      }
+    ],
+    "rejection_reason": "scheduled duplicate market already logged: 20260907-mlb-v1-atlant-total",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled duplicate market already logged: 20260907-mlb-v1-atlant-total"
+    ]
   }
 ]
