@@ -5885,5 +5885,77 @@
     "line_num": 11.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260907-mlb-v2-washin-total",
+    "date": "2026-09-07",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Washington Nationals @ San Diego Padres Over 8 Total Runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-104 @ ProphetX",
+    "units": 1,
+    "score": 8.65,
+    "primary_edge": "Mega over steam, anti-chase entry: total opened 8 (-114/-106); 6 of 16 books (theScore, Hard Rock, Novig, book-68, book-39, book-75) moved up to 8.5, zero moved down; ProphetX still hangs the 8 opener at -104 (FanDuel/BetMGM/Caesars/Fanatics/bet365/book-27 -110, DK -112). Irvin (5.57 ERA) vs Pivetta in first MLB appearance since April 12 (likely short leash); no injury/lineup catalyst found. Steam signal downgraded -1 (V2 steam 10-19, 34%); Pinnacle absent so CLV unverified.",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers API (market 175 total, event 100263)",
+        "status": "usable",
+        "freshness": "2026-09-07 09:07 AZ, same-day pre-game (first pitch 2:10 PM AZ)",
+        "opening_line": 8,
+        "opening_odds": "-114/-106",
+        "books_moved_up": 6,
+        "books_moved_down": 0,
+        "books_total": 16,
+        "direction": "up",
+        "steam_tier": "mega",
+        "detail": "moved to 8.5: theScore +110/-130, Hard Rock +105/-125, Novig +111/-115, book-68 +113/-117, book-39 +100/-130, book-75 +113/-115; still 8: FanDuel -110, DraftKings -112, BetMGM -110, Caesars -110, Fanatics -110, ProphetX -104, BetRivers -112, book-15 -112, book-27 -110, bet365 -110; consensus 8 -110"
+      },
+      {
+        "category": "stale_price_data",
+        "source": "BettingPros /offers Over ladder (market 175, event 100263)",
+        "status": "usable",
+        "freshness": "2026-09-07 09:07 AZ, same-day pre-game",
+        "stale_book": "ProphetX",
+        "bet_odds": -104,
+        "over_8": {
+          "ProphetX": -104,
+          "FanDuel": -110,
+          "BetMGM": -110,
+          "Caesars": -110,
+          "Fanatics": -110,
+          "bet365": -110,
+          "book-27": -110,
+          "DraftKings": -112,
+          "BetRivers": -112
+        },
+        "moved_market_over_8_5": "+100 to +113",
+        "pinnacle": "absent from offers - CLV unverified"
+      },
+      {
+        "category": "catalyst_check",
+        "source": "Bleacher Nation probable starters + Yahoo/Fubo WSH@SD previews 2026-09-07",
+        "status": "usable",
+        "freshness": "2026-09-07, same-day",
+        "detail": "Irvin 2-8, 5.57 ERA (19th start); Pivetta 1-2, 4.50 ERA, first MLB appearance since April 12 (elbow flexor strain) - known at open, likely limited pitch count exposes SD bullpen; Nationals on 7-game road losing streak; no injury/lineup/weather news explaining the move. Bleacher Nation injury report 403-blocked."
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "2:10 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
