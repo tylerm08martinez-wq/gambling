@@ -5957,5 +5957,81 @@
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260907-mlb-v1-atlant-total",
+    "date": "2026-09-07",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Atlanta Braves @ Philadelphia Phillies Under 8 Total Runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-110 @ FanDuel",
+    "units": 1,
+    "score": 7.0,
+    "primary_edge": "Total structural inefficiency, anti-chase entry: Luzardo (3.02 ERA, 11.09 K/9, 2.28 ERA last 7) vs Holmes (2.47 FIP last two), both offenses cold (PHI 72 wRC+ last 6); total opened 8 and 9 of 16 books moved down to 7.5 (Under 7.5 +100 to +110) while FanDuel/Caesars/BetMGM/bet365/book-27 still hang Under 8 at -110. Two independent previews (Covers U7.5, Predictem U8) agree. Clear weather, 0% rain, 5 mph wind. Injuries (Strider/Lopez/Suarez out ATL; Banks/Keller/Kilian out PHI) roughly offset. Pinnacle absent - CLV unverified.",
+    "primary_edge_type": "matchup_edge",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers API (market 175 total, event 98611)",
+        "status": "usable",
+        "freshness": "2026-09-07 09:35 AZ, same-day pre-game (first pitch 10:05 AM AZ)",
+        "opening_line": 8,
+        "opening_odds": "-110/-110",
+        "books_moved_down": 9,
+        "books_moved_up": 0,
+        "books_total": 16,
+        "direction": "down",
+        "detail": "moved to 7.5: theScore -130/+110, Hard Rock -125/+105, Novig -113/+108, ProphetX -113/+107, book-68 -113/+108, book-39 -125/+100, book-75 -113/+108, BetRivers -117/-103, book-15 -117/-103; still 8: FanDuel -110/-110, DraftKings -108/-112, Caesars -110, BetMGM -110, Fanatics -105/-115, book-27 -110, bet365 -110; consensus 8 -110"
+      },
+      {
+        "category": "stale_price_data",
+        "source": "BettingPros /offers Under ladder (market 175, event 98611)",
+        "status": "usable",
+        "freshness": "2026-09-07 09:35 AZ, same-day pre-game",
+        "stale_book": "FanDuel",
+        "bet_odds": -110,
+        "under_8": {
+          "FanDuel": -110,
+          "Caesars": -110,
+          "BetMGM": -110,
+          "bet365": -110,
+          "book-27": -110,
+          "DraftKings": -112,
+          "Fanatics": -115
+        },
+        "moved_market_under_7_5": "+100 to +110 (devig fair U7.5 ~47.5%)",
+        "pinnacle": "absent from offers - CLV unverified"
+      },
+      {
+        "category": "expert_consensus",
+        "source": "Covers.com ATL@PHI preview 2026-09-07; Predictem ATL@PHI preview 2026-09-07",
+        "status": "usable",
+        "freshness": "2026-09-07, same-day",
+        "detail": "Covers: Under 7.5 (47%, play to 55%) + Braves ML - both offenses cold, PHI 72 wRC+ last six, Holmes 2.47 FIP last two, ATL pen 2.76 xERA; Predictem: Under 8 at -110, 2u moderate - Luzardo 44.8% whiff sweeper, 11.09 K/9 vs Holmes 7.11, Olson .185 in 27 PA vs Luzardo; injuries (ATL: Strider, R.Lopez, Suarez, Wentz; PHI: Banks, Keller, Kilian) roughly offset"
+      },
+      {
+        "category": "situational_data",
+        "source": "TheSpread / Covers game previews 2026-09-07 (weather + pitchers)",
+        "status": "usable",
+        "freshness": "2026-09-07, same-day",
+        "detail": "Citizens Bank Park, 1:05 PM ET, clear, high-70s, wind 5-6 mph, 0% rain; Luzardo 13-5 3.02 ERA 209 K, 4-0 2.28 ERA last 7 starts incl 7 IP 1-hit shutout vs SEA; Holmes 9-5 3.62 ERA, last start 3 scoreless IP cut by weather delay (fresh arm, no injury)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:05 AM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
