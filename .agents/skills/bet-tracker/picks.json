@@ -6166,5 +6166,133 @@
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260908-mlb-v2-cincin-total",
+    "date": "2026-09-08",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Cincinnati Reds @ Los Angeles Dodgers Under 8.5 Total Runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-120 @ Hard Rock",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Mega under steam, anti-chase entry: total opened 8.5 (+100/-122); 14 of 16 books moved down to 8 or 7.5 (theScore, Novig, book-68, book-75 all the way to 7.5); Hard Rock (-120) and book-39 (-135) still hang the 8.5 opener. No injury/lineup catalyst - Skubal (2.86 ERA, 0.98 WHIP) vs Lodolo was known at open. Moved-market devig fair U8 ~48.9%; U8.5 at -120 (54.5%) roughly equals fair for the extra half-run, so the edge is the stale number. Pinnacle absent - CLV unverified.",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers API (market 175 total, event 99226)",
+        "status": "usable",
+        "freshness": "2026-09-08 09:10 AZ, same-day pre-game (first pitch 7:10 PM AZ)",
+        "opening_line": 8.5,
+        "opening_odds": "+100/-122",
+        "books_moved_down": 14,
+        "books_moved_up": 0,
+        "books_total": 16,
+        "direction": "down",
+        "detail": "to 8: FanDuel -104, DraftKings -109, BetMGM -105, Caesars -105, Fanatics -105, ProphetX -102, BetRivers -127, book-15 -127, book-27 -105, bet365 -105; to 7.5: theScore +110, Novig +113, book-68 +113, book-75 +117; still 8.5: Hard Rock -120, book-39 -135; consensus 8 -105"
+      },
+      {
+        "category": "stale_price_data",
+        "source": "BettingPros /offers Under ladder (market 175, event 99226)",
+        "status": "usable",
+        "freshness": "2026-09-08 09:10 AZ, same-day pre-game",
+        "stale_book": "Hard Rock",
+        "bet_odds": -120,
+        "under_8_5": {
+          "Hard Rock": -120,
+          "book-39": -135
+        },
+        "moved_market_under_8": "-102 to -127 (devig fair U8 ~48.9%)",
+        "pinnacle": "absent from offers - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "7:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260908-mlb-v2-minnes-total",
+    "date": "2026-09-08",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Minnesota Twins @ Detroit Tigers Under 8.5 Total Runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-115 @ Novig",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Mega under steam vs public over lean, anti-chase entry: total opened 8.5 (-105/-115); 7 of 16 books (DraftKings, Caesars, BetMGM, Fanatics, ProphetX, book-27, bet365) moved down to 8 while 9 books still hang 8.5 (Novig -115, book-68/book-75 -113, BetRivers/book-15 -117, FanDuel -122). Public previews (Athlon, TheSpread) lean over on Kremer (5.80 ERA) - sharps went the other way. No injury/lineup catalyst; Kremer-Anderson rematch known at open. Moved-market devig fair U8 ~51%; U8.5 -115 (53.5%) is about +2% vs the extra half-run. Pinnacle absent - CLV unverified.",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers API (market 175 total, event 97988)",
+        "status": "usable",
+        "freshness": "2026-09-08 09:10 AZ, same-day pre-game (first pitch 3:40 PM AZ)",
+        "opening_line": 8.5,
+        "opening_odds": "-105/-115",
+        "books_moved_down": 7,
+        "books_moved_up": 0,
+        "books_total": 16,
+        "direction": "down",
+        "detail": "to 8: DraftKings -105, Caesars -105, BetMGM -102, Fanatics -105, ProphetX +102, book-27 -102, bet365 -105; still 8.5: FanDuel -122, theScore -120, Hard Rock -120, Novig -115, book-68 -113, book-39 -125, book-75 -113, BetRivers -117, book-15 -117; consensus 8 -105"
+      },
+      {
+        "category": "stale_price_data",
+        "source": "BettingPros /offers Under ladder (market 175, event 97988)",
+        "status": "usable",
+        "freshness": "2026-09-08 09:10 AZ, same-day pre-game",
+        "stale_book": "Novig",
+        "bet_odds": -115,
+        "under_8_5": {
+          "Novig": -115,
+          "book-68": -113,
+          "book-75": -113,
+          "BetRivers": -117,
+          "book-15": -117,
+          "theScore": -120,
+          "Hard Rock": -120,
+          "FanDuel": -122,
+          "book-39": -125
+        },
+        "moved_market_under_8": "-105 to +102 (devig fair U8 ~51%)",
+        "pinnacle": "absent from offers - CLV unverified"
+      },
+      {
+        "category": "public_lean",
+        "source": "Athlon Sports and TheSpread.com MIN@DET previews 2026-09-08",
+        "status": "usable",
+        "freshness": "2026-09-08, same-day",
+        "detail": "Both lean over citing Kremer 5.80 ERA / 15 HR in 66.2 IP; market moved under against that public read"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
