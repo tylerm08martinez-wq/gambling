@@ -6443,5 +6443,211 @@
     "line_num": 14.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260911-mlb-v2-pittsb-total",
+    "date": "2026-09-11",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Pittsburgh Pirates @ Chicago Cubs Under 8.5 Total Runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-108 @ book-68",
+    "units": 1,
+    "score": 8.65,
+    "primary_edge": "Mega steam: 8 of 15 books moved total 8.5 to 8 (Caesars, BetMGM, Fanatics, ProphetX, BetRivers, book-15, book-27, bet365); stale 8.5 still up at book-68/book-75 -108, Novig -115, FanDuel -122",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers (MLB, event 100210, market 175 total)",
+        "status": "usable",
+        "freshness": "2026-09-11 ~09:20 AZ, same-day pre-game (first pitch 11:20 AM AZ)",
+        "opening_line": 8.5,
+        "books_moved_down": 8,
+        "books_total": 15,
+        "stale_under_8_5": {
+          "book-68": -108,
+          "book-75": -108,
+          "Novig": -115,
+          "Hard Rock": -120,
+          "FanDuel": -122,
+          "theScore Bet": -125,
+          "book-39": -125
+        },
+        "moved_under_8": {
+          "Caesars": -105,
+          "BetMGM": -105,
+          "Fanatics": -105,
+          "ProphetX": 103,
+          "BetRivers": -112,
+          "bet365": -105
+        },
+        "pinnacle": "absent - CLV unverified",
+        "calibration": "steam signal -1 (V2 steam 12-20 settled); MLB threshold 7.0"
+      },
+      {
+        "category": "catalyst_check",
+        "source": "WebSearch: thespread.com / tonyspicks.com PIT-CHC 09-11-2026 previews",
+        "status": "usable",
+        "freshness": "2026-09-11 same-day",
+        "note": "No injury/lineup catalyst; wind at Wrigley forecast calm; Imanaga 1.12 WHIP on full rest. Pirates starter listed Dotel (BettingPros) vs Ashcraft (one preview) - swap would push over, not under"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:20 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260911-mlb-v2-chris-prop",
+    "date": "2026-09-11",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Chris Bassitt (BAL) Under 17.5 Outs Recorded at Toronto Blue Jays",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-135 @ Hard Rock",
+    "units": 1,
+    "score": 8.5,
+    "primary_edge": "Cross-book gap 1.0: outs line moved 17.5 to 16.5 at 8 books; Hard Rock/Caesars/Underdog/book-63 still hang stale 17.5 - bet the stale higher line for the under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_projection_and_price",
+        "source": "BettingPros /props + /offers (MLB, event 99516, market 405 outs-recorded)",
+        "status": "usable",
+        "freshness": "2026-09-11 ~09:10 AZ, same-day pre-game (first pitch 4:07 PM AZ)",
+        "player": "Chris Bassitt",
+        "side": "under",
+        "bet_line": 17.5,
+        "bet_book": "Hard Rock",
+        "bet_odds": -135,
+        "opening_line": 17.5,
+        "consensus_line": 16.5,
+        "consensus_under_odds": -105,
+        "gap": 1.0,
+        "stale_under_17_5": {
+          "Hard Rock": -135,
+          "Caesars": -138,
+          "Underdog": -145,
+          "Novig": -147,
+          "book-63": -156
+        },
+        "moved_under_16_5": {
+          "BetMGM": -105,
+          "theScore Bet": -105,
+          "Fanatics": -105,
+          "book-27": -105
+        },
+        "projection": {
+          "recommended_side": "under",
+          "value": 15.84
+        },
+        "trend_confirmed": true,
+        "trend_note": "season 6-9 under, L10 6-4 over, streak 4 over (V2 rubric has no trend-conflict penalty; V1 rejected same spot at 4.2 - explicit divergence test)",
+        "pinnacle": "absent - CLV unverified"
+      },
+      {
+        "category": "situational",
+        "source": "WebSearch: athlonsports.com / predictem.com BAL-TOR 09-11-2026 previews",
+        "status": "usable",
+        "freshness": "2026-09-11 same-day",
+        "note": "Bassitt 4.96 ERA, 1.58 WHIP, 85.1 IP in 2026 - high baserunner rate shortens outings; vs former team in wild-card race"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:07 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 17.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260911-mlb-v2-cincin-total",
+    "date": "2026-09-11",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Cincinnati Reds @ Milwaukee Brewers Under 8 Total Runs",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-110 @ ProphetX",
+    "units": 1,
+    "score": 8.05,
+    "primary_edge": "Mega steam: 7 of 16 books moved total 8 to 7.5 (FanDuel, theScore, Hard Rock, Novig, book-68, book-39, book-75); stale 8 still up at ProphetX/BetRivers/book-15 -110",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers (MLB, event 99392, market 175 total)",
+        "status": "usable",
+        "freshness": "2026-09-11 ~09:20 AZ, same-day pre-game (first pitch 4:45 PM AZ)",
+        "opening_line": 8,
+        "books_moved_down": 7,
+        "books_total": 16,
+        "stale_under_8": {
+          "ProphetX": -110,
+          "BetRivers": -110,
+          "book-15": -110,
+          "DraftKings": -115,
+          "BetMGM": -115,
+          "Caesars": -115,
+          "Fanatics": -115,
+          "book-27": -115,
+          "bet365": -120
+        },
+        "moved_under_7_5": {
+          "FanDuel": 106,
+          "theScore Bet": 100,
+          "Hard Rock": 100,
+          "Novig": 108,
+          "book-68": 108,
+          "book-39": 100,
+          "book-75": 111
+        },
+        "pinnacle": "absent - CLV unverified",
+        "calibration": "steam signal -1 (V2 steam 12-20 settled); MLB threshold 7.0",
+        "correlation_note": "same game as V1 Abbott Under 14.5 outs (mildly negatively correlated - early exit usually means runs)"
+      },
+      {
+        "category": "catalyst_check",
+        "source": "WebSearch: predictem.com Reds-Brewers 09-11-2026 preview",
+        "status": "usable",
+        "freshness": "2026-09-11 same-day",
+        "note": "Abbott vs Dustin May confirmed; roofed park, no weather; no injury/lineup catalyst found"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:45 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
