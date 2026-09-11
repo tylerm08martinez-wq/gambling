@@ -6367,5 +6367,81 @@
     "line_num": 1.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260911-mlb-v1-andrew-prop",
+    "date": "2026-09-11",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Andrew Abbott (CIN) Under 14.5 Outs Recorded at Milwaukee Brewers",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+130 @ Novig",
+    "units": 1,
+    "score": 6.2,
+    "primary_edge": "Cross-book gap: BetRivers/book-15 hang 15.5 while consensus sits 14.5; Novig under 14.5 +130 beats de-vigged consensus fair (~+121) by ~4pp",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_projection_and_price",
+        "source": "BettingPros /props + /offers (MLB, event 99392, market 405 outs-recorded)",
+        "status": "usable",
+        "freshness": "2026-09-11 ~09:10 AZ, same-day pre-game (first pitch 4:45 PM AZ)",
+        "player": "Andrew Abbott",
+        "side": "under",
+        "bet_line": 14.5,
+        "bet_book": "Novig",
+        "bet_odds": 130,
+        "bet_odds_offers_snapshot": 138,
+        "consensus_line": 14.5,
+        "consensus_odds": 110,
+        "consensus_over_odds": -135,
+        "devig_fair_under": "+121",
+        "opening_line": 14.5,
+        "gap_books": {
+          "BetRivers": 15.5,
+          "book-15": 15.5
+        },
+        "under_14_5_ladder": {
+          "Novig": 138,
+          "BetMGM": 115,
+          "theScore Bet": 115,
+          "book-27": 115,
+          "DraftKings": 110,
+          "Caesars": 110,
+          "Hard Rock": 110,
+          "Underdog": 112,
+          "book-63": 100,
+          "Fanatics": -105
+        },
+        "projection": {
+          "recommended_side": "over",
+          "value": 16.05
+        },
+        "trend": "season 22-7 over outs line, L10 6-4 over, streak 2 under; conflicting -2 applied",
+        "calibration": "cross_book_gap bonus reduced to +3 (V1 cross_book_gap 18-30 settled)"
+      },
+      {
+        "category": "situational",
+        "source": "WebSearch: predictem.com Reds-Brewers 09-11-2026 preview",
+        "status": "usable",
+        "freshness": "2026-09-11 same-day",
+        "note": "Abbott 70 BB, 1.42 WHIP, fastball .399 xwOBA against - high pitch counts shorten outings (supporting only)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:45 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 14.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
