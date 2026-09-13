@@ -6975,5 +6975,93 @@
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260913-nfl-v1-aaron-prop",
+    "date": "2026-09-13",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Aaron Rodgers (PIT) Under 216.5 passing yards vs ATL",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-104 @ Novig",
+    "units": 1,
+    "score": 7.0,
+    "primary_edge": "Cross-book gap: Novig hangs 216.5 vs 212.5 BettingPros consensus (+4 yds cushion) at a better price (-104 vs -113); BettingPros projection 207.1 confirms the under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers NFL event 21927 market 103 (passing yards)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-13 17:01:32 UTC",
+        "detail": "Novig U216.5 -104; consensus U212.5 -113; 19 book-lines surveyed"
+      },
+      {
+        "source": "BettingPros /v3/props NFL projection model",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-13 fetched 16:0x UTC",
+        "detail": "projected 207.094 passing yards, recommended_side=under, diff -9.41"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:00 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 216.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260913-nfl-v1-joe-prop",
+    "date": "2026-09-13",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Joe Burrow (CIN) Under 271.5 passing yards vs TB",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-104 @ Novig",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book gap: Novig hangs 271.5 vs 269.5 BettingPros consensus (+2 yds cushion) at a better price (-104 vs -115); BettingPros projection 259.3 confirms the under by the largest margin in today's slate (-12.2)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers NFL event 21926 market 103 (passing yards)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-13 17:00:29 UTC",
+        "detail": "Novig U271.5 -104; consensus U269.5 -115; 19 book-lines surveyed"
+      },
+      {
+        "source": "BettingPros /v3/props NFL projection model",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-13 fetched 16:0x UTC",
+        "detail": "projected 259.274 passing yards, recommended_side=under, diff -12.23"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:00 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 271.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]

@@ -597,5 +597,75 @@
     "validation_notes": [
       "scheduled duplicate market already logged: 20260907-mlb-v1-atlant-total"
     ]
+  },
+  {
+    "id": "20260913-nfl-v1-dak-prop",
+    "date": "2026-09-13",
+    "checked_at": "2026-09-13T11:44:41",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Dak Prescott (DAL) Under 263.5 passing yards at NYG",
+    "line": "-107 @ Underdog",
+    "units": 1,
+    "score": 7.0,
+    "primary_edge": "Cross-book gap: Underdog hangs 263.5 vs 260.5 BettingPros consensus (+3 yds cushion) at a better price (-107 vs -115); BettingPros projection 257.0 confirms the under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers NFL event 21907 market 103 (passing yards)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-13 18:36:47 UTC",
+        "detail": "Underdog U263.5 -107; consensus U260.5 -115; 18 book-lines surveyed"
+      },
+      {
+        "source": "BettingPros /v3/props NFL projection model",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-13 fetched 16:0x UTC",
+        "detail": "projected 256.984 passing yards, recommended_side=under, diff -6.52"
+      }
+    ],
+    "rejection_reason": "scheduled daily model cap reached for v1-trends: 3/3",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled daily model cap reached for v1-trends: 3/3"
+    ]
+  },
+  {
+    "id": "20260913-nfl-v1-dak-prop",
+    "date": "2026-09-13",
+    "checked_at": "2026-09-13T12:00:16",
+    "run_type": "scheduled",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Dak Prescott (DAL) Under 263.5 passing yards at NYG",
+    "line": "-107 @ Underdog",
+    "units": 1,
+    "score": 7.0,
+    "primary_edge": "Cross-book gap: Underdog hangs 263.5 vs 260.5 BettingPros consensus (+3 yds cushion) at a better price (-107 vs -115); BettingPros projection 257.0 confirms the under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers NFL event 21907 market 103 (passing yards)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-13 18:36:47 UTC",
+        "detail": "Underdog U263.5 -107; consensus U260.5 -115; 18 book-lines surveyed"
+      },
+      {
+        "source": "BettingPros /v3/props NFL projection model",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-13 fetched 16:0x UTC",
+        "detail": "projected 256.984 passing yards, recommended_side=under, diff -6.52"
+      }
+    ],
+    "rejection_reason": "scheduled daily model cap reached for v1-trends: 3/3",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled daily model cap reached for v1-trends: 3/3"
+    ]
   }
 ]
