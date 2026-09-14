@@ -7107,5 +7107,130 @@
     "line_num": 32.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260914-nfl-v2-patric-prop",
+    "date": "2026-09-14",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Patrick Mahomes (KC) Under 227.5 passing yards vs DEN",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-110 @ BetMGM",
+    "units": 1,
+    "score": 9.35,
+    "primary_edge": "Cross-book prop gap 7.0: BetMGM hanging opener 227.5 while consensus moved 228.5\u2192220.5 (DK/Fanatics/ProphetX 220.5); bet stale book in direction of move",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers NFL event 21910 market 103 (passing yards)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-14 16:04 UTC",
+        "detail": "BetMGM U227.5 -110; book-27 227.5; Hard Rock 226.5; consensus U220.5 -113; opened 228.5; DK/Fanatics/ProphetX at 220.5; 18 book-lines surveyed; Pinnacle absent \u2014 CLV unverified"
+      },
+      {
+        "source": "BettingPros /v3/props NFL projection model",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-14 ~16:00 UTC",
+        "detail": "projected 223.7 passing yards, recommended_side=over at 220.5 (not trend-confirmed; still under 227.5). Weather: dry, 78F, S wind 10-20 mph \u2014 no catalyst"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 227.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260914-nfl-v2-travis-prop",
+    "date": "2026-09-14",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Travis Kelce (KC) Over 38.5 receiving yards vs DEN",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-125 @ BetMGM",
+    "units": 1,
+    "score": 8.15,
+    "primary_edge": "Cross-book prop gap 3.0: consensus moved up 39.5\u219241.5 (theScore 44.5, FD/HR/ProphetX 42.5) while BetMGM/book-27 still 38.5; bet stale low line in direction of move",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers NFL event 21910 market 105 (receiving yards)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-14 16:04 UTC",
+        "detail": "BetMGM O38.5 -125; book-27 38.5; book-68 O39.5 +100; consensus O41.5 -115; opened 39.5; theScore 44.5, FD/HR/ProphetX 42.5; 17 book-lines surveyed; Pinnacle absent \u2014 CLV unverified"
+      },
+      {
+        "source": "BettingPros /v3/props NFL projection model",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-14 ~16:00 UTC",
+        "detail": "projected 40.2 receiving yards, recommended_side=under at 41.5 \u2014 not trend-confirmed, but projection still clears 38.5"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 38.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260914-mlb-v2-giants-total",
+    "date": "2026-09-14",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Giants @ Cardinals Under 8.5",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-118 @ ProphetX",
+    "units": 1,
+    "score": 8.05,
+    "primary_edge": "Mega steam under: total opened 8, 11 of 16 books moved to 7.5 (consensus 7.5 -105 under); ProphetX still hanging 8.5 \u2014 a full unit above consensus, above the opener. No catalyst (Roupp vs Mathews as listed). Steam signal downgraded -1 per 33% steam calibration",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers MLB event 99236 market 175 (game total)",
+        "category": "steam",
+        "status": "usable",
+        "freshness": "2026-09-14 ~16:10 UTC",
+        "detail": "Opened 8 (-124 under); 11/16 books now 7.5 (FD/theScore/Caesars/MGM/HR/Novig/book-68/39/75/27/bet365), DK/Fanatics/BetRivers/book-15 at 8, ProphetX U8.5 -118; 0 books moved up; Pinnacle absent \u2014 CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:45 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
