@@ -7063,5 +7063,49 @@
     "line_num": 271.5,
     "prop_result": "254 passing yards",
     "prop_margin": -17
+  },
+  {
+    "id": "20260914-nfl-v1-patric-prop",
+    "date": "2026-09-14",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Patrick Mahomes (KC) Under 32.5 pass attempts vs DEN",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+114 @ ProphetX",
+    "units": 1,
+    "score": 6.6,
+    "primary_edge": "Cross-book prop gap: ProphetX U32.5 +114 vs consensus U32.5 -106 (20-cent price gap); line moved 33.5\u219232.5 from open (sharp direction = under); BettingPros projection 30.88 attempts agrees",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers NFL event 21910 market 333 (pass attempts)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-14 16:04:41 UTC",
+        "detail": "ProphetX U32.5 +114; consensus U32.5 -106 / O32.5 -125; opened 33.5; Hard Rock/book-68/63/39 still 33.5; 16 book-lines surveyed"
+      },
+      {
+        "source": "BettingPros /v3/props NFL projection model",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-14 ~16:00 UTC",
+        "detail": "projected 30.88 pass attempts, recommended_side=under; L5 4-1 over and prior season 11-3 over on old lines (conflict, -2)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 32.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
