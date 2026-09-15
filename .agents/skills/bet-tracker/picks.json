@@ -7320,5 +7320,79 @@
     "line_num": 17.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260915-mlb-v2-royals-total",
+    "date": "2026-09-15",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Royals @ Astros Under 8",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-108 @ ProphetX",
+    "units": 1,
+    "score": 8.65,
+    "primary_edge": "Mega steam: 9 of 16 books moved total 8 -> 7.5 (FanDuel, Caesars, theScore, Hard Rock, Novig, book-68/75/39); ProphetX/DK/BetMGM/Fanatics/bet365 still hang the 8 opener; ProphetX -108 best stale price. Steam signal downgraded -1 (steam 14-26 settled). Pinnacle absent - CLV unverified",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers MLB event 98288 market 175 (total)",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-09-15 16:20 UTC",
+        "detail": "opening 8; 9/16 books now 7.5 (FanDuel U +104, Caesars U +100, theScore U +105, Hard Rock U +105, Novig U +108, book-68 +108, book-75 +111, book-39 +100); stale at 8: ProphetX U -108, DK -115, BetMGM -115, Fanatics -115, bet365 -115, BetRivers -122; consensus 8 -115; Pinnacle not listed"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260915-mlb-v2-athlet-total",
+    "date": "2026-09-15",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Athletics @ Rays Under 8.5",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-117 @ Novig",
+    "units": 1,
+    "score": 8.05,
+    "primary_edge": "Mega steam: 13 of 16 books moved total 8.5 -> 8 or 7.5 (FanDuel/theScore/book-39/75 at 7.5; DK/Caesars/BetMGM/Fanatics/BetRivers/bet365 at 8); Novig, ProphetX, Hard Rock, book-68 still hang the 8.5 opener; Novig -117 best stale price, full run of cushion vs 7.5 books. Steam signal downgraded -1 (steam 14-26 settled). Pinnacle absent - CLV unverified",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers MLB event 99982 market 175 (total)",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-09-15 16:20 UTC",
+        "detail": "opening 8.5; 13/16 books moved down: FanDuel 7.5 U +106, theScore 7.5 U +110, book-39 7.5 +100, book-75 7.5 +117, DK 8 U -111, Caesars 8 -115, BetMGM 8 -110, Fanatics 8 -110, BetRivers 8 -129, book-15 8 -129, book-27 8 -110, bet365 8 -110; stale at 8.5: Novig U -117, ProphetX -118, book-68 -122, Hard Rock -125; consensus 8 -110; Pinnacle not listed"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
