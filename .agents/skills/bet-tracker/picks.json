@@ -7232,5 +7232,93 @@
     "line_num": 8.5,
     "prop_result": "3 total runs (1+2), under 8.5",
     "prop_margin": null
+  },
+  {
+    "id": "20260915-mlb-v1-riley-prop",
+    "date": "2026-09-15",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Riley Greene (DET) Over 0.5 hits vs TOR",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-170 @ Fanatics",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book prop gap: Fanatics O0.5 hits -170 while 9 of 15 books hang O1.5 (+130 to +180); BettingPros consensus line 1.0; projection 1.34 hits (rec over), L10 7-3 over, 4-game over streak",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers MLB event 98075 market 293 (hits)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-15 16:05 UTC",
+        "detail": "Fanatics O0.5 -170 (best); Caesars O0.5 -173, ProphetX -200, book-63 -213, book-39 -205; FanDuel/BetMGM/Underdog/Novig/BetRivers/Hard Rock/theScore O1.5 +130 to +180; consensus line 1.0 (O +130 / U -200); 15 book-lines surveyed"
+      },
+      {
+        "source": "BettingPros /v3/props MLB projection model",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-15 16:05 UTC",
+        "detail": "projected 1.34 hits, recommended_side=over, diff +0.84; L10 7-3 over, season 60-47 over, streak 4 over"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:07 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260915-mlb-v1-logan-prop",
+    "date": "2026-09-15",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Logan Gilbert (SEA) Under 17.5 outs recorded vs LAA",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+156 @ Novig",
+    "units": 1,
+    "score": 7.4,
+    "primary_edge": "Cross-book price gap on same line: Novig U17.5 outs +156 vs consensus +122 (next best Fanatics +135); de-vig fair ~+138 => ~+7% EV; BettingPros projection 17.28 outs (rec under); Underdog hangs O18.5",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers MLB event 99694 market 405 (outs recorded)",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-15 16:05 UTC",
+        "detail": "Novig U17.5 +156 (best); Fanatics +135, Hard Rock +125, Caesars +122, BetMGM +120, DK +119, Underdog +118, theScore +110; consensus O17.5 -165 / U17.5 +122; opened 17.5, unchanged; 13 book-lines surveyed"
+      },
+      {
+        "source": "BettingPros /v3/props MLB projection model",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-15 16:05 UTC",
+        "detail": "projected 17.28 outs, recommended_side=under, diff -0.22; L10 5-5, season 17-12 over (conflicting -2 applied)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:38 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 17.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
