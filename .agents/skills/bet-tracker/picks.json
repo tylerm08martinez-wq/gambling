@@ -7468,5 +7468,137 @@
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260919-mlb-v1-michae-prop",
+    "date": "2026-09-19",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Michael McGreevy (STL) Under 17.5 outs recorded vs WSH",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+100 @ BetMGM",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book price gap: BetMGM under 17.5 outs +100 (stale 13:56 UTC) vs DK -124 / Caesars -128 / Hard Rock -130 / consensus -128 at same line; market moved toward under from open (-119 to -128); projection 15.99 outs",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event 98458 market 405",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-19 15:59 UTC",
+        "detail": "BetMGM/PartyCasino U17.5 +100 (updated 13:56 UTC); DK -124, Caesars -128, theScore -135, Hard Rock -130, Novig -138, consensus -128; opening U -119"
+      },
+      {
+        "source": "BettingPros /props projection",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-19",
+        "detail": "proj 15.99 outs, recommended under, bet_rating 4, L10 4-6 under"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 17.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260919-nfl-v1-jonath-prop",
+    "date": "2026-09-19",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Jonathan Taylor (IND) Under 108.5 rushing yards vs KC",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-115 @ Caesars",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book line gap: Caesars U108.5 -115 vs DK 104.5 -111 / theScore 104.5 -115 / BetMGM 102.5 -115 (median 104.5, gap 4.0 yds); projection 102.2 confirms under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event 21997 market 406",
+        "category": "cross_book_lines",
+        "status": "usable",
+        "freshness": "2026-09-19 16:00 UTC",
+        "detail": "Caesars 108.5 -115; Fliff 107.5 -120; Fanatics 105.5 -125; DK 104.5 -111; theScore 104.5 -115; BetMGM/PartyCasino 102.5 -115"
+      },
+      {
+        "source": "BettingPros /props projection",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-19",
+        "detail": "proj 102.24 rushing yds, recommended under, L10 3-7 over"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:20 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 108.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260919-nfl-v1-chase-prop",
+    "date": "2026-09-19",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Chase Brown (CIN) Over 75.5 rushing yards vs HOU",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-130 @ Fanatics",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book line gap: Fanatics O75.5 -130 vs DK 78.5 -114 / theScore 79.5 -115 / Caesars & BetMGM 81.5 -115 (median 80.5, gap 5.0 yds); projection 82.5 and L10 8-2 over confirm",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event 21990 market 406",
+        "category": "cross_book_lines",
+        "status": "usable",
+        "freshness": "2026-09-19 16:00 UTC",
+        "detail": "Fanatics 75.5 -130; DK 78.5 -114; theScore 79.5 -115; Fliff 80.5 -120; Caesars/BetMGM/PartyCasino 81.5 -115"
+      },
+      {
+        "source": "BettingPros /props projection",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-19",
+        "detail": "proj 82.53 rushing yds, recommended over, L10 8-2 over"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:00 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 75.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
