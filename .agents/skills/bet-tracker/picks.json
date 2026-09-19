@@ -7600,5 +7600,93 @@
     "line_num": 75.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260919-nfl-v2-bo-prop",
+    "date": "2026-09-19",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Bo Nix (DEN) Under 226.5 passing yards vs JAC",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-115 @ BetMGM",
+    "units": 1,
+    "score": 9.1,
+    "primary_edge": "Cross-book prop gap 4.0 yds: BetMGM/PartyCasino U226.5 -115 vs DK 223.5 -111, Fliff 222.5, Caesars/Hard Rock 221.5, FanDuel/Fanatics 220.5 (median 222.5); projection 216.3 confirms under. CLV unverified (Pinnacle absent from offers)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event 21992 market 103",
+        "category": "cross_book_lines",
+        "status": "usable",
+        "freshness": "2026-09-19 16:00 UTC",
+        "detail": "BetMGM 226.5 -115; PartyCasino 226.5 -115; theScore 224.5 -120; DK 223.5 -111; Fliff 222.5 -120; Caesars 221.5 -121; Hard Rock 221.5 -115; FanDuel 220.5 -114; Fanatics 220.5 -115; Pinnacle absent"
+      },
+      {
+        "source": "BettingPros /props projection",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-19",
+        "detail": "proj 216.3 passing yds, recommended under, L10 5-5"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:05 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 226.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260919-nfl-v2-drake-prop",
+    "date": "2026-09-19",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Drake Maye (NE) Over 220.5 passing yards vs PIT",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-115 @ Fanatics",
+    "units": 1,
+    "score": 9.1,
+    "primary_edge": "Cross-book prop gap 4.0 yds: Fanatics O220.5 -115 vs DK/FanDuel/Caesars/BetMGM/Hard Rock/PartyCasino all 224.5 (-113 to -115), Fliff 225.5; projection 235.9 confirms over. CLV unverified (Pinnacle absent from offers)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers event 21986 market 103",
+        "category": "cross_book_lines",
+        "status": "usable",
+        "freshness": "2026-09-19 16:00 UTC",
+        "detail": "Fanatics 220.5 -115; FanDuel 224.5 -114; DK 224.5 -113; Caesars 224.5 -115; BetMGM 224.5 -115; Hard Rock 224.5 -115; theScore 224.5 -120; PartyCasino 224.5 -115; Fliff 225.5 -120; Pinnacle absent"
+      },
+      {
+        "source": "BettingPros /props projection",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-19",
+        "detail": "proj 235.9 passing yds, recommended over, diff +11.4, L10 5-5"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:00 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 220.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
