@@ -7688,5 +7688,93 @@
     "line_num": 220.5,
     "prop_result": "208 passing yards",
     "prop_margin": -12
+  },
+  {
+    "id": "20260926-mlb-v2-rockie-total",
+    "date": "2026-09-26",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Rockies @ White Sox Over 8",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-115 @ DraftKings",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Steam: total opened 8, 8 books moved to 8.5 (FanDuel, theScore, Caesars, Hard Rock, Novig, Kalshi, Polymarket, Fliff); DraftKings/BetMGM/Fanatics stale at 8 -115. No weather/lineup catalyst (62F, 7mph L-R). CLV unverified (Pinnacle absent from feed).",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers sport=MLB event_id=98128 market_id=175",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-09-26 10:00 AZ",
+        "detail": "opening_line 8; current 8.5 at 8 books (FanDuel 104, theScore 105, Caesars 108, Hard Rock 105, Novig 106, Kalshi 108, Polymarket 108, Fliff -105); still 8 at DraftKings -115, BetMGM -115, Fanatics -115, ProphetX -110, BetRivers -121, bet365 -115"
+      },
+      {
+        "source": "BettingPros /v3/events sport=MLB date=2026-09-26",
+        "category": "schedule",
+        "status": "usable",
+        "freshness": "2026-09-26 10:00 AZ",
+        "detail": "COL @ CWS scheduled 2026-09-26 23:10 UTC; probables Quintana vs Davis Martin"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:10 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260926-mlb-v2-angels-total",
+    "date": "2026-09-26",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Angels @ Mariners Under 7.5",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-120 @ Hard Rock",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Steam: total opened 7.5, 4 books moved to 7 (DraftKings, Fanatics, ProphetX, bet365); Hard Rock/Caesars/FanDuel stale at 7.5 under -120. No injury/lineup catalyst found. Under aligns with under-value lean. CLV unverified (Pinnacle absent from feed). Only 4 of 16 books moved \u2014 thinner than a full-market steam.",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers sport=MLB event_id=99190 market_id=175",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-09-26 10:00 AZ",
+        "detail": "opening_line 7.5; current 7 at 4 books (DraftKings under -101, Fanatics under +100, ProphetX under +109, bet365 under +100); still 7.5 at Hard Rock -120, Caesars -121, FanDuel -122, BetRivers -122, theScore -125, BetMGM -125"
+      },
+      {
+        "source": "BettingPros /v3/events sport=MLB date=2026-09-26",
+        "category": "schedule",
+        "status": "usable",
+        "freshness": "2026-09-26 10:00 AZ",
+        "detail": "LAA @ SEA scheduled 2026-09-27 01:40 UTC; probables Ryan Johnson vs Kade Anderson"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:40 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 7.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
