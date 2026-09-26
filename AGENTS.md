@@ -59,6 +59,12 @@ NFL / College Football, NBA / College Basketball, MLB, NHL. Add others as needed
 
 **Non-negotiable:** any change touching resolution / scoring / CLV ends with `/verify`, not just `/review`.
 
+**Support tools (not part of the chain):**
+
+- `/zoom-out` — run *before* `/to-prd` when about to work in unfamiliar code, so the PRD is grounded.
+- `/improve-codebase-architecture` — periodic codebase health audit (HTML report); recommendations *feed* `/to-prd`; run between feature cycles, not during one.
+- `/write-a-skill` → `/skill-optimizer` — for building new skills, not code features.
+
 **Hygiene:** close or delete abandoned branches/draft PRs — the chain doesn't sweep rot.
 
 ## File Paths — Critical
