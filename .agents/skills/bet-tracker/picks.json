@@ -7776,5 +7776,158 @@
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260927-nfl-v1-kennet-prop",
+    "date": "2026-09-27",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Kenneth Walker III (KC) Under 86.5 rushing yards at MIA",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-106 @ Novig",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book prop gap: Novig/Underdog stale at 86.5 vs consensus 83.5 (opened 88.5, market moved down 5); BettingPros projection 78.3 (under) confirms",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers sport=NFL event_id=22039 market_id=107",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-27 08:58 AZ",
+        "detail": "Under: open 88.5; consensus 83.5 -113; FanDuel 82.5, ProphetX 82.5, BetMGM 83.5, Caesars 84.5, Hard Rock 85.5, Fanatics 85.5, Underdog 86.5 -107, Novig 86.5 -106"
+      },
+      {
+        "source": "BettingPros /v3/props sport=NFL",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-27 09:00 AZ",
+        "detail": "projection 78.3 rush yds, recommended under"
+      },
+      {
+        "source": "BettingPros /v3/events sport=NFL date=2026-09-27",
+        "category": "schedule",
+        "status": "usable",
+        "freshness": "2026-09-27 09:00 AZ",
+        "detail": "KC @ MIA scheduled 2026-09-27 17:00 UTC"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:00 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 86.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260927-nfl-v1-jameso-prop",
+    "date": "2026-09-27",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Jameson Williams (DET) Under 57.5 receiving yards vs NYJ",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-114 @ DraftKings",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book prop gap: DraftKings stale-high at 57.5 vs consensus 54.5 (median 53.5); exchanges Novig/ProphetX at 49.5; BettingPros projection 52.4 (under) confirms",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers sport=NFL event_id=22044 market_id=105",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-27 08:58 AZ",
+        "detail": "Under: open 54.5; consensus 54.5 -115; DraftKings 57.5 -114; FanDuel 52.5, Underdog 52.5, BetMGM 53.5, Caesars 54.5, Fanatics 55.5, Novig 49.5, ProphetX 49.5"
+      },
+      {
+        "source": "BettingPros /v3/props sport=NFL",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-27 09:00 AZ",
+        "detail": "projection 52.4 rec yds, recommended under"
+      },
+      {
+        "source": "BettingPros /v3/events sport=NFL date=2026-09-27",
+        "category": "schedule",
+        "status": "usable",
+        "freshness": "2026-09-27 09:00 AZ",
+        "detail": "NYJ @ DET scheduled 2026-09-27 17:00 UTC"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:00 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 57.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260927-nfl-v1-jake-prop",
+    "date": "2026-09-27",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Jake Ferguson (DAL) Over 26.5 receiving yards vs BAL",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-107 @ Underdog",
+    "units": 1,
+    "score": 7.0,
+    "primary_edge": "Cross-book prop gap: Underdog/FanDuel low at 26.5 vs consensus 28.5 (opened 28.5); BettingPros projection 28.5 (over) confirms",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /v3/offers sport=NFL event_id=21905 market_id=105",
+        "category": "cross_book_odds",
+        "status": "usable",
+        "freshness": "2026-09-27 08:58 AZ",
+        "detail": "Over: open 28.5; consensus 28.5 -113; Underdog 26.5 -107, FanDuel 26.5 -113; DraftKings 28.5, Caesars 28.5, Novig 28.5, BetMGM 27.5, Hard Rock 27.5, theScore 29.5, ProphetX 29.5"
+      },
+      {
+        "source": "BettingPros /v3/props sport=NFL",
+        "category": "projection",
+        "status": "usable",
+        "freshness": "2026-09-27 09:00 AZ",
+        "detail": "projection 28.5 rec yds, recommended over"
+      },
+      {
+        "source": "BettingPros /v3/events sport=NFL date=2026-09-27",
+        "category": "schedule",
+        "status": "usable",
+        "freshness": "2026-09-27 09:00 AZ",
+        "detail": "BAL @ DAL scheduled 2026-09-27 20:25 UTC"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:25 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 26.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
