@@ -7929,5 +7929,49 @@
     "line_num": 26.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260927-nfl-v2-jeremi-prop",
+    "date": "2026-09-27",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Jeremiyah Love (ARI) Over 39.5 rushing yards at SF",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-109 @ DraftKings",
+    "units": 1,
+    "score": 9.7,
+    "primary_edge": "Cross-book prop gap 2.0 yds + mega steam: opened 37.5, 13 books up to 41.5 (theScore 44.5), DK/PrizePicks/book-68/book-75 stale at 39.5; BettingPros projection 45.0 confirms over",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_prop_gap",
+        "source": "BettingPros /props + /offers event 22048 market 107",
+        "status": "usable",
+        "freshness": "2026-09-27T18:10Z",
+        "detail": "DraftKings over 39.5 -109 vs consensus 41.5 -111; gap 2.0; trend_confirmed true; projection 45.016"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line vs current",
+        "status": "usable",
+        "freshness": "2026-09-27T18:10Z",
+        "detail": "opening 37.5 -> consensus 41.5; 13 of 18 books moved up (mega steam toward over); Pinnacle absent, CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:05 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 39.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
