@@ -8061,5 +8061,93 @@
     "line_num": 29.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260928-nfl-v2-dandre-prop",
+    "date": "2026-09-28",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "D'Andre Swift (CHI) Under 62.5 rushing yards vs PHI",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-119 @ Betr",
+    "units": 1,
+    "score": 9.1,
+    "primary_edge": "Cross-book prop gap 1.0 yd: opened 66.5, moved down to 61.5 consensus (DK/Caesars/BetMGM/Hard Rock 61.5, FanDuel/Fanatics/Underdog 60.5); Betr/Novig stale at 62.5; BettingPros projection 55.6 confirms under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_prop_gap",
+        "source": "BettingPros /props + /offers event 22052 market 107",
+        "status": "usable",
+        "freshness": "2026-09-28T16:00Z",
+        "detail": "Betr under 62.5 -119 vs consensus 61.5 -113; gap 1.0; trend_confirmed true; projection 55.56 under"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line vs current",
+        "status": "usable",
+        "freshness": "2026-09-28T16:00Z",
+        "detail": "opening 66.5 -> consensus 61.5; 12+ books moved down; Pinnacle absent, CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 62.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260928-nfl-v2-kyle-prop",
+    "date": "2026-09-28",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Kyle Monangai (CHI) Over 50.5 rushing + receiving yards vs PHI",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-115 @ Fanatics",
+    "units": 1,
+    "score": 9.1,
+    "primary_edge": "Cross-book prop gap 1.0 yd: opened 50.5, moved up to 51.5 consensus (Caesars/Underdog 51.5, DK/ProphetX 52.5); Fanatics stale at opener 50.5; BettingPros projection 54.4 confirms over",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_prop_gap",
+        "source": "BettingPros /props + /offers event 22052 market 406",
+        "status": "usable",
+        "freshness": "2026-09-28T16:00Z",
+        "detail": "Fanatics over 50.5 -115 vs consensus 51.5 -115; gap 1.0; trend_confirmed true; projection 54.43 over"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line vs current",
+        "status": "usable",
+        "freshness": "2026-09-28T16:00Z",
+        "detail": "opening 50.5 -> consensus 51.5; DK/ProphetX/book-39/book-63 at 52.5; Pinnacle absent, CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 50.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
