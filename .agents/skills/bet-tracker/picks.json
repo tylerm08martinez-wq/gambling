@@ -7973,5 +7973,93 @@
     "line_num": 39.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260928-nfl-v1-luther-prop",
+    "date": "2026-09-28",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Luther Burden III (CHI) Over 33.5 receiving yards vs PHI",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-120 @ Hard Rock",
+    "units": 1,
+    "score": 7.0,
+    "primary_edge": "Cross-book prop gap 4.0 yds: opened 30.5, steamed to 37.5 consensus (FD/DK/PrizePicks/ProphetX/Novig 37.5); Hard Rock stale at 33.5; BettingPros projection 41.0 confirms over",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_prop_gap",
+        "source": "BettingPros /props + /offers event 22052 market 105",
+        "status": "usable",
+        "freshness": "2026-09-28T16:30Z",
+        "detail": "Hard Rock over 33.5 -120 vs consensus 37.5 -113; gap 4.0; projection 40.965 over"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line vs current",
+        "status": "usable",
+        "freshness": "2026-09-28T16:30Z",
+        "detail": "opening 30.5 -> consensus 37.5; FD/DK/PrizePicks/ProphetX/Novig at 37.5, Caesars 36.5, Fanatics 35.5, BetMGM 34.5; Pinnacle absent"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 33.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260928-nfl-v1-colsto-prop",
+    "date": "2026-09-28",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Colston Loveland (CHI) Over 29.5 receiving yards vs PHI",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-117 @ ProphetX",
+    "units": 1,
+    "score": 7.0,
+    "primary_edge": "Cross-book prop gap 3.0 yds: opened 27.5, moved to 32.5 consensus (DK/Caesars/Hard Rock/Novig 32.5, BetMGM 34.5); ProphetX stale at 29.5; BettingPros projection 34.4 confirms over",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_prop_gap",
+        "source": "BettingPros /props + /offers event 22052 market 105",
+        "status": "usable",
+        "freshness": "2026-09-28T16:30Z",
+        "detail": "ProphetX over 29.5 -117 vs consensus 32.5 -120; gap 3.0; projection 34.43 over"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line vs current",
+        "status": "usable",
+        "freshness": "2026-09-28T16:30Z",
+        "detail": "opening 27.5 -> consensus 32.5; DK/Caesars/Hard Rock/Novig 32.5, PrizePicks 33.5, BetMGM 34.5; theScore 29.5 -125; Pinnacle absent"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 29.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
