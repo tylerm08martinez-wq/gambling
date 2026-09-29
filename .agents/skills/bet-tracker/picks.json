@@ -8149,5 +8149,49 @@
     "line_num": 50.5,
     "prop_result": "31 rush yds, ~0 rec yds",
     "prop_margin": -20
+  },
+  {
+    "id": "20260929-mlb-v2-philli-total",
+    "date": "2026-09-29",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Phillies @ Braves Under 7 total runs (NL Wild Card Game 1, Luzardo/Painter bullpen vs Sale)",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-117 @ ProphetX",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Mega steam: total opened 7 (-110/-110), moved to 6.5 at 12 books (DK, FD, BetMGM, Caesars, theScore, Hard Rock, bet365, Novig, 39, 68, 75, 27) + consensus; ProphetX still hanging 7 \u2014 stale opener entry, no public catalyst (sunny/no wind, Harper+Schwarber in lineup, PHI bullpen game cuts toward over)",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /v3/offers MLB event 100907 market 175 (game total)",
+        "status": "usable",
+        "freshness": "2026-09-29T16:01Z",
+        "detail": "opening_line 7 -110/-110; 12 books now 6.5 (over -117 to -130, under +100 to +115); stale at 7: ProphetX U -117, Fanatics U -120, BetRivers/15 U -132; Pinnacle absent - CLV unverified"
+      },
+      {
+        "category": "catalyst_check",
+        "source": "WSB-TV/Covers weather + Liberty Line lineup 2026-09-29",
+        "status": "usable",
+        "freshness": "2026-09-29",
+        "detail": "Sunny low 80s minimal wind at Truist Park; Harper/Schwarber in lineup; Arraez out since 9/24 (pre-open); no public catalyst for under move"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:00 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 7.0,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
