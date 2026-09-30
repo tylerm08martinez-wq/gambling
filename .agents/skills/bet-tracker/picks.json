@@ -8193,5 +8193,137 @@
     "line_num": 7.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20260930-mlb-v2-max-prop",
+    "date": "2026-09-30",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Max Fried Under 16.5 outs recorded (Yankees vs Red Sox, AL Wild Card Game 2)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+120 @ Novig",
+    "units": 1,
+    "score": 9.7,
+    "primary_edge": "Cross-book prop gap 1.0 (theScore 17.5 vs consensus 16.5); Novig Under 16.5 +120 vs consensus +100 / DK +104 / Caesars +107; BP projection 15.78 confirms under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /v3/props MLB + prop_edge.py extractor",
+        "status": "usable",
+        "freshness": "2026-09-30T16:05Z",
+        "detail": "cross_book_gap 1.0, bet_book Novig (60), trend_confirmed true, projection under 15.78"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /v3/offers MLB event 100948 market 405 (outs recorded)",
+        "status": "usable",
+        "freshness": "2026-09-30T16:05Z",
+        "detail": "open 16.5; Under 16.5: Novig +120, Caesars +107, Hard Rock +105, DK +104, consensus/BetMGM/Fanatics +100, book-63 -104; theScore 17.5 U -140; Pinnacle absent - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 16.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260930-mlb-v2-white-total",
+    "date": "2026-09-30",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "White Sox @ Astros Under 8 total runs (AL Wild Card Game 2, Burke vs Hunter Brown)",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-124 @ ProphetX",
+    "units": 1,
+    "score": 8.15,
+    "primary_edge": "Mega steam: total opened 8, moved to 7.5 at 15 books (DK, FD, BetMGM, Caesars, theScore, Hard Rock, Fanatics, bet365, BetRivers, Novig, consensus + 15/27/39/68/75); ProphetX still hanging 8 \u2014 stale opener entry, no public catalyst (roof, no lineup/injury news)",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /v3/offers MLB event 100944 market 175 (game total)",
+        "status": "usable",
+        "freshness": "2026-09-30T16:05Z",
+        "detail": "opening_line 8; 15 books now 7.5 (under -104 to -120); ProphetX still 8 U -124 / O +120; Pinnacle absent - CLV unverified"
+      },
+      {
+        "category": "catalyst_check",
+        "source": "Covers/Houston Chronicle/Bleacher Nation previews 2026-09-30",
+        "status": "usable",
+        "freshness": "2026-09-30",
+        "detail": "Starters Brown vs Burke unchanged since announcement; Minute Maid roof; no injury/lineup catalyst for under move"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "2:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.0,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20260930-mlb-v2-philli-total",
+    "date": "2026-09-30",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Phillies @ Braves Under 7.5 total runs (NL Wild Card Game 2, Sanchez vs Mahle)",
+    "bet_type": "total",
+    "bet_type_source": "declared",
+    "line": "-120 @ ProphetX",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Mega steam: total opened 7.5, moved to 7 at 8 books (DK, BetMGM, Caesars, Fanatics, bet365, BetRivers, 15, 27 + consensus) and 7.5 books juiced to U -134/-135 (FD, theScore, Hard Rock); ProphetX U7.5 -120 best remaining under price, no public catalyst",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /v3/offers MLB event 100931 market 175 (game total)",
+        "status": "usable",
+        "freshness": "2026-09-30T16:05Z",
+        "detail": "opening_line 7.5; 8 books now 7 (under -105 to +100); 7.5 books: FD U -134, theScore -135, Hard Rock -135, book-39 -140, Novig -122, ProphetX -120, book-68 -127, book-75 -125; Pinnacle absent - CLV unverified"
+      },
+      {
+        "category": "catalyst_check",
+        "source": "Yahoo Sports/ESPN lineups 2026-09-30",
+        "status": "usable",
+        "freshness": "2026-09-30",
+        "detail": "Full regular lineups both sides (Harper, Schwarber, Acuna, Olson in); starters Sanchez vs Mahle as announced; no injury catalyst"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:00 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 7.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
