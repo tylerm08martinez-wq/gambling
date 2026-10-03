@@ -8668,5 +8668,49 @@
     "line_num": 11.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20261003-mlb-v1-jacob-prop",
+    "date": "2026-10-03",
+    "model": "v1-trends",
+    "sport": "MLB",
+    "bet": "Jacob Misiorowski Under 7.5 strikeouts (Brewers vs Padres)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+123 @ BetRivers",
+    "units": 1,
+    "score": 6.4,
+    "primary_edge": "Cross-book prop gap 1.0 (K line steamed 8.5->7.5), best under price +123",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /v3/props MLB + prop_edge.py extractor",
+        "status": "usable",
+        "freshness": "2026-10-03T16:05Z",
+        "detail": "cross_book_gap 1.0 (opening 8.5, FD/theScore/Underdog/book-39 still 8.5; consensus 7.5), side under, bet_book book-15 (BetRivers same +123), trend_confirmed true, projection 7.14 (diff -0.36), L10 3-7 O/U, 3-start under streak"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /v3/offers MLB event 100941 market 285 (pitcher strikeouts)",
+        "status": "usable",
+        "freshness": "2026-10-03T16:10Z",
+        "detail": "Under 7.5: BetRivers +123, book-15 +123, Novig +117, Caesars/Hard Rock/Fanatics/ProphetX +115, consensus/BetMGM +105; consensus O -140/U +105 de-vig fair U 45.5% vs entry 44.8% (~+1.5% EV); Pinnacle absent - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:30 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 7.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
