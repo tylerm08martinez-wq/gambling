@@ -1,7 +1,7 @@
 // ============================================================================
 // live-peek.js — read-only, non-authoritative "second grader" for the dashboard.
 //
-// 🔍 on a Pick computes a Live Peek (CONTEXT.md → Live Peek; ADR 0007):
+// 🔍 on a Pick computes a Live Peek (GLOSSARY.md → Live Peek; ADR 0007):
 //   - settled pick      → render the stored result + final_score, NO network call
 //   - unsettled MLB prop → fetch the boxscore from statsapi.mlb.com, grade inline,
 //                          label it "live peek — official grade posts tonight"
@@ -193,7 +193,7 @@ export function gradeOverUnder(value, side, line) {
 
 // ---------------------------------------------------------------------------
 // 3. MLB Player Prop Source adapter (thin async wrappers over statsapi.mlb.com).
-//    Mirrors the Python Player Prop Source interface (CONTEXT.md):
+//    Mirrors the Python Player Prop Source interface (GLOSSARY.md):
 //      findGame(date, teamHints) → opaque { gamePk, status, scores }
 //      fetchBoxscore(gamePk)     → shared boxscore shape
 //      findPlayerStat(box, ...)  → matched player's stat, refusing ambiguous matches

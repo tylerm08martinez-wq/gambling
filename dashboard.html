@@ -977,7 +977,7 @@ function winRate(ps) {
 }
 // CLV is "Measured" only when non-null and non-zero. Picks with clv === 0
 // are placeholder entries from the nightly resolve agent (Pinnacle fetch unimplemented).
-// See CONTEXT.md → Measured CLV.
+// See GLOSSARY.md → Measured CLV.
 function measuredClvPicks(ps) {
   return ps.filter(p => p.clv !== null && p.clv !== undefined && p.clv !== 0);
 }

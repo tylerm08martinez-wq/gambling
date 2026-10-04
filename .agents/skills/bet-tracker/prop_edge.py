@@ -2,7 +2,7 @@
 
 Translates one normalized prop (the shape `bettingpros.fetch_props` returns) into a
 betting candidate carrying the detected signal, the side/line/book to bet, and the
-canonical `primary_edge_type` (CONTEXT.md). No I/O — fully table-testable.
+canonical `primary_edge_type` (GLOSSARY.md). No I/O — fully table-testable.
 
 Signals (slice 2 of #48):
 - **Cross-Book Prop Gap** — the best available line differs from the consensus line by

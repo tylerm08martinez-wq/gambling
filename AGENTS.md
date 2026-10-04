@@ -149,4 +149,4 @@ Public repo: `https://github.com/tylerm08martinez-wq/gambling` — all picks ver
 
 - **Issue tracker:** GitHub Issues. See docs/agents/issue-tracker.md.
 - **Triage labels:** default five-role vocabulary (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See docs/agents/triage-labels.md.
-- **Domain docs:** single-context repo — one CONTEXT.md at root, ADRs in docs/adr/. See docs/agents/domain.md.
+- **Domain docs:** single-context repo — one GLOSSARY.md at root, ADRs in docs/adr/. See docs/agents/domain.md.

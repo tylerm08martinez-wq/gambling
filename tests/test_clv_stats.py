@@ -1,7 +1,7 @@
 """Tests for CLV calibration stats (#46).
 
 The model is judged by closing-line value, not short-run ROI: CLV+ rate, average CLV,
-and CLV per Primary Edge Type. The load-bearing rule (CONTEXT.md): **Unmeasured CLV**
+and CLV per Primary Edge Type. The load-bearing rule (GLOSSARY.md): **Unmeasured CLV**
 picks — null clv, or a placeholder +0.00% with no Pinnacle close fetched — are EXCLUDED
 from every CLV statistic, never treated as zero. A genuine measured 0.00% (close was
 fetched, price tied the close) IS measured: it counts in the denominator but did not
