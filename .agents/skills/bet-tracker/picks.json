@@ -8325,5 +8325,93 @@
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20261004-nfl-v1-jaylen-prop",
+    "date": "2026-10-04",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Jaylen Wright (MIA) Under 31.5 rushing yards @ MIN",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-113 @ Novig",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book prop gap 3.0 yds: opened 31.5, market moved down to 28.5 consensus (FD/Hard Rock 27.5, Caesars/BetMGM/Betr 28.5, DK/theScore/ProphetX 29.5, Fanatics 25.5); Novig still at the 31.5 opener at -113; BettingPros projection 20.4 confirms under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_prop_gap",
+        "source": "BettingPros /props + /offers NFL event 22121 market 107",
+        "status": "usable",
+        "freshness": "2026-10-04T16:05Z",
+        "detail": "Novig under 31.5 -113 (over -108) vs consensus 28.5 under -115; gap 3.0; 9 of 10 sportsbooks at 25.5-29.5; projection 20.41 under; est fair P(under 31.5) ~56% vs 53.1% implied"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line vs current",
+        "status": "usable",
+        "freshness": "2026-10-04T16:05Z",
+        "detail": "opening 31.5 -114 (FD 2026-09-30) -> consensus 28.5; Novig unmoved at opener; Pinnacle absent, CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:05 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 31.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261004-nfl-v1-deebo-prop",
+    "date": "2026-10-04",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Deebo Samuel Sr. (SF) Under 39.5 receiving yards vs DEN",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-113 @ ProphetX",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Cross-book prop gap 5.0 yds: nine sportsbooks hang 33.5-35.5 (consensus 34.5 -113 both ways); ProphetX alone at 39.5 with under -113 - same price, five more yards",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "cross_book_prop_gap",
+        "source": "BettingPros /offers NFL event 22124 market 105",
+        "status": "usable",
+        "freshness": "2026-10-04T16:05Z",
+        "detail": "ProphetX under 39.5 -113 (over +108) vs consensus 34.5 under -113; gap 5.0; FD/Caesars/theScore/Hard Rock/Novig/Betr 34.5, DK 33.5, Fanatics 35.5; projection 38.04 (below bet line); est fair P(under 39.5) ~58% vs 53.1% implied"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line vs current",
+        "status": "usable",
+        "freshness": "2026-10-04T16:05Z",
+        "detail": "opening 34.5 -113 (FD 2026-10-04 05:38Z, late open); consensus unchanged at 34.5; Pinnacle absent, CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:25 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 39.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
