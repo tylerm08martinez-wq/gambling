@@ -7,7 +7,7 @@ days after (a 2026-07-19 pick was backfilled on 2026-07-25). That has two failur
 that compound:
 
   1. **Coverage.** Post-game the prop market is usually gone, so most picks never get
-     a close at all. Measured CLV sits at 22% against the 90% CONTEXT.md requires
+     a close at all. Measured CLV sits at 22% against the 90% GLOSSARY.md requires
      before ROI is a mature signal.
   2. **Vintage.** `fetch_offer_ladder` has no timestamp and no "closing" flag. When it
      *does* return something for a finished game, nothing distinguishes a true close

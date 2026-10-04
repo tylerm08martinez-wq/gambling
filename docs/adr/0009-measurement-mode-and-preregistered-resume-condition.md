@@ -13,7 +13,7 @@ The record, corrected for a data defect found on 2026-07-25 (four picks logged w
 
 The entire positive headline rested on those four assumed-price rows. On bets whose price is actually known, the book is slightly below the ~52.4% breakeven. The two largest samples are the negative ones: player props — the declared Primary Edge — at −12.6% (n=54), and `cross_book_gap`, its mechanism, at −9.9% (n=38).
 
-De-vig CLV reads **+0.03% over 18 picks**: not negative, *absent*. And CLV Coverage is **22%** against the 90% CONTEXT.md already requires before ROI is treated as mature. That combination is the real finding — it is not "the strategy is losing", it is "a good strategy running badly and a bad strategy are currently indistinguishable, because the diagnostic is broken."
+De-vig CLV reads **+0.03% over 18 picks**: not negative, *absent*. And CLV Coverage is **22%** against the 90% GLOSSARY.md already requires before ROI is treated as mature. That combination is the real finding — it is not "the strategy is losing", it is "a good strategy running badly and a bad strategy are currently indistinguishable, because the diagnostic is broken."
 
 Detecting a true 55% from breakeven on results alone needs roughly 2,300 bets. CLV answers the same question far sooner, which is exactly why the framework designates it the process signal — but only if it is measured. Coverage is therefore the binding constraint on learning anything, and ADR 0010's closing-line capture exists to lift it.
 

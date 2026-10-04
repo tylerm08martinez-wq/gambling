@@ -555,7 +555,7 @@ def is_measured_clv(pick: dict, metric: str = "preferred") -> bool:
     Now also requires `closing_line` to PARSE as American odds. It previously only
     tested truthiness, so six picks carrying a hand-written clv of 0.0 beside
     unparseable free text ('Mets ML +110') counted as Measured — 18% of the measured
-    denominator, dragging avg_clv toward zero. CONTEXT.md already called a placeholder
+    denominator, dragging avg_clv toward zero. GLOSSARY.md already called a placeholder
     +0.00% Unmeasured; this makes the code agree.
 
     A genuine measured 0.00 (close fetched, price tied the close) IS measured.
@@ -841,7 +841,7 @@ NBA_PROP_STAT_MAP = {
 }
 
 
-# ── Player Prop Source seam (CONTEXT.md: "Player Prop Source") ───────────────────
+# ── Player Prop Source seam (GLOSSARY.md: "Player Prop Source") ───────────────────
 # A per-sport adapter that supplies everything needed to settle a Player Prop from a
 # finished game, behind one small interface. The resolver looks the source up by sport
 # and runs ONE shared path regardless of sport — so adding a sport is registering a

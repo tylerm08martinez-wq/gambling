@@ -99,7 +99,7 @@ The `/offers` snapshot already lists every book's current line. Recommend the be
 1. **Prop gap** (`cross_book_gap`) — ≥ 0.5 unit best-line-vs-consensus gap from the extractor; bet the stale book's line
 2. **Season-trend prop edge** (`prop_trend`) — the extractor's standalone prop_trend (strong projection/rating), or pitcher avg ≥0.8 K from the K line in the favorable direction
 3. **Total (over/under)** (`matchup_edge`) — structural inefficiency (injury, weather, pace mismatch)
-4. **Reverse line movement** (`hard_rlm`) — **Manual-Run-only** (Public Ticket Data is unavailable to a Scheduled Run, CONTEXT.md). Do not log on a scheduled run.
+4. **Reverse line movement** (`hard_rlm`) — **Manual-Run-only** (Public Ticket Data is unavailable to a Scheduled Run, GLOSSARY.md). Do not log on a scheduled run.
 5. **ATS trend** (`ats_trend`) — situational angle. **Supporting evidence only on a Scheduled Run** — never a standalone scheduled Primary Edge.
 6. **Unpriced injury** (`matchup_edge`) — major injury, line hasn't adjusted
 7. **Moneyline** (`plus_money_start`) — only with a market-confirmed edge; avoid juice worse than −130

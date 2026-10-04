@@ -29,7 +29,7 @@ Markets are efficient. The primary goal is **beating the closing line (positive 
 3. **Unpriced injury** — fast-closing window.
 4. **Underdog/under value** — public overweights favorites and overs.
 
-**Hard/Soft RLM are Manual-Run-only** (CONTEXT.md, ADR 0006): the BettingPros API exposes no public ticket/handle splits, and the sites that do 403 the datacenter IP. A Scheduled Run cannot source Public Ticket Data, so it cannot log an RLM pick — it uses Steam for the sharp game-line signal. A human on a residential IP may still research RLM on a Manual Run.
+**Hard/Soft RLM are Manual-Run-only** (GLOSSARY.md, ADR 0006): the BettingPros API exposes no public ticket/handle splits, and the sites that do 403 the datacenter IP. A Scheduled Run cannot source Public Ticket Data, so it cannot log an RLM pick — it uses Steam for the sharp game-line signal. A human on a residential IP may still research RLM on a Manual Run.
 
 **Sport scope:**
 - **MLB:** April – October
