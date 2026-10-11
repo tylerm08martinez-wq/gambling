@@ -8580,5 +8580,93 @@
     "line_num": 224.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20261011-nfl-v2-geno-prop",
+    "date": "2026-10-11",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Geno Smith Under 198.5 passing yards (CLE @ NYJ)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-108 @ Novig",
+    "units": 1,
+    "score": 9.7,
+    "primary_edge": "Signal A cross-book prop gap: Novig under 198.5 -108 vs consensus 195.5/-118 (3-yd stale rung + better price); projection 189.4 confirms",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props cross-book (bet-side line vs consensus)",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-10-11 09:16 AZ",
+        "detail": "under 198.5 -108 @Novig vs consensus 195.5/-118; proj 189.4 under"
+      },
+      {
+        "source": "BettingPros /offers Pinnacle",
+        "category": "clv_benchmark",
+        "status": "unavailable",
+        "freshness": "2026-10-11 09:30 AZ",
+        "detail": "Pinnacle not listed for this prop market - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "10:00 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 198.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261011-nfl-v2-keaton-prop",
+    "date": "2026-10-11",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Keaton Mitchell Over 29.5 rushing yards (DEN @ LAC)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-108 @ book-75",
+    "units": 1,
+    "score": 9.7,
+    "primary_edge": "Signal A cross-book prop gap: over 29.5 -108 vs consensus 32.5/-114 (3-yd stale rung, 10% below market); projection 33.0 confirms",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /props cross-book (bet-side line vs consensus)",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-10-11 09:16 AZ",
+        "detail": "over 29.5 -108 @book75 vs consensus 32.5/-114; proj 33.0 over"
+      },
+      {
+        "source": "BettingPros /offers Pinnacle",
+        "category": "clv_benchmark",
+        "status": "unavailable",
+        "freshness": "2026-10-11 09:30 AZ",
+        "detail": "Pinnacle not listed for this prop market - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:05 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 29.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
