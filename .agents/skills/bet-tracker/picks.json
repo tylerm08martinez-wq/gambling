@@ -8458,16 +8458,16 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "5:00 PM",
-    "result": null,
-    "units_won_lost": null,
-    "closing_line": null,
-    "clv": null,
+    "result": "win",
+    "units_won_lost": 0.847,
+    "closing_line": "-110",
+    "clv": -1.75,
     "clv_devig": null,
-    "clv_pct_pts": null,
-    "final_score": null,
+    "clv_pct_pts": -1.75,
+    "final_score": "CLE 2, CHW 0",
     "game_margin": null,
-    "line_num": 13.5,
-    "prop_result": null,
-    "prop_margin": null
+    "line_num": -118.0,
+    "prop_result": "17 outs recorded (5.2 IP, 12 K)",
+    "prop_margin": 4
   }
 ]
