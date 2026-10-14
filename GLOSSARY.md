@@ -71,6 +71,9 @@ The price currently available at a book beats the de-vigged Pinnacle (`book_id` 
 ## V3-Value
 The third pick-generation model, after V1-Trends and V2-Sharp: a pure CLV/+EV engine that logs a [[Pick]] only when an available price beats the de-vigged Pinnacle fair line — a [[Line-Value Edge]]. Optimizes for [[CLV-Positive +EV Candidate]]s and is judged by CLV (CLV+ rate, average CLV) and [[Sharp Score]], never short-run win rate. Its originating Primary Edges are `clv_value` and [[Cross-Book Prop Gap]]; [[Steam Move]] and consensus win probability are confirmation-only.
 
+## V4-Matchup
+The fourth pick-generation model: builds its own fair price from **matchup projections** — how a player or team performs against a specific opponent trait (defensive scheme, coverage type, defender, position-level defense), adjusted for injuries and availability — and logs a [[Pick]] when an available price beats that projection. Distinct from [[V3-Value]], whose fair price is the de-vigged market rather than a model. Scoped to NFL and NBA, covering player props, alt lines, spreads and totals. Runs under measurement mode and is judged by de-vigged CLV, never short-run win rate.
+
 ## Scheduled Run
 An unattended betting routine run that may log picks only when structured edge type and source evidence are present. Distinct from a Manual Run, which may capture incomplete candidates for human review.
 
