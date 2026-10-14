@@ -80,6 +80,9 @@ The price currently available at a book beats a **blended fair price**: [[V4-Mat
 ## Run Slot
 The scheduled time of day a [[Pick]] was logged in (`09:00` or `15:00` Arizona time), recorded so CLV can be compared across runs. A later run only adds picks. It never edits or cancels a pick logged in an earlier slot; injury news that turns against an earlier pick shows up in its CLV.
 
+## Season Snapshot
+A dated local copy of an NBA stats table that only ever returns **season-to-date totals** and ignores date filters (Synergy play types; `leaguedashptdefend` until its date filter is confirmed). Saved daily because a missed day can never be recovered. A projection for a game may use only the latest snapshot taken **on or before** that game's date. Filling a gap with a later snapshot is look-ahead leakage. Raw snapshots are never committed to the public repo. Planned for [[V4-Matchup]] as of 2026-10-13.
+
 ## Scheduled Run
 An unattended betting routine run that may log picks only when structured edge type and source evidence are present. Distinct from a Manual Run, which may capture incomplete candidates for human review.
 
