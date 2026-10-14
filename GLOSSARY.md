@@ -74,6 +74,12 @@ The third pick-generation model, after V1-Trends and V2-Sharp: a pure CLV/+EV en
 ## V4-Matchup
 The fourth pick-generation model: builds its own fair price from **matchup projections** — how a player or team performs against a specific opponent trait (defensive scheme, coverage type, defender, position-level defense), adjusted for injuries and availability — and logs a [[Pick]] when an available price beats that projection. Distinct from [[V3-Value]], whose fair price is the de-vigged market rather than a model. Scoped to NFL and NBA, covering player props, alt lines, spreads and totals. Runs under measurement mode and is judged by de-vigged CLV, never short-run win rate.
 
+## Projection-Value Edge
+The price currently available at a book beats a **blended fair price**: [[V4-Matchup]]'s own projection blended with a de-vigged market reference (70% market / 30% model to start for spreads and totals). Its canonical [[Primary Edge Type]] is `projection_value`. Unlike [[Expert/Model Consensus]] (third-party picks, never a standalone Primary Edge), it counts as a [[Market-Confirmed Primary Edge]], because the market fair price is part of the blend and a real, available price has to beat it. Its [[Source Evidence]] must record four parts: the projection, the market reference, the blend, and the injury news it assumed. Distinct from `matchup_edge`, a narrative matchup angle with no priced projection behind it. Takes effect with V4-Matchup (planned, not yet built as of 2026-10-13).
+
+## Run Slot
+The scheduled time of day a [[Pick]] was logged in (`09:00` or `15:00` Arizona time), recorded so CLV can be compared across runs. A later run only adds picks. It never edits or cancels a pick logged in an earlier slot; injury news that turns against an earlier pick shows up in its CLV.
+
 ## Scheduled Run
 An unattended betting routine run that may log picks only when structured edge type and source evidence are present. Distinct from a Manual Run, which may capture incomplete candidates for human review.
 
