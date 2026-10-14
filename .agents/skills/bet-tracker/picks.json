@@ -8701,16 +8701,16 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "5:30 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "win",
+    "units_won_lost": 1.23,
     "closing_line": null,
     "clv": null,
     "clv_devig": null,
     "clv_pct_pts": null,
-    "final_score": null,
+    "final_score": "SAN 2, MIL 3",
     "game_margin": null,
     "line_num": 7.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "6 strikeOuts",
+    "prop_margin": -1.5
   }
 ]
