@@ -1,6 +1,6 @@
 # Can we test NFL projections for free before going live? (V4-Matchup research)
 
-Ticket: #98 · Map: #86 · Sibling: #89 ([v4-nfl-free-data](https://github.com/tylerm08martinez-wq/gambling/blob/research/v4-nfl-free-data/docs/research/v4-nfl-free-data.md)) · Researched: 2026-10-13 (home PC, residential IP)
+Ticket: #98 · Map: #86 · Sibling: #89 ([v4-nfl-free-data](https://github.com/tylerm08martinez-wq/gambling/blob/main/docs/research/v4-nfl-free-data.md)) · Researched: 2026-10-13 (home PC, residential IP)
 
 ## Bottom line
 
