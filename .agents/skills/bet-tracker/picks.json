@@ -8712,5 +8712,107 @@
     "line_num": 7.5,
     "prop_result": "6 strikeOuts",
     "prop_margin": -1.5
+  },
+  {
+    "id": "20261015-nfl-v2-bo-prop",
+    "date": "2026-10-15",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Bo Nix Under 14.5 rushing yards (DEN vs SEA)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-111 @ Novig",
+    "units": 1,
+    "score": 9.1,
+    "primary_edge": "Signal A cross-book prop gap + steam: opened 14.5, 6 books (DK/Caesars/theScore/BetMGM/ProphetX/book-27) steamed to 13.5; Novig/FanDuel still hang 14.5; projection 13.31 under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers cross-book (event 22000 mkt 107)",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-10-15 09:20 AZ",
+        "detail": "under 14.5 -111 @Novig, -113 @FanDuel vs consensus 13.5 (-118/-109); open 14.5, 6 books moved to 13.5"
+      },
+      {
+        "source": "BettingPros /props projection",
+        "category": "model_projection",
+        "status": "usable",
+        "freshness": "2026-10-15 09:20 AZ",
+        "detail": "proj 13.31 under; season 0-5 over"
+      },
+      {
+        "source": "BettingPros /offers Pinnacle",
+        "category": "clv_benchmark",
+        "status": "unavailable",
+        "freshness": "2026-10-15 09:20 AZ",
+        "detail": "Pinnacle not listed - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 14.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261015-nfl-v2-rj-prop",
+    "date": "2026-10-15",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "RJ Harvey Under 21.5 receiving yards (DEN vs SEA)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+102 @ Novig",
+    "units": 1,
+    "score": 10.0,
+    "primary_edge": "Signal A cross-book prop gap + mega steam: opened 25.5, market steamed to 20.5 consensus (theScore/ProphetX 19.5); Novig 21.5 under +102 still above consensus; projection 18.94 under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers cross-book (event 22000 mkt 105)",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-10-15 09:20 AZ",
+        "detail": "under 21.5 +102 @Novig vs consensus 20.5 (-114/-116); open 25.5, DK/Caesars/Fanatics/Betr 20.5, theScore/ProphetX 19.5"
+      },
+      {
+        "source": "BettingPros /props projection",
+        "category": "model_projection",
+        "status": "usable",
+        "freshness": "2026-10-15 09:20 AZ",
+        "detail": "proj 18.94 under"
+      },
+      {
+        "source": "BettingPros /offers Pinnacle",
+        "category": "clv_benchmark",
+        "status": "unavailable",
+        "freshness": "2026-10-15 09:20 AZ",
+        "detail": "Pinnacle not listed - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 21.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
