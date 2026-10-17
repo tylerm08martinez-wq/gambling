@@ -8814,5 +8814,63 @@
     "line_num": 102.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20261017-mlb-v2-taylor-prop",
+    "date": "2026-10-17",
+    "model": "v2-sharp",
+    "sport": "MLB",
+    "bet": "Taylor Walls Under 0.5 hits (TB @ CLE, ALCS)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-110 @ theScore Bet",
+    "units": 1,
+    "score": 9.35,
+    "primary_edge": "Signal C+ mega steam: Walls U0.5 hits opened +106, moved to -140/-169 at 9+ books (Hard Rock -140, Underdog -143, Novig -141, ProphetX -158, BetMGM/Fanatics -165, books 39/63 -165/-169); theScore Bet lagging at -110. TB U0.5 total bases moved the same way (-115 to -165). Walls confirmed starting SS, batting 9th in ALCS G1-3, so no lineup reason found for the move",
+    "primary_edge_type": "steam",
+    "source_evidence": [
+      {
+        "source": "BettingPros /offers cross-book (event 100930 mkt 287)",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-10-17 09:30 AZ",
+        "detail": "U0.5 hits open +106; consensus -162; HardRock -140, Underdog -143, Novig -141, ProphetX -158, BetMGM -165, Fanatics -160, 39 -165, 63 -169; theScore -110 (stale)"
+      },
+      {
+        "source": "BettingPros /offers cross-book (event 100930 mkt 293)",
+        "category": "line_movement_data",
+        "status": "usable",
+        "freshness": "2026-10-17 09:30 AZ",
+        "detail": "U0.5 total bases open -115 -> consensus -165; theScore -110"
+      },
+      {
+        "source": "BettingPros /props projection",
+        "category": "model_projection",
+        "status": "usable",
+        "freshness": "2026-10-17 09:20 AZ",
+        "detail": "TB projection 0.24 under 0.5"
+      },
+      {
+        "source": "BettingPros /offers Pinnacle",
+        "category": "clv_benchmark",
+        "status": "unavailable",
+        "freshness": "2026-10-17 09:30 AZ",
+        "detail": "Pinnacle not listed - CLV unverified; consensus de-vig fair under ~57% vs entry 52.4%"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:08 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 0.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
