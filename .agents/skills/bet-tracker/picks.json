@@ -8872,5 +8872,137 @@
     "line_num": -110.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20261018-nfl-v1-justin-prop",
+    "date": "2026-10-18",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Justin Herbert Under 196.5 passing yards (LAC @ KC)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-111 @ DraftKings",
+    "units": 1,
+    "score": 8.6,
+    "primary_edge": "Cross-book gap: DK Under 196.5 vs consensus 194.5 and BetMGM 189.5 (7-yd spread); projection 190.3 confirms under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NFL event 22063 market 103 (pass yds)",
+        "status": "usable",
+        "freshness": "2026-10-18 17:28 UTC",
+        "detail": "Under rungs: DK 196.5 -111, theScore 194.5 -110, consensus 194.5 -112; over rungs BetMGM 189.5 -115, Fanatics 190.5 -120, FanDuel 192.5 -113 -> DK is the stale high book"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection",
+        "status": "usable",
+        "freshness": "2026-10-18 17:25 UTC",
+        "detail": "Herbert projection 190.31 (diff -4.19 vs 194.5), recommended under; L5 2-3 over"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:25 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 196.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261018-nfl-v1-patric-prop",
+    "date": "2026-10-18",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Patrick Mahomes Over 220.5 passing yards (LAC @ KC)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-115 @ Fanatics",
+    "units": 1,
+    "score": 8.6,
+    "primary_edge": "Cross-book gap: Fanatics Over 220.5 vs consensus 223.5/224.5 (DK Under 225.5); projection 233.1 (+8.6) confirms over",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NFL event 22063 market 103 (pass yds)",
+        "status": "usable",
+        "freshness": "2026-10-18 17:28 UTC",
+        "detail": "Over rungs: Fanatics 220.5 -115 (stale low), consensus 223.5 -113; DK/BetMGM/HardRock/Betr under 225.5"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection",
+        "status": "usable",
+        "freshness": "2026-10-18 17:25 UTC",
+        "detail": "Mahomes projection 233.06 (diff +8.56), recommended over; L5 3-2 over"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:25 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 220.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261018-nfl-v1-christ-prop",
+    "date": "2026-10-18",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Christian Watson Under 79.5 receiving yards (DAL @ GB)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-125 @ theScore Bet",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book gap: theScore Under 79.5 vs consensus 75.5 (4 yds, DK 76.5); projection 72.7 confirms under",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NFL event 22065 market 105 (rec yds)",
+        "status": "usable",
+        "freshness": "2026-10-18 17:26 UTC",
+        "detail": "Under rungs: theScore 79.5 -125 (stale high), Hard Rock 77.5 -115, DK 76.5 -110, consensus 75.5 -115"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection",
+        "status": "usable",
+        "freshness": "2026-10-18 17:25 UTC",
+        "detail": "Watson projection 72.65 (diff -3.85), recommended under; L5 3-2 over (boom/bust risk)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:20 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 79.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
