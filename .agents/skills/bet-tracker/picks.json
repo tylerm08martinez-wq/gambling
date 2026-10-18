@@ -9004,5 +9004,107 @@
     "line_num": 79.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20261018-nfl-v2-tucker-prop",
+    "date": "2026-10-18",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Tucker Kraft Under 52.5 receiving yards (DAL @ GB)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-115 @ DraftKings",
+    "units": 1,
+    "score": 9.1,
+    "primary_edge": "Signal A cross-book gap: DK Under 52.5 vs consensus 49.5 (3 yds); projection 48.9 confirms under; Pinnacle absent, CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NFL event 22065 market 105 (rec yds)",
+        "status": "usable",
+        "freshness": "2026-10-18 17:24 UTC",
+        "detail": "DK Under 52.5 -115 is the stale high rung; consensus 49.5 -109; ProphetX over 52.5 +101, Novig under 49.5 +106"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection",
+        "status": "usable",
+        "freshness": "2026-10-18 17:25 UTC",
+        "detail": "Kraft projection 48.92 (diff -0.58 vs 49.5), recommended under; L5 2-3 over"
+      },
+      {
+        "category": "clv_benchmark",
+        "source": "BettingPros /offers Pinnacle (book 2)",
+        "status": "unavailable",
+        "freshness": "2026-10-18 17:28 UTC",
+        "detail": "Pinnacle not listed in any NFL offers response - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:20 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 52.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261018-nfl-v2-jordan-prop",
+    "date": "2026-10-18",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Jordan Love Under 277.5 passing yards (DAL @ GB)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-115 @ BetMGM",
+    "units": 1,
+    "score": 9.1,
+    "primary_edge": "Signal A cross-book gap: BetMGM and Hard Rock Under 277.5 vs consensus 274.5 (3 yds); projection 273.3 confirms under; Pinnacle absent, CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NFL event 22065 market 103 (pass yds)",
+        "status": "usable",
+        "freshness": "2026-10-18 17:27 UTC",
+        "detail": "BetMGM 277.5 -115 and Hard Rock 277.5 -115 are the stale high rungs; consensus 274.5 -113; Novig 274.5 +100"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection",
+        "status": "usable",
+        "freshness": "2026-10-18 17:25 UTC",
+        "detail": "Love projection 273.25 (diff -1.25 vs 274.5), recommended under; L5 3-2 over"
+      },
+      {
+        "category": "clv_benchmark",
+        "source": "BettingPros /offers Pinnacle (book 2)",
+        "status": "unavailable",
+        "freshness": "2026-10-18 17:28 UTC",
+        "detail": "Pinnacle not listed in any NFL offers response - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:20 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 277.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
