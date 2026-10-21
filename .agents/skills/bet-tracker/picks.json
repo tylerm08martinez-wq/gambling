@@ -9259,5 +9259,63 @@
     "line_num": 23.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20261021-nba-v2-devin-prop",
+    "date": "2026-10-21",
+    "model": "v2-sharp",
+    "sport": "NBA",
+    "bet": "Devin Booker Under 35.5 Points+Rebounds+Assists (PHO @ POR)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-110 @ DraftKings",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Signal A cross-book gap: DK still hangs the 35.5 opener while 11 books moved to 34.5 (consensus 34.5 -112/-118) and the PHO@POR total steamed 235.5 -> 231.5 at all 18 books; cross-rung fair under ~55% vs 52.4%; Pinnacle absent, CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27900 market 338 (PRA)",
+        "status": "usable",
+        "freshness": "2026-10-21 16:02 UTC",
+        "detail": "DK U35.5 -110 / O35.5 -120 (opener 35.5 DK); Hard Rock U35.5 -125; FD/CZR/BetRivers/ProphetX/Novig + 6 more at 34.5; consensus 34.5 -112/-118"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers NBA event 27900 market 128 (total)",
+        "status": "usable",
+        "freshness": "2026-10-21 16:05 UTC",
+        "detail": "Game total opened 235.5, now 231.5 at 17/18 books - lower-scoring script supports PRA under"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection",
+        "status": "usable",
+        "freshness": "2026-10-21 15:50 UTC",
+        "detail": "Projection 38.0 (over, +3.5) - conflicts; L5 0-5 under (last season)"
+      },
+      {
+        "category": "clv_benchmark",
+        "source": "BettingPros /offers Pinnacle (book 2)",
+        "status": "unavailable",
+        "freshness": "2026-10-21 16:05 UTC",
+        "detail": "Pinnacle not listed in NBA offers - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "7:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 35.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
