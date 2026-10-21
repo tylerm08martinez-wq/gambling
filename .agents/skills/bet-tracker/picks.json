@@ -9106,5 +9106,158 @@
     "line_num": 277.5,
     "prop_result": "276 pass yds",
     "prop_margin": -2
+  },
+  {
+    "id": "20261021-nba-v1-domant-prop",
+    "date": "2026-10-21",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Domantas Sabonis Over 21.5 Points + Assists (SAC @ LAC)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+100 @ Novig",
+    "units": 1,
+    "score": 8.8,
+    "primary_edge": "Cross-book gap: Novig still hangs the 21.5 opener at +100 while every sportsbook moved to 22.5 (consensus 22.5 -119/-110); cross-rung fair ~56% vs 50% implied",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27901 market 335 (pts+ast)",
+        "status": "usable",
+        "freshness": "2026-10-21 15:52 UTC",
+        "detail": "Novig O21.5 +100 / U21.5 -120 (stale at 21.5 opener); DK O22.5 -124, CZR -121, Hard Rock -120, BetRivers -117, theScore -110; consensus 22.5 -119/-110; Novig points market (17.5) is current, only the combo book is stale"
+      },
+      {
+        "category": "clv_benchmark",
+        "source": "BettingPros /offers Pinnacle (book 2)",
+        "status": "unavailable",
+        "freshness": "2026-10-21 16:05 UTC",
+        "detail": "Pinnacle not listed in NBA offers - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "7:30 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 21.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261021-nba-v1-naz-prop",
+    "date": "2026-10-21",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Naz Reid Over 23.5 Points + Rebounds (CHA @ BKN)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+115 @ Novig",
+    "units": 1,
+    "score": 7.6,
+    "primary_edge": "Cross-book gap: market steamed 22.5 -> 25.5 at 8+ books on Reid's post-LaMelo-trade role in CHA; Novig lags at 23.5 +115 (2 pts under consensus at plus money)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27895 market 336 (pts+reb)",
+        "status": "usable",
+        "freshness": "2026-10-21 15:52 UTC",
+        "detail": "Novig O23.5 +115 / U23.5 -147; Fanatics O24.5 -125; DK/FD/CZR/theScore/Hard Rock/BetRivers O25.5 -103 to -110; consensus 25.5 -109/-120; opener 22.5 (FanDuel)"
+      },
+      {
+        "category": "news",
+        "source": "NBC Sports / FantasyPros (Shams) 2026-06-25",
+        "status": "usable",
+        "freshness": "2026-10-21 16:10 UTC",
+        "detail": "Reid traded MIN -> CHA in LaMelo Ball deal; expanded role explains the 3-pt line move"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection",
+        "status": "usable",
+        "freshness": "2026-10-21 15:50 UTC",
+        "detail": "Projection 22.2 (under), L10 3-7 - conflicting, reflects MIN bench role; scored -2"
+      },
+      {
+        "category": "clv_benchmark",
+        "source": "BettingPros /offers Pinnacle (book 2)",
+        "status": "unavailable",
+        "freshness": "2026-10-21 16:05 UTC",
+        "detail": "Pinnacle not listed - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:30 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 23.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261021-nba-v1-julius-prop",
+    "date": "2026-10-21",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Julius Randle Over 23.5 Points + Assists (CHA @ BKN)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-104 @ Novig",
+    "units": 1,
+    "score": 7.4,
+    "primary_edge": "Cross-book gap: Novig (and Fanatics -125) still at 23.5 after market moved 22.5 opener -> 24.5; projection 24.6 agrees with over",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27895 market 335 (pts+ast)",
+        "status": "usable",
+        "freshness": "2026-10-21 15:52 UTC",
+        "detail": "Novig O23.5 -104 / U23.5 +100; Fanatics O23.5 -125; DK O24.5 -107, CZR -109, FD -112, BetRivers -117; consensus 24.5 -110/-121; opener 22.5 (DK)"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection",
+        "status": "usable",
+        "freshness": "2026-10-21 15:50 UTC",
+        "detail": "Projection 24.6 (over, +1.1 vs 24.5); L10 1-9 under (last season, MIN) - conflicting trend scored -2"
+      },
+      {
+        "category": "clv_benchmark",
+        "source": "BettingPros /offers Pinnacle (book 2)",
+        "status": "unavailable",
+        "freshness": "2026-10-21 16:05 UTC",
+        "detail": "Pinnacle not listed - CLV unverified"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:30 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 23.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
