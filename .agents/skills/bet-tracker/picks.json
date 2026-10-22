@@ -9317,5 +9317,63 @@
     "line_num": -110.0,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20261022-nfl-v1-hunter-prop",
+    "date": "2026-10-22",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Hunter Henry Over 31.5 receiving yards (NE @ CHI)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-116 @ Betr",
+    "units": 1,
+    "score": 6.4,
+    "primary_edge": "Cross-book prop gap: Betr still hangs Henry rec yds at 31.5 (-116/-118, its own 50/50) while the market steamed 28.5 -> 35.5 consensus (FD/BetMGM 33.5, Caesars/Hard Rock 34.5, DK 35.5, Kalshi 39.5 over priced 42%); cross-rung fair P(over 31.5) ~54.8% vs 53.7% needed, EV ~+2%",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NFL event 22067 market 105 (receiving yards)",
+        "status": "usable",
+        "freshness": "2026-10-22 16:06 UTC",
+        "detail": "Betr O31.5 -116 / U31.5 -118 (updated 15:59 UTC); FanDuel 33.5 -113/-113; BetMGM 33.5 -115/-115; Caesars 34.5 -114/-115; Hard Rock 34.5; DraftKings 35.5 -110/-114; consensus 35.5 -107/-119; Kalshi 39.5 +133/-144"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-22 16:06 UTC",
+        "detail": "Opened 28.5 -115 (DraftKings 2026-10-19); consensus now 35.5 - +7 yd move in bet direction; Betr lagging at 31.5"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection + performance",
+        "status": "usable",
+        "freshness": "2026-10-22 16:00 UTC",
+        "detail": "Projection 33.41 (above 31.5 bet line, below 35.5 consensus); L5 4-1 over, season 4-2 over, 3-game over streak; receptions proj 3.0 vs 3.5 (mild volume conflict)"
+      },
+      {
+        "category": "injury_news",
+        "source": "CBS Sports + Covers NE injury report",
+        "status": "usable",
+        "freshness": "2026-10-21",
+        "detail": "Henry not on injury report; NE pass-catchers out are IR only (WR Mack Hollins, TE Julian Hill)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:15 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 31.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
