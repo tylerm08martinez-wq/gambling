@@ -159,16 +159,16 @@ Format:
 - [Flag near-misses and blowouts]
 
 **Pattern updates**:
-- [Edge type trending up/down — note it. Promote to Active Patterns at 3+ consistent results]
+- [Edge type trending up/down — note it. Promote to Active Intelligence at 3+ consistent results]
 - [Score calibration flags]
 ```
 
 Only write specific, actionable observations. If nothing notable: `[Date] — X picks resolved [W-L]. No notable updates.`
 
-Also update top-level sections of `betting-intel.md` when warranted:
-- **Active Patterns** — promote at 3+ consistent results for an edge type
-- **Patterns to Avoid** — promote at 3+ consistent failures
-- **Score Calibration Notes** — flag big mismatches between score and outcome
+Also update the **Active Intelligence** section at the top of `betting-intel.md` when warranted (keep it under ~40 lines — promote durable rules, prune stale ones):
+- Promote an edge-type rule at **3+ consistent results** (working template) or **3+ consistent failures** (pattern to avoid)
+- Update the data-source notes when a feed starts/stops working
+- Flag a score-calibration rule when scores and outcomes repeatedly mismatch
 
 ---
 

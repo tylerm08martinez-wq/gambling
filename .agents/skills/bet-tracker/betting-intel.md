@@ -6,57 +6,39 @@ Cumulative observations from V1-Trends, V2-Sharp, and Bet Tracker sessions. All 
 
 ## How to Use This Log (for skills)
 
-**On read:** Scan all sections before making any picks or analysis. Apply relevant patterns to today's games. If a sport, team, edge type, or market condition matches a logged observation, adjust confidence accordingly.
+**On read:** Read **only the Active Intelligence section below** — it is the distilled, current state. **Do NOT scan the Session Log archive** at the bottom; it is hundreds of dated entries kept for humans and re-distillation, and reading it wastes tokens without adding signal beyond what's already promoted up here.
 
-**On write:** After presenting picks or resolving results, append a dated entry to the Session Log. Be specific — name teams, lines, signals, and outcomes. Vague observations don't help future decisions.
-
----
-
-## Edge Type Patterns
-
-*Running observations about which signal types are working or failing.*
-
-<!-- Format: [Date] [Model] — [Signal type] — [Observation] -->
+**On write:** Append a dated entry to the **Session Log** (specific — name teams, lines, signals, outcomes). When a Session-Log observation recurs **3+ times** with consistent results, promote a one-line rule into Active Intelligence and prune anything it makes stale. Keep Active Intelligence under ~40 lines.
 
 ---
 
-## Sport-Specific Observations
+## Active Intelligence
 
-*Patterns that apply to specific sports or leagues.*
+*The only section skills read. Distilled from the Session Log; current as of 2026-06-01.*
 
-<!-- Format: [Date] [Sport] — [Observation] -->
+**Data sources — what actually works on a scheduled/residential run:**
+- **BettingPros API is the only reliable feed.** Props work (`bettingpros.py props`); game-line market IDs (ML/spread/total) return **empty** via `/offers` → game-line steam is **unverifiable** via BettingPros alone on scheduled runs.
+- **Pinnacle is absent** from BettingPros prop offers → props log "CLV unverified." On manual runs, shop Pinnacle directly when juice is borderline (−131 to −140).
+- **403 from datacenter/this environment — do not retry:** Action Network, VSIN, BetQL, SportsBettingDime, Covers (14+ straight sessions; public/money splits NOT accessible on scheduled runs). `scoresandodds.com` and `winnersandwhiners.com` work from a residential IP; ActionNetwork/DocSports/SBDime steam pages 404.
 
----
+**V2-Sharp signal rules (confirmed):**
+- **`cross_book_gap` extractor is the primary scheduled-run signal** (best line vs consensus, `trend_confirmed`).
+- **Discard** gap ≥1.0 + `trend_confirmed=false` + minimal player sample → lineup/public news, not sharp (e.g. Vargas 1.5→0.5).
+- **Single-book RLM (1 book moved, 1 held) = always discard.** Steam needs **3+ books** simultaneously.
+- Line moving **WITH** heavy public = public steam, NOT RLM. Line dropping WITH ~98% public = sharp+public aligned, NOT RLM. Both discard.
+- One-whale "100% money / 50-50 tickets" = single actor, excluded.
+- RLM bar: ≥15-cent ML move **and** confirmed 65%+ public split (rarely confirmable in this data environment).
 
-## Market & Line Movement Notes
+**V1-Trends templates (working):**
+- **Plus-money road dog + dominant arm vs a broken opposing starter** (CIN +120, Royals +102, Cardinals +102) — recurring ML-mismatch.
+- **Dual-bad-starter Over** (both SP >5.5 ERA → high total).
+- **MLB unders:** stadium run-suppression (e.g. Kauffman/KC) and dual-ace low-total setups — both cash with cushion.
+- **Pitcher strikeout-over props** (Burns, Cavalli) via the extractor.
+- **Chalk-trap discipline:** skip when the good pitcher is already priced heavy (≥ −150). *Exception:* opponent on an **opener/bulk day** is a structural disadvantage so moderate chalk clears — but it won by only 1 run once; don't inflate score/units.
 
-*Observations about books, juice levels, and line movement behavior.*
-
-<!-- Format: [Date] — [Observation] -->
-
----
-
-## Score Calibration Notes
-
-*Cases where model scores were too high or too low vs. actual outcomes.*
-
-<!-- Format: [Date] [Model] — [Bet] scored [X], outcome was [win/loss] — [What the score missed] -->
-
----
-
-## Active Patterns (High Confidence)
-
-*Patterns seen 3+ times with consistent results. Apply these proactively.*
-
-None yet — will populate as data accumulates.
-
----
-
-## Patterns to Avoid
-
-*Situations that have repeatedly produced bad outcomes.*
-
-None yet — will populate as data accumulates.
+**Operational rules:**
+- **"Too close to start":** skip games within ~15 min of the ~9–10 AM AZ session start (may be in progress / near-open). Check for already-final early games first.
+- Daily cap: 5 total, max 3/model. Highest V2 score to date: Aranda TB 9.0 (plus money on a below-consensus line).
 
 ---
 
