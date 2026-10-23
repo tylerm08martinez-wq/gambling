@@ -9549,5 +9549,121 @@
     "line_num": 10.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20261023-nba-v2-victor-prop",
+    "date": "2026-10-23",
+    "model": "v2-sharp",
+    "sport": "NBA",
+    "bet": "Victor Wembanyama Under 40.5 Points+Rebounds+Assists (HOU @ SAS)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-112 @ Betr",
+    "units": 1,
+    "score": 9.1,
+    "primary_edge": "Signal A cross-book prop gap: Betr alone hangs Wemby PRA at 40.5 while 15 books sit at 39.5 (opened 39.5) with unders juiced; de-vigged 39.5 two-ways put P(under 40.5) ~55% vs 52.8% needed; projection 36.7 confirms (+0.5). CLV unverified (no Pinnacle)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27911 market 338 (PRA)",
+        "status": "usable",
+        "freshness": "2026-10-23 16:10 UTC",
+        "detail": "Betr O40.5 -122 / U40.5 -112 (upd 16:03 UTC); FanDuel 39.5 -112/-118; DraftKings 39.5 -115/-115; Caesars 39.5 -114/-118; BetMGM 39.5 -110/-120; Hard Rock 39.5 -115/-115; Fanatics 39.5 -110/-120; BetRivers 39.5 -109/-125; consensus 39.5 -111/-119; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-23 16:10 UTC",
+        "detail": "Opened 39.5 -110/-120 (FanDuel 2026-10-22 05:19 UTC); market unchanged at 39.5 - Betr outlier one point high"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection + performance",
+        "status": "usable",
+        "freshness": "2026-10-23 16:00 UTC",
+        "detail": "Projection 36.7 (under, diff -2.8); last 20 9-11, 3-game under streak"
+      },
+      {
+        "category": "injury_news",
+        "source": "ESPN NBA injuries page",
+        "status": "usable",
+        "freshness": "2026-10-23 16:05 UTC",
+        "detail": "Wembanyama not listed; SAS: De Aaron Fox (wrist) and Keldon Johnson questionable, Tobias Harris out; HOU: Steven Adams and Reed Sheppard questionable"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:30 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 40.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261023-nba-v2-jaime-prop",
+    "date": "2026-10-23",
+    "model": "v2-sharp",
+    "sport": "NBA",
+    "bet": "Jaime Jaquez Jr. Over 14.5 Points (CHI @ MIL)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-111 @ BetMGM",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Signal A cross-book prop gap: BetMGM (and sister book 27) still at 14.5 (own -111/-120) after the market firmed from 15.5 under -136 at open to 15.5 even at 14 books; de-vigged 15.5 two-ways put P(over 14.5) ~57% vs 52.6% needed. Projection 14.3 does not confirm. CLV unverified (no Pinnacle)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27909 market 156 (points)",
+        "status": "usable",
+        "freshness": "2026-10-23 16:10 UTC",
+        "detail": "BetMGM O14.5 -111 / U14.5 -120 (upd 15:50 UTC); FanDuel 15.5 -114/-114; DraftKings 15.5 -127/+100; theScore 15.5 -115/-115; Caesars 15.5 -120/-112; Hard Rock 15.5 -115/-115; Fanatics 15.5 -115/-115; Betr 15.5 -122/-112; BetRivers 15.5 -114/-120; consensus 15.5 -115/-114; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-23 16:10 UTC",
+        "detail": "Opened 15.5 over +102 / under -136 (FanDuel 2026-10-22 16:32 UTC); now 15.5 at even juice at 14 books - market moved toward the over, BetMGM lags at the opening valuation"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection + performance",
+        "status": "usable",
+        "freshness": "2026-10-23 16:00 UTC",
+        "detail": "Projection 14.3 (under vs 15.5); last 20 11-9 over, prior season 37-39"
+      },
+      {
+        "category": "injury_news",
+        "source": "ESPN NBA injuries page",
+        "status": "usable",
+        "freshness": "2026-10-23 16:15 UTC",
+        "detail": "MIL none listed; CHI: Nic Claxton out, Swain/Hawkins questionable (illness), Giddey/Collins/Awaka probable"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 14.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
