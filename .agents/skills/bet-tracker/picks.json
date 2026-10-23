@@ -9375,5 +9375,179 @@
     "line_num": 31.5,
     "prop_result": "71 rec yds (7 rec)",
     "prop_margin": 39
+  },
+  {
+    "id": "20261023-nba-v1-ace-prop",
+    "date": "2026-10-23",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Ace Bailey Over 11.5 Points (NOR @ UTA)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-108 @ Novig",
+    "units": 1,
+    "score": 8.6,
+    "primary_edge": "Cross-book prop gap: DraftKings/Fanatics/Novig still hang Bailey points at 11.5 (own ~50/50) after the market moved 10.5 -> 12.5 at 11 books; de-vigged 12.5 two-ways put P(over 11.5) ~55% vs 51.9% needed (EV ~+6%); projection 14.1 agrees",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27912 market 156 (points)",
+        "status": "usable",
+        "freshness": "2026-10-23 16:10 UTC",
+        "detail": "Novig O11.5 -108 / U11.5 -120; DraftKings O11.5 -111 / U -115 (upd 15:31 UTC); Fanatics O11.5 -115 / U -115; Caesars 12.5 -102/-130; theScore 12.5 -110/-120; Hard Rock 12.5 -105/-125; BetRivers 12.5 -124/-110; consensus 12.5 -110/-120"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-23 16:10 UTC",
+        "detail": "Opened 10.5 (Fanatics 2026-10-22 23:32 UTC); market now 12.5 at 11 books - DK/Fanatics/Novig lag one point behind the up-move"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection + performance",
+        "status": "usable",
+        "freshness": "2026-10-23 16:00 UTC",
+        "detail": "Projection 14.1 (over); last 20 15-5 over, prior season 41-31 over"
+      },
+      {
+        "category": "injury_news",
+        "source": "ESPN NBA injuries page",
+        "status": "usable",
+        "freshness": "2026-10-23 16:05 UTC",
+        "detail": "Bailey not listed; UTA: Nurkic out, Tony Bradley questionable; NOR none listed"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:30 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 11.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261023-nba-v1-jayson-prop",
+    "date": "2026-10-23",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Jayson Tatum Under 26.5 Points (NYK @ BOS)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-105 @ Fanatics",
+    "units": 1,
+    "score": 8.6,
+    "primary_edge": "Cross-book prop gap: Fanatics still hangs the 26.5 opener with the under at -105 while the market moved down to 25.5 at 11+ books; de-vigged 25.5 two-ways put P(under 26.5) ~54% vs 51.2% needed (EV ~+6%); projection 23.2 agrees",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27905 market 156 (points)",
+        "status": "usable",
+        "freshness": "2026-10-23 16:10 UTC",
+        "detail": "Fanatics O26.5 -125 / U26.5 -105 (upd 15:44 UTC); BetMGM 26.5 -110/-115; FanDuel 25.5 -125/-106; DraftKings 25.5 -114/-112; Caesars 25.5 -121/-110; theScore 25.5 -125/-105; Hard Rock 25.5 -125/-105; BetRivers 25.5 -115/-118; consensus 25.5 -121/-110"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-23 16:10 UTC",
+        "detail": "Opened 26.5 (FanDuel 2026-10-21 11:32 UTC); market moved down to 25.5 - Fanatics/BetMGM lag at 26.5"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection + performance",
+        "status": "usable",
+        "freshness": "2026-10-23 16:00 UTC",
+        "detail": "Projection 23.2 (under); last 20 6-14 under, 3-game under streak, prior season 6-16 under"
+      },
+      {
+        "category": "injury_news",
+        "source": "ESPN NBA injuries page",
+        "status": "usable",
+        "freshness": "2026-10-23 16:05 UTC",
+        "detail": "Tatum not listed (BOS: Devin Carter out); NYK none listed; BOS home opener"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 26.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261023-nba-v1-bilal-prop",
+    "date": "2026-10-23",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Bilal Coulibaly Under 10.5 Points (TOR @ WAS)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-110 @ Fanatics",
+    "units": 1,
+    "score": 8.2,
+    "primary_edge": "Cross-book prop gap: Fanatics lags at 10.5 after the market moved 11.5 -> 9.5 at 16 books; de-vigged 9.5 two-ways put P(under 10.5) ~57% vs 52.4% needed (EV ~+9%, crude); projection 9.0 agrees. Conflicting: 17-3 over L20 and AJ Dybantsa out (usage up) - scored -2",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27906 market 156 (points)",
+        "status": "usable",
+        "freshness": "2026-10-23 16:10 UTC",
+        "detail": "Fanatics O10.5 -120 / U10.5 -110 (upd 15:45 UTC); DraftKings 9.5 -114/-111; Caesars 9.5 -127/-106; theScore 9.5 -125/-105; BetMGM 9.5 -105/-115; Hard Rock 9.5 -125/-105; Betr 9.5 -128/-108; BetRivers 9.5 -127/-107; consensus 9.5 -125/-106"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-23 16:10 UTC",
+        "detail": "Opened 11.5 (Fanatics 2026-10-22 21:04 UTC); market now 9.5 at 16 books - Fanatics only partly moved to 10.5"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection + performance",
+        "status": "usable",
+        "freshness": "2026-10-23 16:00 UTC",
+        "detail": "Projection 9.0 (under); conflicting trend: last 20 17-3 over vs 9.5, 5-game over streak"
+      },
+      {
+        "category": "injury_news",
+        "source": "ESPN NBA injuries page",
+        "status": "usable",
+        "freshness": "2026-10-23 16:05 UTC",
+        "detail": "Coulibaly not listed; WAS: AJ Dybantsa out (ankle), Felix Okpara questionable; TOR: Nate Bittle out"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 10.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
