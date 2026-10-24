@@ -9665,5 +9665,63 @@
     "line_num": -111.0,
     "prop_result": "19 points",
     "prop_margin": 4
+  },
+  {
+    "id": "20261024-nba-v1-peyton-prop",
+    "date": "2026-10-24",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Peyton Watson Under 13.5 Points (BKN @ CLE)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-115 @ Fanatics",
+    "units": 1,
+    "score": 8.6,
+    "primary_edge": "Cross-book prop gap: Fanatics still hangs 13.5 at its own 50/50 (-115/-115) after the market fell 14.5 -> 12.5 at ~15 books (FD/DK/theScore/Caesars/BetMGM/BetRivers/Hard Rock/Betr all 12.5 near even). De-vigged 12.5 two-ways put P(under 13.5) ~56.6% vs 53.5% needed (+3.1pp, EV ~+5.8%). BP projection 12.1 agrees. Pinnacle absent - CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27918 market 156 (points)",
+        "status": "usable",
+        "freshness": "2026-10-24 15:57 UTC",
+        "detail": "Fanatics O13.5 -115 / U13.5 -115 (upd 15:43 UTC); FanDuel 12.5 -114/-114; DraftKings 12.5 -113/-112; Caesars 12.5 -124/-108; theScore 12.5 -115/-115; BetRivers 12.5 -112/-122; BetMGM 12.5 O-135; Hard Rock 12.5 -120/-110; Betr 12.5 -119/-115; consensus 12.5 -114/-114; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-24 15:57 UTC",
+        "detail": "Opened 14.5 over +100 / under -130 (Fanatics 2026-10-24 02:05 UTC); market now 12.5 at ~15 books; Fanatics only moved to 13.5"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection + performance",
+        "status": "usable",
+        "freshness": "2026-10-24 15:55 UTC",
+        "detail": "Projection 12.1 (under); last 5 1-4 under; 4-game under streak"
+      },
+      {
+        "category": "injury_news",
+        "source": "ESPN NBA injuries + Watson gamelog",
+        "status": "usable",
+        "freshness": "2026-10-24 16:10 UTC",
+        "detail": "Watson active; opener 10/22 @ PHI 30 min 8 pts; no CLE injuries listed; BKN Tyler Bilodeau out"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:30 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 13.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
