@@ -7,7 +7,7 @@ Exchange Benchmark with `value_engine.scan_market`, and writes every price whose
 projected CLV clears the market kind's gate (2% game lines, 3% props) to
 `v3-observations.json`.
 
-It never reads or writes picks.json. Observations never count toward stats, the
+It never reads or writes the picks ledger. Observations never count toward stats, the
 dashboard or the Daily Pick Cap (GLOSSARY.md: Observation Scan).
 
 An observation is any row whose projected CLV clears `gate_threshold(kind)`, whatever

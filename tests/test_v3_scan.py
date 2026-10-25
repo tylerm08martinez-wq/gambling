@@ -264,5 +264,87 @@ class TestCli(unittest.TestCase):
         self.assertEqual(json.loads(self.out.read_text())["runs"][0]["status"], "failed")
 
 
+class TestIsolationFromTheLedger(unittest.TestCase):
+    """Observations never touch picks.json, tracker stats, the dashboard or the cap."""
+
+    def test_the_scan_never_opens_picks_json(self):
+        import builtins
+        import contextlib
+        import io
+        import tempfile
+        from unittest.mock import patch
+        opened, real_open = [], builtins.open
+
+        def spy(file, *a, **kw):
+            opened.append(str(file))
+            return real_open(file, *a, **kw)
+
+        with tempfile.TemporaryDirectory() as tmp, patch("builtins.open", spy), \
+                contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            out = str(Path(tmp) / "obs.json")
+            v3.main(["--date", "2026-10-25", "--sports", "NFL", "--apply", "--out", out],
+                    get_json=gainwell_board(), now=LIVE_NOW)
+        self.assertTrue(opened)   # the spy saw the observations file being written
+        self.assertFalse([p for p in opened if "picks.json" in p], opened)
+        src = (_DIR / "v3_scan.py").read_text()
+        self.assertNotIn("picks.json", src)
+        self.assertNotIn("PICKS_FILE", src)
+
+    def test_tracker_stats_is_byte_identical_with_and_without_observations(self):
+        import shutil
+        import subprocess
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = Path(tmp) / "bet-tracker"
+            shutil.copytree(_DIR, skill, ignore=shutil.ignore_patterns(
+                "v3-observations.json", "__pycache__"))
+
+            def stats():
+                return subprocess.run([sys.executable, str(skill / "tracker.py"), "stats"],
+                                      capture_output=True, check=True, cwd=tmp).stdout
+
+            without = stats()
+            store = v3.merge({"runs": [], "observations": []},
+                             v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=gainwell_board()))
+            v3.save_store(str(skill / "v3-observations.json"), store)
+            self.assertTrue(store["observations"])
+            self.assertEqual(stats(), without)
+
+    def test_dashboard_and_tracker_never_read_the_observations_file(self):
+        for name in ("dashboard.html",):
+            self.assertNotIn("v3-observations", (_ROOT / name).read_text(encoding="utf-8"))
+        self.assertNotIn("v3-observations", (_DIR / "tracker.py").read_text(encoding="utf-8"))
+
+
+class TestMarketScope(unittest.TestCase):
+    def test_market_ids_match_the_issue(self):
+        ids = {sport: {m[0] for m in markets} for sport, markets in v3.MARKETS.items()}
+        self.assertEqual(ids["NBA"], {127, 128, 129, 156, 157, 151, 335, 336, 337, 338})
+        self.assertTrue({1, 2, 3} <= ids["NFL"])
+        self.assertEqual(ids["MLB"], {122, 175, 176, 285, 405})
+        for kinds in v3.MARKETS.values():
+            for _mid, kind, _stat in kinds:
+                self.assertIn(kind, {"moneyline", "spread", "total", "prop"})
+
+
+class TestRunner(unittest.TestCase):
+    SCRIPT = (_ROOT / "scripts" / "run-daily-picks.sh").read_text(encoding="utf-8")
+
+    def test_scan_runs_before_the_agent_and_cannot_abort_the_picks_run(self):
+        lines = self.SCRIPT.splitlines()
+        scan = next(i for i, l in enumerate(lines) if "v3_scan.py" in l and "--apply" in l)
+        agent = next(i for i, l in enumerate(lines) if l.startswith("claude -p"))
+        self.assertLess(scan, agent)
+        # Run as an `if` condition so `set -e` can't kill the run on a scan failure.
+        self.assertTrue(lines[scan].lstrip().startswith("if "), lines[scan])
+        self.assertIn('--date "$TODAY"', lines[scan])
+        self.assertIn("V3_VALUE_ENABLED", self.SCRIPT)
+        self.assertRegex(self.SCRIPT, r"git commit [^\n]*v3-observations\.json|v3-observations\.json")
+
+    def test_v3_step_checks_that_its_skill_file_exists(self):
+        self.assertIn('[ -f "$V3_SKILL" ]', self.SCRIPT)
+        self.assertIn('V3_VALUE_ENABLED:-0', self.SCRIPT)   # gate default stays OFF
+
+
 if __name__ == "__main__":
     unittest.main()
