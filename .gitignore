@@ -17,3 +17,6 @@ scripts/.last-run-status.json
 scripts/.LAST-RUN-FAILED
 scripts/.capture-closes.log
 scripts/.CAPTURE-FAILED
+
+# Agent worktrees (Claude Code isolation) — never commit; the auto-sync hook would add them as gitlinks
+.claude/worktrees/
