@@ -205,9 +205,17 @@ def _utc(h, m, day=25):
 
 
 def nba_total_offer():
+    # Live totals carry `participants: []` (NFL 21915 market 2, NBA 27926 market 128):
+    # the game's teams come only from /events.
     off = total_offer(over=((220.5, -105),), under=((220.5, -115),))
-    off.update(market_id=128, event_id=27927, participants=[MAGIC, KNICKS])
+    off.update(market_id=128, event_id=27927, participants=[])
     return off
+
+
+def _evp(*teams):
+    """Event participants as bettingpros._normalize_event returns them."""
+    return [{"id": t["id"], "name": t["name"], "city": t["team"]["city"],
+             "abbreviation": t["team"]["abbreviation"]} for t in teams]
 
 
 def _respread(event_id, away, home):
@@ -225,9 +233,10 @@ class FakeGameBoard:
     Market ids: 127 moneyline, 128 total, 129 spread."""
 
     def __init__(self, offers=None):
-        self.events = [{"id": 27926, "start": _utc(23, 0)},
-                       {"id": 27927, "start": _utc(23, 0)},
-                       {"id": 27924, "start": _utc(21, 0)}]
+        self.events = [
+            {"id": 27926, "start": _utc(23, 0), "participants": _evp(CLIPPERS, THUNDER)},
+            {"id": 27927, "start": _utc(23, 0), "participants": _evp(MAGIC, KNICKS)},
+            {"id": 27924, "start": _utc(21, 0), "participants": _evp(LAKERS, JAZZ)}]
         self.offers = offers if offers is not None else {
             (27926, 129): [spread_offer()], (27926, 127): [moneyline_offer()],
             (27927, 128): [nba_total_offer()],
@@ -301,9 +310,23 @@ class TestParseGameLineBet(unittest.TestCase):
                           ("Clippers +3.5 first half", "spread"),
                           ("Knicks Under 110.5 team total", "total"),
                           ("Yankees @ Red Sox Under 4.5 first 5 innings", "total"),
-                          ("Thunder ML 1st quarter", "ml")):
+                          ("Thunder ML 1st quarter", "ml"),
+                          ("Clippers +2.5 2H", "spread"),
+                          ("Clippers +2.5 second half", "spread"),
+                          ("Yankees ML F5", "ml"),
+                          ("Mets ML 1st 5", "ml")):
             with self.subTest(bet=bet):
                 self.assertIsInstance(cc.parse_game_line_bet(_gl("x", bet, None), kind), str)
+
+    def test_the_word_half_alone_is_not_a_partial_game_market(self):
+        b = cc.parse_game_line_bet(_gl("h", "Clippers +14.5 vs Thunder, half-Kelly sizing", 14.5),
+                                   "spread")
+        self.assertEqual((b["kind"], b["line"]), ("spread", 14.5))
+
+    def test_alt_spread_is_parsed_and_left_to_exact_line_matching(self):
+        b = cc.parse_game_line_bet(_gl("a", "Clippers +13.5 alt spread vs Thunder", 13.5),
+                                   "spread")
+        self.assertEqual(b["line"], 13.5)
 
 
 class TestMatchTeams(unittest.TestCase):
@@ -397,12 +420,81 @@ class TestCaptureGameLinePicks(unittest.TestCase):
         self.assertEqual(snaps["g1"]["close"], {"LAC": "-110", "OKC": "-110"})
         self.assertEqual(report[0][1], "keep")
 
+    def test_only_the_matched_games_market_is_fetched(self):
+        snaps, _, board = _capture([_gl("g1", "Clippers +14.5 vs Thunder", 14.5)], _at(15, 50))
+        self.assertIn("g1", snaps)
+        self.assertEqual(board.ladder_calls(), [("ladders", 27926, 129)])
+
+    def test_market_whose_teams_are_not_the_events_teams_is_unmeasured(self):
+        board = FakeGameBoard()
+        board.offers[(27926, 129)] = [_respread(27926, MAGIC, KNICKS)]
+        snaps, report, _ = _capture([_gl("g1", "Clippers +14.5 vs Thunder", 14.5)],
+                                    _at(15, 50), board=board)
+        self.assertEqual(snaps, {})
+        self.assertEqual(report[0][1], "skip")
+
+    def test_snapshot_records_the_consensus_quote_updated_time(self):
+        snaps, _, _ = _capture([_gl("g1", "Clippers +14.5 vs Thunder", 14.5)], _at(15, 50))
+        self.assertEqual(snaps["g1"]["quote_updated"], UPD)
+
+    def test_consensus_line_not_updated_for_24h_is_not_a_close(self):
+        board = FakeGameBoard()
+        stale = spread_offer()
+        for sel in stale["selections"]:
+            for ln in sel["books"][0]["lines"]:
+                ln["updated"] = "2026-10-24 22:00:00"     # 24h50m before the capture
+        board.offers[(27926, 129)] = [stale]
+        snaps, report, _ = _capture([_gl("g1", "Clippers +14.5 vs Thunder", 14.5)],
+                                    _at(15, 50), board=board)
+        self.assertEqual(snaps, {})
+        self.assertIn("24h", report[0][2])
+
     def test_settled_and_prop_picks_are_not_touched(self):
         picks = [_gl("g1", "Clippers +14.5 vs Thunder", 14.5, result="win"),
                  _gl("p1", "Shai Gilgeous-Alexander Over 30.5 points", 30.5, bet_type="prop")]
         snaps, report, board = _capture(picks, _at(15, 50))
         self.assertEqual(snaps, {})
         self.assertEqual(board.calls, [])
+
+
+_GL = json.loads((_ROOT / "tests" / "fixtures" / "game_line_offers.json").read_text())
+
+
+class TestLiveShapedNflFixture(unittest.TestCase):
+    """PIT @ NO (London, 13:30 UTC = 06:30 AZ) as /events and /offers served it."""
+
+    def _board(self):
+        ev = _GL["nfl_event_21915"]
+        board = FakeGameBoard(offers={(21915, 2): [_GL["nfl_21915_total"]],
+                                      (21915, 3): [_GL["nfl_21915_spread"]]})
+        board.events = [{"id": ev["id"], "start": _utc(13, 30),
+                         "participants": bp._normalize_event(ev)["participants"]}]
+        return board
+
+    def _capture(self, pick):
+        board = self._board()
+        snaps, report = cc.capture_game_lines(
+            [pick], _at(6, 20), events_for=board.events_for, fetch_ladders=board.fetch_ladders,
+            market_for_kind={"moneyline": 1, "total": 2, "spread": 3}.get,
+            classify_bet=tracker.classify_bet, window_minutes=45, snapshots={})
+        return snaps, report, board
+
+    def test_total_with_empty_offer_participants_is_matched_through_the_event(self):
+        self.assertEqual(_GL["nfl_21915_total"]["participants"], [])
+        pick = dict(_gl("t", "Steelers @ Saints Under 43.5", 43.5, game_time="6:30 AM"),
+                    sport="NFL")
+        snaps, report, board = self._capture(pick)
+        s = snaps["t"]
+        self.assertEqual(s["close"], {"under": "-110", "over": "-108"})
+        self.assertEqual((s["side"], s["market"], s["event_id"]), ("under", "total", 21915))
+        self.assertEqual(s["quote_updated"], "2026-10-25 05:14:56")
+        self.assertEqual(board.ladder_calls(), [("ladders", 21915, 2)])
+
+    def test_spread_from_the_live_feed(self):
+        pick = dict(_gl("s", "New Orleans Saints +3 vs Pittsburgh Steelers", 3.0,
+                        game_time="6:30 AM"), sport="NFL")
+        snaps, _, _ = self._capture(pick)
+        self.assertEqual(snaps["s"]["close"], {"NO": "-109", "PIT": "-110"})
 
 
 class TestGameLineBackfill(unittest.TestCase):
@@ -499,15 +591,15 @@ class TestObservationCloses(unittest.TestCase):
         self.assertEqual(close["minutes_before_start"], 18.0)
         # Same instant as the scan, so the exchange close IS the scan's benchmark:
         # realized CLV against it equals the projected CLV the scan stored (+2.24%).
-        self.assertAlmostEqual(u["realized_clv_exchange"], obs["projected_clv"], places=6)
-        self.assertAlmostEqual(u["realized_clv_exchange"], 0.0224, delta=0.0005)
+        self.assertAlmostEqual(u["realized_clv_exchange_frac"], obs["projected_clv"], places=6)
+        self.assertAlmostEqual(u["realized_clv_exchange_frac"], 0.0224, delta=0.0005)
         self.assertEqual(sorted(close["exchange"]["operators"], key=str), [60, 68, "polymarket"])
         # Retail consensus +240 / -300, power de-vig: Colts fair 0.266916 (k 1.0793),
         # against DraftKings +260 (0.277778) = -3.91%. Hand-checked.
         self.assertEqual((close["retail_consensus"]["odds_side"],
                           close["retail_consensus"]["odds_other"]), (240, -300))
         self.assertAlmostEqual(close["retail_consensus"]["fair_p"], 0.266916, places=5)
-        self.assertAlmostEqual(u["realized_clv_retail"], -0.0391, places=4)
+        self.assertAlmostEqual(u["realized_clv_retail_frac"], -0.0391, places=4)
         self.assertEqual([r[1] for r in report], ["captured"])
 
     def test_spread_side_b_is_priced_at_its_own_signed_number(self):
@@ -519,8 +611,8 @@ class TestObservationCloses(unittest.TestCase):
         # 0.513394; vs -105 (0.512195) = +0.234%. Retail -108/-112: OKC fair 0.504641,
         # = -1.475%. Hand-checked.
         self.assertAlmostEqual(u["close"]["exchange"]["fair_p"], 0.513394, places=5)
-        self.assertAlmostEqual(u["realized_clv_exchange"], 0.002341, places=5)
-        self.assertAlmostEqual(u["realized_clv_retail"], -0.014749, places=5)
+        self.assertAlmostEqual(u["realized_clv_exchange_frac"], 0.002341, places=5)
+        self.assertAlmostEqual(u["realized_clv_retail_frac"], -0.014749, places=5)
         self.assertEqual(u["close"]["retail_consensus"]["line"], -14.5)
         self.assertEqual(u["close"]["retail_consensus"]["odds_side"], -112)
 
@@ -530,10 +622,10 @@ class TestObservationCloses(unittest.TestCase):
                                {("NBA", 27926, 129): [_okc_spread_offer()]})
         b, _, _ = _obs_capture([copy.deepcopy(obs)], _utc(22, 50),
                                {("NBA", 27926, 129): [_okc_spread_offer(reorder=True)]})
-        self.assertAlmostEqual(a["v3obs-okc"]["realized_clv_exchange"],
-                               b["v3obs-okc"]["realized_clv_exchange"], places=9)
-        self.assertAlmostEqual(a["v3obs-okc"]["realized_clv_retail"],
-                               b["v3obs-okc"]["realized_clv_retail"], places=9)
+        self.assertAlmostEqual(a["v3obs-okc"]["realized_clv_exchange_frac"],
+                               b["v3obs-okc"]["realized_clv_exchange_frac"], places=9)
+        self.assertAlmostEqual(a["v3obs-okc"]["realized_clv_retail_frac"],
+                               b["v3obs-okc"]["realized_clv_retail_frac"], places=9)
 
     def test_side_label_missing_from_the_market_is_unmeasured(self):
         obs = dict(_spread_observation(), side="Spurs", participant="Spurs")
@@ -569,8 +661,35 @@ class TestObservationCloses(unittest.TestCase):
                                      {("NBA", 27926, 129): [off]})
         u = updates["v3obs-okc"]
         self.assertIsNone(u["close"]["exchange"])
-        self.assertIsNone(u["realized_clv_exchange"])
-        self.assertIsNotNone(u["realized_clv_retail"])
+        self.assertIsNone(u["realized_clv_exchange_frac"])
+        self.assertIsNotNone(u["realized_clv_retail_frac"])
+
+    def test_stale_consensus_gives_no_retail_close_but_keeps_the_exchange(self):
+        off = _okc_spread_offer()
+        for sel in off["selections"]:
+            for ln in sel["books"][0]["lines"]:
+                ln["updated"] = "2026-10-24 20:00:00"
+        updates, report, _ = _obs_capture([_spread_observation()], _utc(22, 50),
+                                          {("NBA", 27926, 129): [off]})
+        u = updates["v3obs-okc"]
+        self.assertIsNone(u["close"]["retail_consensus"])
+        self.assertIsNone(u["realized_clv_retail_frac"])
+        self.assertIsNotNone(u["close"]["exchange"])
+
+    def test_retail_close_records_the_quote_updated_time(self):
+        updates, _, _ = _obs_capture([_spread_observation()], _utc(22, 50),
+                                     {("NBA", 27926, 129): [_okc_spread_offer()]})
+        self.assertEqual(updates["v3obs-okc"]["close"]["retail_consensus"]["quote_updated"], UPD)
+
+    def test_one_bad_row_is_reported_and_the_pass_continues(self):
+        bad = dict(_spread_observation(), id="v3obs-bad")
+        del bad["line"]                                  # a spread with no number
+        rows = [bad, None, _spread_observation()]
+        updates, report, _ = _obs_capture(rows, _utc(22, 50),
+                                          {("NBA", 27926, 129): [_okc_spread_offer()]})
+        self.assertEqual(list(updates), ["v3obs-okc"])
+        self.assertEqual(report[0][:2], ("v3obs-bad", "error"))
+        self.assertEqual(report[1][1], "error")
 
     def test_neither_close_available_writes_nothing(self):
         off = _okc_spread_offer()
@@ -604,7 +723,7 @@ class TestObservationCloses(unittest.TestCase):
         cc.apply_observation_updates({"observations": [obs]}, later)
         self.assertEqual(obs["close"]["exchange"]["minutes_before_start"], 30.0)
         self.assertEqual(obs["close"]["retail_consensus"]["minutes_before_start"], 10.0)
-        self.assertIsNotNone(obs["realized_clv_exchange"])
+        self.assertIsNotNone(obs["realized_clv_exchange_frac"])
         # A capture further from the start than what is stored changes nothing.
         stale, report, _ = _obs_capture([obs], _utc(22, 20),
                                         {("NBA", 27926, 129): [_okc_spread_offer()]})
@@ -617,7 +736,7 @@ class TestObservationCloses(unittest.TestCase):
         updates, _, _ = _obs_capture([obs], LIVE_NOW, {("NFL", 22068, 1): [_colts_offer()]})
         cc.apply_observation_updates({"observations": [obs]}, updates)
         after = {k: v for k, v in obs.items()
-                 if k not in ("close", "realized_clv_exchange", "realized_clv_retail")}
+                 if k not in ("close", "realized_clv_exchange_frac", "realized_clv_retail_frac")}
         self.assertEqual(after, before)
 
     def test_saving_rereads_the_file_so_a_concurrent_scan_row_survives(self):
@@ -638,6 +757,63 @@ class TestObservationCloses(unittest.TestCase):
         self.assertEqual(saved["runs"], [{"scan_date": "2026-10-25"}])
 
 
+class TestObservationFileWrites(unittest.TestCase):
+    """The scan and the capture write one file; they must not trample each other."""
+
+    def setUp(self):
+        self.dir = tempfile.mkdtemp()
+        self.path = str(Path(self.dir) / "v3-observations.json")
+        v3.save_store(self.path, {"runs": [], "observations": [_spread_observation()]})
+
+    def test_save_store_does_not_use_a_fixed_temp_name(self):
+        Path(self.path + ".tmp").mkdir()          # a shared fixed name would now fail
+        v3.save_store(self.path, {"runs": [{"x": 1}], "observations": []})
+        self.assertEqual(v3.load_store(self.path)["runs"], [{"x": 1}])
+        leftovers = [p.name for p in Path(self.dir).iterdir()
+                     if p.name not in ("v3-observations.json", "v3-observations.json.tmp")]
+        self.assertEqual(leftovers, [])
+
+    def _hold_lock(self):
+        import fcntl
+        fh = open(v3.lock_path(self.path), "a+")
+        fcntl.flock(fh, fcntl.LOCK_EX)
+        self.addCleanup(fh.close)
+
+    def test_capture_save_skips_when_the_lock_stays_held(self):
+        updates, _, _ = _obs_capture([_spread_observation()], _utc(22, 50),
+                                     {("NBA", 27926, 129): [_okc_spread_offer()]})
+        self._hold_lock()
+        n = cc.save_observation_closes(self.path, updates, lock_timeout=0.2)
+        self.assertEqual(n, 0)
+        self.assertIsNone(v3.load_store(self.path)["observations"][0]["close"])
+
+    def test_capture_save_writes_when_the_lock_is_free(self):
+        updates, _, _ = _obs_capture([_spread_observation()], _utc(22, 50),
+                                     {("NBA", 27926, 129): [_okc_spread_offer()]})
+        self.assertEqual(cc.save_observation_closes(self.path, updates, lock_timeout=0.2), 1)
+        self.assertTrue(Path(v3.lock_path(self.path)).exists())
+
+    def test_scan_apply_skips_its_write_when_the_lock_stays_held(self):
+        import contextlib
+        import io
+        self._hold_lock()
+        before = Path(self.path).read_text()
+        saved = v3.LOCK_TIMEOUT_SEC
+        v3.LOCK_TIMEOUT_SEC = 0.2
+        err = io.StringIO()
+        try:
+            with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+                rc = v3.main(["--date", "2026-10-25", "--sports", "NBA", "--apply",
+                              "--out", self.path],
+                             get_json=lambda url: {"events": [], "offers": []},
+                             now=_utc(12, 0))
+        finally:
+            v3.LOCK_TIMEOUT_SEC = saved
+        self.assertEqual(Path(self.path).read_text(), before)
+        self.assertEqual(rc, 2)
+        self.assertIn("lock", err.getvalue())
+
+
 # ── live wiring ──────────────────────────────────────────────────────────────────
 
 cf = _load("clv_fetch")
@@ -653,7 +829,8 @@ class FakeLiveBP:
 
     def fetch_events(self, sport, date):
         self.calls.append(("events", sport, date))
-        return [{"id": 27926, "scheduled": "2026-10-25 23:00:00"}] if sport == "NBA" else []
+        return ([{"id": 27926, "scheduled": "2026-10-25 23:00:00",
+                  "participants": _evp(CLIPPERS, THUNDER)}] if sport == "NBA" else [])
 
     def fetch_props(self, sport, date=None):
         self.calls.append(("props", sport, date))
@@ -729,8 +906,8 @@ class TestCaptureClosesCommand(unittest.TestCase):
         tracker.PICKS_FILE = picks_path
         cc.SNAPSHOT_FILE, cc.OBSERVATIONS_FILE = snap_path, obs_path
         cc.capture_live = lambda picks, **k: ({"g1": {"close": {}}}, [("g1", "captured", "T-5m")])
-        upd = {"v3obs-okc": {"close": {"side": "Thunder"}, "realized_clv_exchange": 0.01,
-                             "realized_clv_retail": -0.01}}
+        upd = {"v3obs-okc": {"close": {"side": "Thunder"}, "realized_clv_exchange_frac": 0.01,
+                             "realized_clv_retail_frac": -0.01}}
         cc.capture_observations_live = lambda **k: (upd, [("v3obs-okc", "captured", "T-5m")])
         out = io.StringIO()
         try:
