@@ -470,7 +470,7 @@ class TestScanMarket(unittest.TestCase):
         quotes = [q(60, 3.0, -105, -105), q(68, 3.0, -105, -105), q(12, 3.0, 110, -130),
                   q(60, 2.5, -120, 110), q(12, 2.5, 110, -130)]   # 2.5 has one operator
         rows = ve.scan_market(quotes, "spread", NOW)
-        self.assertEqual({r["line"] for r in rows}, {3.0})
+        self.assertEqual({(r["side"], r["line"]) for r in rows}, {("a", 3.0), ("b", -3.0)})
         self.assertEqual(len(rows), 2)
 
     def test_line_without_benchmark_gives_no_row(self):

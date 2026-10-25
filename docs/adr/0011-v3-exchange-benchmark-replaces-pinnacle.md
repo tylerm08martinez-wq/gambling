@@ -19,6 +19,7 @@ The same review found engine defects that would mis-state projected CLV regardle
 - **Quote eligibility:** a venue's quote counts only if it is two-way at the same line number, its two-way hold is at most 3%, and its `updated` time is within 60 minutes of the scan.
 - **Minimum:** at least 2 distinct operators must qualify, or the market has no benchmark and is skipped. No fallback to retail consensus.
 - **Candidates:** retail sportsbooks only: FanDuel (10), DraftKings (12), Caesars (13), Fanatics (14), BetRivers (18), BetMGM (19), bet365 (24), theScore Bet (33), Fliff (39), Betr (45), Hard Rock (49). Exchanges, DFS and pick'em venues, and the skins SugarHouse (15) and PartyCasino (27), are never candidates.
+- **Retail freshness:** a retail candidate quote counts only if its `updated` time is within 24 hours of the scan (`MAX_RETAIL_QUOTE_AGE_MIN`); older rungs linger on the feed as dead lines. Every scan row records `quote_age_min` and `benchmark_max_age_min` so the week-end review can tighten it.
 - **De-vig:** power method for every game line (moneyline, spread, total). Multiplicative for player props, unchanged.
 - **Gates:** unchanged at 2% for game lines and 3% for player props. The market kind is passed to the engine explicitly and never inferred from a label.
 - **Line numbers:** a candidate is compared only with benchmark quotes at the identical line. A spread of +2.5 is never compared with a fair price at +3.

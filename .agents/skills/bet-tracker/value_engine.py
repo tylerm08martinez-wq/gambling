@@ -13,8 +13,16 @@ candidate; otherwise sit out. Steam is confirmation-only.
 The fair line was de-vigged Pinnacle (book_id 2, ADR 0007). Pinnacle has been absent
 from the BettingPros feed since about July, so ADR 0011 replaces it with the
 **Exchange Benchmark**: the median de-vigged price across low-hold exchange operators
-quoting the identical line (`exchange_benchmark`, `scan_market`). `evaluate_market`
-still accepts a `pinnacle` key for the existing boards and fixtures.
+quoting the identical line (`exchange_benchmark`, `scan_market`): Novig, Kalshi,
+Polymarket (one operator with Polymarket US) and ProphetX, each quote two-way, hold
+-0.5% to 3%, updated within 60 minutes, at least 2 operators. Retail sportsbooks are
+the only candidates, compared only at the same number. `evaluate_market` still
+accepts a `pinnacle` key for the existing boards and fixtures.
+
+The market kind (moneyline / spread / total / prop, `market_kind`) is explicit and
+picks both the de-vig and the gate: **power de-vig for every game line** (moneyline,
+spread, total; ADR 0011 moved moneylines off multiplicative, which inflated
+longshots) and multiplicative for player props; a 2% gate for game lines, 3% for props.
 
 Pipeline per market: implied prob -> de-vig the benchmark to fair_p -> projected CLV
 (fair_p / p_best - 1) -> gate by market kind -> fractional-Kelly units (hard cap 2u).
@@ -77,8 +85,12 @@ OPERATOR = {73: "polymarket", 75: "polymarket"}
 # PartyCasino (27) are never candidates.
 RETAIL_BOOKS = {10, 12, 13, 14, 18, 19, 24, 33, 39, 45, 49}
 MAX_BENCHMARK_HOLD = 0.03   # a benchmark quote's two-way hold must be at most 3%
+MIN_BENCHMARK_HOLD = -0.005  # ... and at least -0.5%: a deeper underround isn't a real price
 MAX_QUOTE_AGE_MIN = 60      # ... and updated within 60 minutes of the scan
 MIN_OPERATORS = 2           # fewer distinct operators -> no benchmark, market skipped
+MAX_RETAIL_QUOTE_AGE_MIN = 24 * 60  # a retail candidate updated over 24h ago is a dead rung
+MAX_FUTURE_SKEW_MIN = 5     # a quote stamped more than 5 min after the scan is rejected
+PLACEHOLDER_ODDS = 10000    # |odds| at or above this is the feed's suspended-side placeholder
 
 
 # ==================================================================================
@@ -162,8 +174,12 @@ def power_devig(p_a: float, p_b: float, iterations: int = 80):
     # Expand the upper bound so the root is always bracketed. Wide/lopsided markets
     # (large overround) push k above the nominal 1.5; a clamped k would silently return
     # fair probs that don't sum to 1. Keep doubling hi until f(hi) < 1 brackets the root.
-    while p_a ** hi + p_b ** hi > 1.0 and hi < 64.0:
+    while p_a ** hi + p_b ** hi > 1.0 and hi < 1e6:
         lo, hi = hi, hi * 2.0
+    # Likewise lower the bottom bound for an underround pair (p_a + p_b < 1, k < 1):
+    # without this, (0.001, 0.6) returned fair probs summing to 0.806.
+    while p_a ** lo + p_b ** lo < 1.0 and lo > 1e-6:
+        lo, hi = lo / 2.0, lo
     for _ in range(iterations):
         k = (lo + hi) / 2.0
         if p_a ** k + p_b ** k > 1.0:
@@ -415,11 +431,30 @@ def _same_line(a, b, kind) -> bool:
         return False
 
 
-def _as_utc_naive(ts):
-    """'2026-10-25 02:09:30' / ISO string / datetime -> naive UTC datetime, else None.
+def is_placeholder_odds(odds) -> bool:
+    """True for the feed's suspended-side placeholders (+99900 / -99900 and the like).
 
-    BettingPros `updated` strings are UTC without an offset. An aware datetime is
-    converted to UTC; a naive one is taken as UTC already."""
+    BettingPros marks a side it isn't really offering with an absurd price. Paired with
+    a live side, +99900/-120 "holds" about -45% and sailed through an upper-bound-only
+    hold filter, producing a +90% "edge". Any |odds| ≥ PLACEHOLDER_ODDS is not a price."""
+    try:
+        return abs(_parse_odds(odds)) >= PLACEHOLDER_ODDS
+    except OddsParseError:
+        return False
+
+
+def _require_aware(now) -> datetime:
+    """The scan clock must be a timezone-aware datetime (naive raises ValueError)."""
+    if not isinstance(now, datetime) or now.tzinfo is None or now.utcoffset() is None:
+        raise ValueError(f"`now` must be a timezone-aware datetime, got {now!r}")
+    return now
+
+
+def _as_utc(ts):
+    """'2026-10-25 02:09:30' / ISO string / datetime -> aware UTC datetime, else None.
+
+    BettingPros `updated` strings are UTC without an offset, so a naive value is read
+    as UTC; an aware one is converted."""
     if isinstance(ts, datetime):
         dt = ts
     elif isinstance(ts, str) and ts.strip():
@@ -429,34 +464,42 @@ def _as_utc_naive(ts):
             return None
     else:
         return None
-    if dt.tzinfo is not None:
-        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
-    return dt
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
 
 def _age_minutes(quote, now):
-    updated = _as_utc_naive(quote.get("updated"))
-    now = _as_utc_naive(now)
-    if updated is None or now is None:
+    """Minutes from the quote's `updated` to `now` (negative = stamped after `now`)."""
+    now = _require_aware(now)
+    updated = _as_utc(quote.get("updated"))
+    if updated is None:
         return None
     return (now - updated).total_seconds() / 60.0
+
+
+def _age_ok(age, max_age_min) -> bool:
+    return age is not None and -MAX_FUTURE_SKEW_MIN - 1e-9 <= age <= max_age_min + 1e-9
 
 
 def benchmark_eligible(quote, line, kind, now) -> bool:
     """Does this quote count toward the Exchange Benchmark at `line`?
 
-    Benchmark book, both sides quoted, identical line, hold ≤ 3%, updated no more
-    than 60 minutes before `now`. A quote with no parseable `updated` is excluded,
-    never assumed fresh."""
+    Benchmark book, both sides quoted with real prices (no placeholder), identical
+    line, hold between -0.5% and 3%, updated no more than 60 minutes before `now` and
+    no more than 5 minutes after it. A quote with no parseable `updated` is excluded,
+    never assumed fresh. `now` must be timezone-aware."""
+    _require_aware(now)
     if quote.get("book_id") not in BENCHMARK_BOOKS or not _two_sided(quote):
+        return False
+    if is_placeholder_odds(quote["odds_a"]) or is_placeholder_odds(quote["odds_b"]):
         return False
     if not _same_line(quote.get("line"), line, kind):
         return False
     hold = quote_hold(quote)
-    if hold is None or hold > MAX_BENCHMARK_HOLD + 1e-12:
+    if hold is None or not (MIN_BENCHMARK_HOLD - 1e-12 <= hold <= MAX_BENCHMARK_HOLD + 1e-12):
         return False
-    age = _age_minutes(quote, now)
-    return age is not None and age <= MAX_QUOTE_AGE_MIN + 1e-9
+    return _age_ok(_age_minutes(quote, now), MAX_QUOTE_AGE_MIN)
 
 
 def exchange_benchmark(quotes, line, kind, now):
@@ -466,8 +509,10 @@ def exchange_benchmark(quotes, line, kind, now):
     freshest per operator, and needs at least MIN_OPERATORS operators. The fair price
     per side is the median of the per-operator de-vigged prices (power for game kinds,
     multiplicative for props). Returns {fair_a, fair_b, operators, quotes_used}.
+    `now` must be a timezone-aware datetime.
     """
     kind = market_kind(kind)
+    _require_aware(now)
     freshest = {}
     for quote in quotes:
         if not benchmark_eligible(quote, line, kind, now):
@@ -505,7 +550,7 @@ def _usable_lines(book):
 
 def _older(ts_a, ts_b):
     """The staler of two `updated` stamps (a pair is only as fresh as its older side)."""
-    da, db = _as_utc_naive(ts_a), _as_utc_naive(ts_b)
+    da, db = _as_utc(ts_a), _as_utc(ts_b)
     if da is None or db is None:
         return None
     return ts_a if da <= db else ts_b
@@ -572,9 +617,16 @@ def scan_market(quotes, kind, now):
     `log` (clears the kind's gate with ≥1u), `reject` (positive but below the gate or
     the 1u stake floor) or `no_bet` (at or worse than fair). A line with no
     benchmark yields no rows: a price is never compared with a different number.
-    Rows are sorted by CLV, best first.
+
+    A retail quote must be updated within MAX_RETAIL_QUOTE_AGE_MIN (24h) of `now` and
+    no more than 5 minutes after it (dead rungs linger on the feed for days); a
+    placeholder side (|odds| ≥ 10000) gives no row. Each row carries `quote_age_min`
+    and `benchmark_max_age_min` so the freshness rules can be tightened from data. A
+    spread row reports its own side's number (side B is the negation of the quote's
+    line). Rows are sorted by CLV, best first. `now` must be timezone-aware.
     """
     kind = market_kind(kind)
+    _require_aware(now)
     gate = gate_threshold(kind)
     benchmarks = {}
     rows = []
@@ -584,15 +636,22 @@ def scan_market(quotes, kind, now):
         key = _line_key(quote.get("line"), kind)
         if isinstance(key, tuple):
             continue
+        quote_age = _age_minutes(quote, now)
+        if not _age_ok(quote_age, MAX_RETAIL_QUOTE_AGE_MIN):
+            continue
         if key not in benchmarks:
             benchmarks[key] = exchange_benchmark(quotes, quote.get("line"), kind, now)
         bench = benchmarks[key]
         if bench is None:
             continue
+        bench_age = max(_age_minutes(u, now) for u in bench["quotes_used"])
         for side, odds_key, fair_key in (("a", "odds_a", "fair_a"), ("b", "odds_b", "fair_b")):
             odds = quote.get(odds_key)
-            if odds is None:
+            if odds is None or is_placeholder_odds(odds):
                 continue
+            line = quote.get("line")
+            if kind == "spread" and side == "b" and line is not None:
+                line = -float(line)
             try:
                 p_best = american_to_prob(odds)
             except OddsParseError:
@@ -611,11 +670,12 @@ def scan_market(quotes, kind, now):
             else:
                 action, reason = "reject", "stake below the 1u minimum (½-Kelly < 0.5% bankroll)"
             rows.append({
-                "book_id": quote["book_id"], "line": quote.get("line"), "side": side,
+                "book_id": quote["book_id"], "line": line, "side": side,
                 "odds": odds, "p_best": p_best, "fair_p": fair_p, "clv": clv,
                 "gate": gate, "units": units, "action": action, "reason": reason,
                 "edge_type": "clv_value" if clv > 0 else None, "kind": kind,
                 "operators": bench["operators"], "updated": quote.get("updated"),
+                "quote_age_min": quote_age, "benchmark_max_age_min": bench_age,
             })
     rows.sort(key=lambda r: r["clv"], reverse=True)
     return rows
