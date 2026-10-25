@@ -367,6 +367,94 @@ class TestRunner(unittest.TestCase):
         self.assertGreater(block.index("git push origin main", rebase), rebase)
         self.assertGreater(block.index("notify_failure", rebase), rebase)
 
+    def _push_function(self):
+        start = self.SCRIPT.index("v3_push_observations() {")
+        end = self.SCRIPT.index("\n}\n", start) + 3
+        return self.SCRIPT[start:end]
+
+    def _git_env(self, tmp):
+        import os
+        env = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1",
+                   GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@example.com",
+                   GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@example.com",
+                   HOME=str(tmp))
+        return env
+
+    def _repos(self, tmp, conflicting):
+        """origin.git; `a` (the runner's checkout) with a local commit; origin moved by `b`."""
+        import subprocess
+        env = self._git_env(tmp)
+
+        def git(cwd, *args):
+            subprocess.run(["git", *args], cwd=cwd, env=env, check=True, capture_output=True)
+
+        git(tmp, "init", "-q", "--bare", "-b", "main", "origin.git")
+        git(tmp, "clone", "-q", "origin.git", "a")
+        a, b = tmp / "a", tmp / "b"
+        (a / "obs.json").write_text("base\n")
+        git(a, "add", "obs.json")
+        git(a, "commit", "-q", "-m", "base")
+        git(a, "push", "-q", "origin", "main")
+        git(tmp, "clone", "-q", "origin.git", "b")
+        (b / ("obs.json" if conflicting else "other.txt")).write_text("from b\n")
+        git(b, "add", "-A")
+        git(b, "commit", "-q", "-m", "b")
+        git(b, "push", "-q", "origin", "main")
+        (a / "obs.json").write_text("from a\n")
+        git(a, "commit", "-q", "-am", "a")
+        return a, env
+
+    def _run_push(self, tmp, a, env):
+        import subprocess
+        harness = (
+            "set -euo pipefail\n"
+            f"LOG={tmp}/run.log; TODAY=2026-10-25; NOTIFY={tmp}/notify.log\n"
+            'notify_failure() { printf "%s\\n" "$1" >> "$NOTIFY"; }\n'
+            + self._push_function() +
+            "rc=0; v3_push_observations || rc=$?\n"
+            "echo \"rc=$rc\"\n")
+        out = subprocess.run(["bash", "-c", harness], cwd=a, env=env,
+                             capture_output=True, text=True)
+        head = subprocess.run(["git", "symbolic-ref", "-q", "--short", "HEAD"], cwd=a, env=env,
+                              capture_output=True, text=True).stdout.strip()
+        notify = tmp / "notify.log"
+        return out, head, notify.read_text() if notify.exists() else ""
+
+    def test_a_rebase_conflict_on_the_push_retry_leaves_head_on_main_with_no_rebase(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+            a, env = self._repos(tmp, conflicting=True)
+            out, head, notified = self._run_push(tmp, a, env)
+            self.assertIn("rc=1", out.stdout, out.stdout + out.stderr)
+            self.assertEqual(head, "main")
+            self.assertFalse((a / ".git" / "rebase-merge").exists())
+            self.assertFalse((a / ".git" / "rebase-apply").exists())
+            self.assertIn("PUSH FAILED", notified)
+
+    def test_a_rejected_push_without_a_conflict_rebases_and_lands(self):
+        import subprocess
+        import tempfile
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+            a, env = self._repos(tmp, conflicting=False)
+            out, head, notified = self._run_push(tmp, a, env)
+            self.assertIn("rc=0", out.stdout, out.stdout + out.stderr)
+            self.assertEqual((head, notified), ("main", ""))
+            log = subprocess.run(["git", "log", "--format=%s", "origin/main"], cwd=a, env=env,
+                                 capture_output=True, text=True).stdout.split()
+            self.assertEqual(log[:2], ["a", "b"])
+
+    def test_head_off_main_after_the_retry_stops_the_run_before_the_agent(self):
+        block = self._scan_block()
+        self.assertIn("# TODO(#112): take scripts/.tracker.lock around this retry once #112 lands",
+                      self.SCRIPT)
+        fn = self._push_function()
+        self.assertIn("git rebase --abort 2>/dev/null || true", fn)
+        self.assertIn("git symbolic-ref -q --short HEAD", fn)
+        # rc 2 = HEAD could not be restored to main -> exit before `claude -p`.
+        self.assertRegex(block, r'if \[ "\$v3_push_rc" -eq 2 \]; then[^\n]*\n[^\n]*\n\s*exit 1')
+
     def test_v3_step_checks_that_its_skill_file_exists(self):
         self.assertIn('[ -f "$V3_SKILL" ]', self.SCRIPT)
         self.assertIn('V3_VALUE_ENABLED:-0', self.SCRIPT)   # gate default stays OFF
