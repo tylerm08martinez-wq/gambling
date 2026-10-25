@@ -1875,9 +1875,18 @@ def cmd_auto_resolve(_args, sources=None):
             if line_num is None:
                 skipped.append((p["id"], "total missing line_num — resolve manually"))
                 continue
+            # Side and threshold come from the bet text; line_num must agree (#113).
+            # Real settled totals carry odds in line_num (-130 on "Under 8.5"), and the
+            # side used to come from `^over`, which read "Angels @ Rangers Over 8" as
+            # an Under.
+            parsed = parse_bet_threshold(bet)
+            if parsed is None or not line_num_agrees(parsed, line_num):
+                skipped.append((p["id"], f"total: line_num {line_num} disagrees with the bet "
+                                         f"text (or text ambiguous) — resolve manually"))
+                continue
             total = result_data["total_runs"]
-            side = "over" if re.match(r'^\s*over\b', bet.lower()) else "under"
-            outcome = prop_outcome(total, side, float(line_num))
+            side = parsed["side"]
+            outcome = prop_outcome(total, side, parsed["threshold"])
             p["result"] = outcome
             p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
             p["final_score"] = result_data["final_score"]

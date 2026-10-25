@@ -227,5 +227,41 @@ class TestResolveRefusesGameLineFieldsOnPropsAndTotals(unittest.TestCase):
         self.assertIsInstance(p["prop_margin"], int)
 
 
+
+def _auto_resolve_total(pick, total_runs, final_score="SEA 3, TOR 4"):
+    game = {"game_pk": 1, "final_score": final_score, "total_runs": total_runs}
+    with patch.object(tracker, "load_picks", return_value=[pick]), \
+         patch.object(tracker, "save_picks"), \
+         patch.object(tracker, "find_mlb_game_for_bet", return_value=game), \
+         contextlib.redirect_stdout(io.StringIO()):
+        try:
+            tracker.cmd_auto_resolve(None, sources={})
+        except SystemExit:
+            pass
+
+
+class TestGameTotalGradesFromTheBetText(unittest.TestCase):
+    """The MLB total branch read `float(line_num)` directly. Real settled totals carry
+    odds there (SEA @ TOR Under 8.5 has line_num -130): an open one would grade
+    Under 8.5 against -130 and LOSE whatever the score."""
+
+    def test_open_total_with_odds_in_line_num_stays_open(self):
+        p = _total(line_num=-130.0)
+        _auto_resolve_total(p, total_runs=7)
+        self.assertIsNone(p["result"])
+
+    def test_open_total_with_true_line_num_grades(self):
+        p = _total()
+        _auto_resolve_total(p, total_runs=7)
+        self.assertEqual(p["result"], "win")       # 7 runs, Under 8.5
+
+    def test_matchup_style_over_is_graded_as_an_over(self):
+        # The side used to come from `^over`, so "Angels @ Rangers Over 8" graded as an
+        # UNDER: 3 runs would have been a WIN. It is a LOSS.
+        p = _total(id="20260822-mlb-v2-angels-total", bet="Angels @ Rangers Over 8", line_num=8.0)
+        _auto_resolve_total(p, total_runs=3, final_score="Angels 3, Rangers 0")
+        self.assertEqual(p["result"], "loss")
+
+
 if __name__ == "__main__":
     unittest.main()
