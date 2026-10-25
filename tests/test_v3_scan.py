@@ -354,11 +354,16 @@ class TestRunner(unittest.TestCase):
         self.assertEqual(len(commit), 1)
         self.assertTrue(add[0].rstrip().endswith('-- "$V3_OBS"'), add[0])
         self.assertIn('-- "$V3_OBS"', commit[0])          # pathspec: commit nothing else
-        # The push sits inside the `if [ -f "$V3_OBS" ] ...` guard, after the commit.
+        # Every push lives in v3_push_observations, which is called only inside the
+        # `if [ -f "$V3_OBS" ] ...` guard, after the commit.
         guard = block.index('if [ -f "$V3_OBS" ]')
+        fn_start = block.index("v3_push_observations() {")
+        fn_end = block.index("\n}\n", fn_start)
         pushes = [i for i in range(len(block)) if block.startswith("git push origin main", i)]
         self.assertTrue(pushes)
-        self.assertTrue(all(p > block.index("git commit") > guard for p in pushes))
+        self.assertTrue(all(fn_start < p < fn_end for p in pushes))
+        call = block.index("v3_push_observations ||", guard)
+        self.assertGreater(call, block.index("git commit", guard))
 
     def test_a_rejected_scan_push_rebases_and_retries_once_before_alerting(self):
         block = self._scan_block()

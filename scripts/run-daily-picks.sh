@@ -171,15 +171,40 @@ else
   echo "❌ V3 Observation Scan FAILED — continuing with V1/V2." | tee -a "$LOG"
   notify_failure "⚠️ Daily Bet Picks: V3 Observation Scan for $TODAY FAILED on $(hostname). V1/V2 picks continue. Check scripts/.run-daily-picks.log."
 fi
+# Push the observations commit. A rejected push (origin moved since the morning pull)
+# gets one rebase + retry. A failed retry must never leave the checkout mid-rebase on a
+# detached HEAD: `claude -p` would then log and commit picks there. So any failure
+# aborts the rebase and checks HEAD is back on main.
+# Returns 0 pushed; 1 push failed but HEAD is on main (alerted, picks continue);
+# 2 HEAD could not be restored to main (alerted; the caller must stop the run).
+v3_push_observations() {
+  # TODO(#112): take scripts/.tracker.lock around this retry once #112 lands
+  if git push origin main 2>&1 | tee -a "$LOG"; then
+    return 0
+  fi
+  if git pull --rebase --autostash origin main 2>&1 | tee -a "$LOG" \
+     && git push origin main 2>&1 | tee -a "$LOG"; then
+    return 0
+  fi
+  git rebase --abort 2>/dev/null || true
+  if [ "$(git symbolic-ref -q --short HEAD || true)" != "main" ]; then
+    git checkout -q main 2>/dev/null || true
+  fi
+  if [ "$(git symbolic-ref -q --short HEAD || true)" != "main" ]; then
+    notify_failure "🚨 Daily Bet Picks: V3 observations push retry left $(hostname) OFF main (HEAD: $(git rev-parse --short HEAD 2>/dev/null || echo '?')). Run STOPPED before the picks agent — fix the checkout by hand."
+    return 2
+  fi
+  notify_failure "⚠️ Daily Bet Picks: V3 observations for $TODAY committed locally but PUSH FAILED (after a rebase retry) on $(hostname). HEAD is on main; picks continue."
+  return 1
+}
 if [ -f "$V3_OBS" ] && [ -n "$(git status --porcelain -- "$V3_OBS")" ]; then
   git add -- "$V3_OBS"
   git commit -m "chore: V3 observation scan for $TODAY" -- "$V3_OBS" 2>&1 | tee -a "$LOG" || true
-  # A rejected push (origin moved since the morning pull) gets one rebase + retry.
-  if ! git push origin main 2>&1 | tee -a "$LOG"; then
-    if ! { git pull --rebase --autostash origin main 2>&1 | tee -a "$LOG" \
-           && git push origin main 2>&1 | tee -a "$LOG"; }; then
-      notify_failure "⚠️ Daily Bet Picks: V3 observations for $TODAY committed locally but PUSH FAILED (after a rebase retry) on $(hostname)."
-    fi
+  v3_push_rc=0
+  v3_push_observations || v3_push_rc=$?
+  if [ "$v3_push_rc" -eq 2 ]; then
+    echo "❌ HEAD is not on main after the V3 push retry — stopping before claude -p." | tee -a "$LOG"
+    exit 1
   fi
 fi
 # ---------------------------------------------------------------------------
