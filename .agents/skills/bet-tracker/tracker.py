@@ -1988,8 +1988,8 @@ def cmd_resolve(args):
 
 
 def cmd_backfill_clv(args):
-    """Backfill realized CLV on settled MLB player props from their BettingPros consensus
-    close (residential IP only — BettingPros 403s datacenter, ADR 0006). Matching lives in
+    """Backfill realized CLV on settled MLB, NBA and NFL player props from their
+    BettingPros consensus close (residential IP only — BettingPros 403s datacenter, ADR 0006). Matching lives in
     clv_fetch (fetch + two-way ladder match); the de-vig + write lives in clv_backfill. A
     pick with no matchable close stays Unmeasured (null clv) — never fabricated."""
     # Running tracker.py as a script already puts its dir on sys.path[0]; clv_fetch also
@@ -2178,7 +2178,7 @@ def main():
                        help="Game start time in Arizona time, e.g. '5:10 PM' or '1:05 PM'")
 
     bf_p = sub.add_parser("backfill-clv",
-                          help="Backfill realized CLV on settled MLB props from BettingPros consensus close (residential IP)")
+                          help="Backfill realized CLV on settled MLB/NBA/NFL props from BettingPros consensus close (residential IP)")
     bf_p.add_argument("--apply", action="store_true", help="write picks.json back (default: dry-run)")
     bf_p.add_argument("--force", action="store_true", help="overwrite an existing closing_line/clv")
     bf_p.add_argument("--date", default="", help="only backfill picks on this date (YYYY-MM-DD); "

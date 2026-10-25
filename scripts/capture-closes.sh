@@ -9,6 +9,13 @@
 # HOME PC ONLY: BettingPros 403s datacenter IPs (ADR 0006), same constraint as the
 # morning picks run.
 #
+# SCHEDULE (crontab on the home PC, inside the "# >>> spacewalk jobs" block, which sets
+# SHELL and PATH; added #107). Every 15 minutes; the 08:00-21:00 AZ window below
+# makes the off-hours passes no-ops:
+#   */15 * * * * /bin/bash /Users/tylermartinez/Projects/gambling/scripts/capture-closes.sh >> /Users/tylermartinez/.local/state/spacewalk/capture-closes.log 2>&1
+#
+# Covers MLB, NBA and NFL player props (#107).
+#
 # Writes .agents/skills/bet-tracker/closing_lines.json locally and does NOT commit —
 # at a 15-minute cadence that would be commit spam. The morning run picks the file up
 # and commits it alongside the CLV backfill, which is also the only consumer (backfill
