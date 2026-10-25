@@ -388,7 +388,6 @@
     "closing_line": null,
     "clv": null,
     "final_score": "Thunder 123, Spurs 108 (Wembanyama: 4 REB)",
-    "game_margin": -11,
     "line_num": 14.5,
     "prop_result": null,
     "prop_margin": null
@@ -430,7 +429,6 @@
     "closing_line": null,
     "clv": null,
     "final_score": "Brewers 5, Dodgers 1 (total: 6)",
-    "game_margin": 2,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -451,7 +449,6 @@
     "closing_line": null,
     "clv": null,
     "final_score": "Rays 4, Yankees 2 (Cole: 2 K)",
-    "game_margin": 3,
     "line_num": 5.5,
     "prop_result": null,
     "prop_margin": null
@@ -472,7 +469,6 @@
     "closing_line": "+100",
     "clv": -3.49,
     "final_score": "SEA 0, KC 5 (total: 5)",
-    "game_margin": 3,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null,
@@ -495,7 +491,6 @@
     "closing_line": "-102",
     "clv": 0.0,
     "final_score": "NYM 1, MIA 4 (total: 5)",
-    "game_margin": 2,
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null,
@@ -541,7 +536,6 @@
     "closing_line": null,
     "clv": null,
     "final_score": "PHI 3, CLE 0",
-    "game_margin": 4,
     "line_num": 7.0,
     "prop_result": null,
     "prop_margin": null
@@ -591,8 +585,7 @@
     "closing_line": null,
     "clv": null,
     "final_score": "CLE 3, PHI 1",
-    "game_margin": -4,
-    "line_num": -7.5,
+    "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -714,8 +707,7 @@
     "closing_line": null,
     "clv": null,
     "final_score": "PIT 12, CHC 1",
-    "game_margin": 11,
-    "line_num": -110.0,
+    "line_num": 5.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -948,7 +940,6 @@
     "closing_line": "-122",
     "clv": 2.57,
     "final_score": "HOU 5, TEX 1",
-    "game_margin": 1,
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null,
@@ -1072,8 +1063,7 @@
     "closing_line": null,
     "clv": null,
     "final_score": "PIT 10, MIN 9",
-    "game_margin": 1,
-    "line_num": -148.0,
+    "line_num": 3.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -1132,7 +1122,6 @@
     "closing_line": null,
     "clv": null,
     "final_score": "PHI 1, LAD 9",
-    "game_margin": -1,
     "line_num": 9.0,
     "prop_result": null,
     "prop_margin": null
@@ -1313,7 +1302,6 @@
     "closing_line": null,
     "clv": null,
     "final_score": "TEX 2, STL 1",
-    "game_margin": -5,
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
@@ -1357,7 +1345,7 @@
     "clv": null,
     "final_score": "MIL 16, SF 2",
     "game_margin": null,
-    "line_num": 0.0,
+    "line_num": 0.5,
     "prop_result": "3-for-5, 2 RBI",
     "prop_margin": 3
   },
@@ -1508,7 +1496,7 @@
     "clv": null,
     "final_score": "ATL 7, TOR 3",
     "game_margin": null,
-    "line_num": 16.0,
+    "line_num": 16.5,
     "prop_result": "18 outs recorded (6.0 IP)",
     "prop_margin": 2
   },
@@ -1634,7 +1622,6 @@
     "closing_line": "-110",
     "clv": -0.03,
     "final_score": "CIN 6, PIT 4",
-    "game_margin": 2,
     "line_num": 16.5,
     "prop_result": "17 outs recorded (5 2/3 IP)",
     "prop_margin": 1,
@@ -1683,7 +1670,6 @@
     "closing_line": "-115",
     "clv": 19.69,
     "final_score": "TEX 5, TOR 4",
-    "game_margin": -1,
     "line_num": 14.5,
     "prop_result": "approx 1 out recorded (pulled in 1st inning, 3-0 hole before 2nd out)",
     "prop_margin": -14,
@@ -1732,7 +1718,6 @@
     "closing_line": "-130",
     "clv": 2.42,
     "final_score": "DET 8, HOU 0",
-    "game_margin": 8,
     "line_num": 16.5,
     "prop_result": "21 outs recorded (7 IP)",
     "prop_margin": 5,
@@ -2430,7 +2415,6 @@
     "closing_line": null,
     "clv": null,
     "final_score": "LAD 4, SD 3",
-    "game_margin": -1,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -2576,7 +2560,6 @@
     "closing_line": null,
     "clv": null,
     "final_score": "CHW 3, CLE 1",
-    "game_margin": -4,
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
@@ -2613,7 +2596,6 @@
     "closing_line": null,
     "clv": null,
     "final_score": "STL 3, CHC 0",
-    "game_margin": -6,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -2651,7 +2633,6 @@
     "closing_line": null,
     "clv": null,
     "final_score": "BOS 8, CWS 1",
-    "game_margin": 7,
     "line_num": 14.5,
     "prop_result": null,
     "prop_margin": null
@@ -2689,8 +2670,7 @@
     "closing_line": null,
     "clv": null,
     "final_score": "CWS 1, ATH 0",
-    "game_margin": 1,
-    "line_num": 100.0,
+    "line_num": 16.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -2727,8 +2707,7 @@
     "closing_line": null,
     "clv": null,
     "final_score": "TB 6, SEA 1",
-    "game_margin": 5,
-    "line_num": 145.0,
+    "line_num": 17.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -2765,8 +2744,7 @@
     "closing_line": null,
     "clv": null,
     "final_score": "HOU 9, TEX 3",
-    "game_margin": 6,
-    "line_num": 104.0,
+    "line_num": 16.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -2803,8 +2781,7 @@
     "closing_line": null,
     "clv": null,
     "final_score": "SF 4, COL 2",
-    "game_margin": 2,
-    "line_num": 100.0,
+    "line_num": 16.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -3065,7 +3042,6 @@
     "closing_line": "+118",
     "clv": -1.08,
     "final_score": "BOS 6, TB 1",
-    "game_margin": 1,
     "line_num": 17.5,
     "prop_result": null,
     "prop_margin": null,
@@ -3169,7 +3145,6 @@
     "closing_line": "+125",
     "clv": -4.0,
     "final_score": "SEA 6, SF 3",
-    "game_margin": 1,
     "line_num": 17.5,
     "prop_result": null,
     "prop_margin": null,
@@ -3220,7 +3195,6 @@
     "closing_line": null,
     "clv": null,
     "final_score": "CHC 10, MIN 1",
-    "game_margin": 3,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -3710,7 +3684,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "ARI 8, PIT 7 (12 inn) | Pfaadt: 4 SO in 7.0 IP",
-    "game_margin": 1,
     "line_num": 3.5,
     "prop_result": null,
     "prop_margin": null
@@ -3754,7 +3727,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "PIT 4, CIN 1",
-    "game_margin": 3,
     "line_num": 0.5,
     "prop_result": null,
     "prop_margin": null
@@ -3798,7 +3770,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "Padres 6, Giants 5 (Mahle 9 Ks)",
-    "game_margin": 6,
     "line_num": 3.5,
     "prop_result": null,
     "prop_margin": null
@@ -3842,7 +3813,6 @@
     "clv_devig": 4.33,
     "clv_pct_pts": 4.88,
     "final_score": "ARI 12, CLE 8",
-    "game_margin": 4,
     "line_num": 4.5,
     "prop_result": null,
     "prop_margin": null
@@ -3886,7 +3856,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "COL 12, KC 6",
-    "game_margin": 6,
     "line_num": 12.0,
     "prop_result": null,
     "prop_margin": null
@@ -3930,7 +3899,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "COL 12, KC 6",
-    "game_margin": 6,
     "line_num": 1.5,
     "prop_result": null,
     "prop_margin": null
@@ -4014,7 +3982,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "TOR 3, HOU 1",
-    "game_margin": -2,
     "line_num": 1.5,
     "prop_result": "1 total base (1 single)",
     "prop_margin": null
@@ -4056,7 +4023,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "TOR 3, HOU 1",
-    "game_margin": 2,
     "line_num": 0.5,
     "prop_result": null,
     "prop_margin": null
@@ -4098,7 +4064,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "CHC 10, LAD 5",
-    "game_margin": 5,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -4134,7 +4099,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "TB 13, COL 9",
-    "game_margin": 4,
     "line_num": 2.5,
     "prop_result": null,
     "prop_margin": null
@@ -4199,8 +4163,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "Angels 7, Rangers 0",
-    "game_margin": 7,
-    "line_num": -125.0,
+    "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
   },
@@ -4243,7 +4206,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "White Sox 4, Tigers 3",
-    "game_margin": 1,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -4287,7 +4249,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "Marlins 8, Reds 4",
-    "game_margin": 4,
     "line_num": 9.5,
     "prop_result": null,
     "prop_margin": null
@@ -4375,7 +4336,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "Phillies 12, Cardinals 3",
-    "game_margin": 9,
     "line_num": 9.0,
     "prop_result": null,
     "prop_margin": null
@@ -4419,7 +4379,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "Orioles 3, Rays 2",
-    "game_margin": 1,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -4463,7 +4422,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "Angels 3, Rangers 0",
-    "game_margin": 3,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -4511,7 +4469,6 @@
     "clv_devig": 2.88,
     "clv_pct_pts": 5.21,
     "final_score": "NYY 8, TOR 3",
-    "game_margin": 5,
     "line_num": 4.5,
     "prop_result": null,
     "prop_margin": null
@@ -4600,7 +4557,7 @@
     "clv_pct_pts": null,
     "final_score": null,
     "game_margin": null,
-    "line_num": 127.0,
+    "line_num": 5.5,
     "prop_result": "7 Ks (over 5.5 threshold)",
     "prop_margin": 2
   },
@@ -4636,7 +4593,6 @@
     "clv_devig": -8.25,
     "clv_pct_pts": -0.24,
     "final_score": "KC 13, TOR 2",
-    "game_margin": 11,
     "line_num": 14.5,
     "prop_result": "12 outs (4.0 IP)",
     "prop_margin": -3
@@ -4673,7 +4629,6 @@
     "clv_devig": 0.44,
     "clv_pct_pts": 3.57,
     "final_score": "HOU 5, NYY 1",
-    "game_margin": 4,
     "line_num": 17.5,
     "prop_result": "18 outs (6.0 IP)",
     "prop_margin": 1
@@ -4710,7 +4665,6 @@
     "clv_devig": 7.73,
     "clv_pct_pts": 7.17,
     "final_score": "STL 7, BAL 5",
-    "game_margin": 2,
     "line_num": 4.5,
     "prop_result": "7 strikeouts",
     "prop_margin": 3
@@ -4754,7 +4708,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "KC 13, TOR 2",
-    "game_margin": 11,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -4798,7 +4751,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "HOU 5, NYY 1",
-    "game_margin": 4,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -4854,8 +4806,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "LAD 6, DET 1",
-    "game_margin": 5,
-    "line_num": -118.0,
+    "line_num": 16.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -4900,8 +4851,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "BAL 8, ATH 5",
-    "game_margin": 3,
-    "line_num": -110.0,
+    "line_num": 10.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -4946,8 +4896,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "TOR 7, SEA 0",
-    "game_margin": 7,
-    "line_num": -130.0,
+    "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -4992,8 +4941,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "TB 5, SD 4",
-    "game_margin": 1,
-    "line_num": -122.0,
+    "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -5036,7 +4984,6 @@
     "clv_devig": -2.5,
     "clv_pct_pts": 2.11,
     "final_score": "SD 5, CIN 0",
-    "game_margin": 5,
     "line_num": 5.5,
     "prop_result": "6 K",
     "prop_margin": null
@@ -5131,7 +5078,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "BOS 9, SEA 8",
-    "game_margin": 1,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -5182,7 +5128,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "LAA 10, NYY 1",
-    "game_margin": 9,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -5233,7 +5178,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "HOU 6, CWS 3",
-    "game_margin": 3,
     "line_num": 4.5,
     "prop_result": "6 H allowed",
     "prop_margin": null
@@ -5437,7 +5381,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "OAK 9, TEX 2",
-    "game_margin": 7,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -5481,7 +5424,6 @@
     "clv_devig": -1.18,
     "clv_pct_pts": 2.7,
     "final_score": "LAD 3, STL 2",
-    "game_margin": 1,
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
@@ -5532,7 +5474,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "OAK 7, SEA 4",
-    "game_margin": 3,
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
@@ -5583,7 +5524,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "LAD 3, STL 2",
-    "game_margin": 1,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -5750,7 +5690,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "TB 6, TEX 3",
-    "game_margin": -2,
     "line_num": 7.0,
     "prop_result": null,
     "prop_margin": null
@@ -5881,7 +5820,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "COL 10, STL 7",
-    "game_margin": -6,
     "line_num": 11.0,
     "prop_result": null,
     "prop_margin": null
@@ -6162,7 +6100,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "SF 2, STL 1",
-    "game_margin": 5,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -6219,7 +6156,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "LAD 3, CIN 2",
-    "game_margin": 3,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -6290,7 +6226,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "MIN 3, DET 2",
-    "game_margin": 3,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -6363,7 +6298,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "HOU 2, PHI 1",
-    "game_margin": 1,
     "line_num": 1.5,
     "prop_result": "0 total bases (0-for-3, reached via IBB in 8th)",
     "prop_margin": null
@@ -6439,7 +6373,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "MIL 20, CIN 0",
-    "game_margin": -9,
     "line_num": 14.5,
     "prop_result": "6 outs (2.0 IP)",
     "prop_margin": null
@@ -6504,7 +6437,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "CHC 12, PIT 2",
-    "game_margin": -6,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -6576,7 +6508,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "BAL 7, TOR 4",
-    "game_margin": 1,
     "line_num": 17.5,
     "prop_result": "~16 outs (5.1+ IP)",
     "prop_margin": null
@@ -6645,7 +6576,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "MIL 20, CIN 0",
-    "game_margin": -12,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -6697,7 +6627,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "TB 3, HOU 2",
-    "game_margin": 2,
     "line_num": 4.0,
     "prop_result": "6 strikeouts",
     "prop_margin": null
@@ -6741,7 +6670,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "NYM 12, NYY 2",
-    "game_margin": -6,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -6785,7 +6713,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "WSH 6, LAA 5",
-    "game_margin": -3,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -6829,7 +6756,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "TEX 6, ARI 2",
-    "game_margin": 0,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -7103,7 +7029,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "KC 31, DEN 10",
-    "game_margin": 21,
     "line_num": 32.5,
     "prop_result": "27 pass attempts (under 32.5)",
     "prop_margin": null
@@ -7147,7 +7072,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "KC 31, DEN 10",
-    "game_margin": 21,
     "line_num": 227.5,
     "prop_result": "184 passing yards (under 227.5)",
     "prop_margin": null
@@ -7191,7 +7115,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "KC 31, DEN 10",
-    "game_margin": 21,
     "line_num": 38.5,
     "prop_result": "71 receiving yards, 3 rec (over 38.5)",
     "prop_margin": null
@@ -7228,7 +7151,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "SF 1, STL 2",
-    "game_margin": -1,
     "line_num": 8.5,
     "prop_result": "3 total runs (1+2), under 8.5",
     "prop_margin": null
@@ -7272,7 +7194,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "DET 10, TOR 1",
-    "game_margin": 9,
     "line_num": 0.5,
     "prop_result": "1 hit (RBI single in 5th)",
     "prop_margin": 1
@@ -7316,7 +7237,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "LAA 2, SEA 1",
-    "game_margin": -1,
     "line_num": 17.5,
     "prop_result": "6.0 IP, 18 outs recorded (over 17.5 threshold)",
     "prop_margin": null
@@ -7353,7 +7273,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "HOU 4, KC 2",
-    "game_margin": 2,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -7390,7 +7309,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "OAK 1, TB 2",
-    "game_margin": 5,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -7427,7 +7345,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "ATL 6, HOU 2",
-    "game_margin": 0,
     "line_num": 8.5,
     "prop_result": null,
     "prop_margin": null
@@ -7464,7 +7381,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "PIT 8, KC 5",
-    "game_margin": 5,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -7508,7 +7424,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "WSH 8, STL 5",
-    "game_margin": -3,
     "line_num": 17.5,
     "prop_result": null,
     "prop_margin": null
@@ -7551,8 +7466,7 @@
     "clv": null,
     "clv_devig": null,
     "clv_pct_pts": null,
-    "final_score": "KC 23, IND 20 OT",
-    "game_margin": -3,
+    "final_score": "KC 33, IND 30 OT",
     "line_num": 108.5,
     "prop_result": null,
     "prop_margin": null
@@ -7596,7 +7510,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "CIN 20, HOU 6",
-    "game_margin": 14,
     "line_num": 75.5,
     "prop_result": "80 rushing yards",
     "prop_margin": 4
@@ -7640,7 +7553,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "DEN 20, JAC 13",
-    "game_margin": 7,
     "line_num": 226.5,
     "prop_result": "288 passing yards",
     "prop_margin": 61
@@ -7684,7 +7596,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "NE 20, PIT 3",
-    "game_margin": 17,
     "line_num": 220.5,
     "prop_result": "208 passing yards",
     "prop_margin": -12
@@ -7728,7 +7639,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "COL 9, CWS 6",
-    "game_margin": 7,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -7772,7 +7682,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "LAA 4, SEA 8",
-    "game_margin": 4,
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
@@ -7823,7 +7732,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "KC 24, MIA 10",
-    "game_margin": 14,
     "line_num": 86.5,
     "prop_result": null,
     "prop_margin": null
@@ -7874,7 +7782,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "DET 31, NYJ 24",
-    "game_margin": 7,
     "line_num": 57.5,
     "prop_result": null,
     "prop_margin": null
@@ -7925,7 +7832,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "BAL 34, DAL 31",
-    "game_margin": 3,
     "line_num": 26.5,
     "prop_result": null,
     "prop_margin": null
@@ -7969,7 +7875,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "SF 36, ARI 30",
-    "game_margin": 6,
     "line_num": 39.5,
     "prop_result": null,
     "prop_margin": null
@@ -8013,7 +7918,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "CHI 27, PHI 7",
-    "game_margin": 20,
     "line_num": 33.5,
     "prop_result": "7 rec, 61 yds, 1 TD",
     "prop_margin": 28
@@ -8057,7 +7961,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "CHI 27, PHI 7",
-    "game_margin": 20,
     "line_num": 29.5,
     "prop_result": "4 rec, 31 yds",
     "prop_margin": 2
@@ -8101,7 +8004,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "CHI 27, PHI 7",
-    "game_margin": 20,
     "line_num": 62.5,
     "prop_result": "84 rush yds (u62.5)",
     "prop_margin": -44
@@ -8145,7 +8047,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "CHI 27, PHI 7",
-    "game_margin": 20,
     "line_num": 50.5,
     "prop_result": "31 rush yds, ~0 rec yds",
     "prop_margin": -20
@@ -8189,7 +8090,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "ATL 5, PHI 3",
-    "game_margin": -1,
     "line_num": 7.0,
     "prop_result": null,
     "prop_margin": null
@@ -8233,7 +8133,6 @@
     "clv_devig": 1.54,
     "clv_pct_pts": 4.55,
     "final_score": "NYY 9, BOS 2",
-    "game_margin": 7,
     "line_num": 16.5,
     "prop_result": "18 outs recorded (o16.5)",
     "prop_margin": 2
@@ -8277,7 +8176,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "CWS 7, HOU 3",
-    "game_margin": 4,
     "line_num": 8.0,
     "prop_result": null,
     "prop_margin": null
@@ -8321,7 +8219,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "PHI 4, ATL 3",
-    "game_margin": 1,
     "line_num": 7.5,
     "prop_result": null,
     "prop_margin": null
@@ -8366,7 +8263,7 @@
     "clv_pct_pts": null,
     "final_score": null,
     "game_margin": null,
-    "line_num": -113.0,
+    "line_num": 31.5,
     "prop_result": "7 rushing yards",
     "prop_margin": -25
   },
@@ -8410,7 +8307,7 @@
     "clv_pct_pts": null,
     "final_score": "SF 24, DEN 14",
     "game_margin": null,
-    "line_num": -113.0,
+    "line_num": 39.5,
     "prop_result": "26 receiving yards (5/6 targets)",
     "prop_margin": -14
   },
@@ -8466,7 +8363,7 @@
     "clv_pct_pts": -1.75,
     "final_score": "CLE 2, CHW 0",
     "game_margin": null,
-    "line_num": -118.0,
+    "line_num": 13.5,
     "prop_result": "17 outs recorded (5.2 IP, 12 K)",
     "prop_margin": 4
   },
@@ -8502,8 +8399,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "PIT 34, IND 22",
-    "game_margin": 12,
-    "line_num": 235.0,
+    "line_num": 224.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -8539,8 +8435,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "DET 45, ARI 21",
-    "game_margin": 24,
-    "line_num": 207.0,
+    "line_num": 129.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -8576,8 +8471,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "DEN 23, LAC 17",
-    "game_margin": 6,
-    "line_num": 123.0,
+    "line_num": 224.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -8620,8 +8514,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "NYJ 17, CLE 12",
-    "game_margin": 5,
-    "line_num": 182.0,
+    "line_num": 198.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -8664,8 +8557,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "DEN 23, LAC 17",
-    "game_margin": 6,
-    "line_num": 11.0,
+    "line_num": 29.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -8759,8 +8651,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "DEN 17, SEA 14 (OT)",
-    "game_margin": 3,
-    "line_num": -111.0,
+    "line_num": 14.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -8810,8 +8701,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "DEN 17, SEA 14 (OT)",
-    "game_margin": 3,
-    "line_num": 102.0,
+    "line_num": 21.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -8868,8 +8758,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "TB 7, CLE 3",
-    "game_margin": 4,
-    "line_num": -110.0,
+    "line_num": 0.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -9146,7 +9035,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "SAC 96, LAC 121",
-    "game_margin": -25,
     "line_num": 21.5,
     "prop_result": "22 (14 pts + 8 ast)",
     "prop_margin": null
@@ -9204,8 +9092,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "CHA 110, BKN 103",
-    "game_margin": 7,
-    "line_num": 115.0,
+    "line_num": 23.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -9255,8 +9142,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "CHA 110, BKN 103",
-    "game_margin": 7,
-    "line_num": -104.0,
+    "line_num": 23.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -9313,8 +9199,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "POR 124, PHO 83",
-    "game_margin": 41,
-    "line_num": -110.0,
+    "line_num": 35.5,
     "prop_result": null,
     "prop_margin": null
   },
@@ -9371,7 +9256,6 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "NE 24, CHI 30",
-    "game_margin": -6,
     "line_num": 31.5,
     "prop_result": "71 rec yds (7 rec)",
     "prop_margin": 39
@@ -9429,8 +9313,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "UTA 120, NOR 119",
-    "game_margin": 1,
-    "line_num": -108.0,
+    "line_num": 11.5,
     "prop_result": "6 points",
     "prop_margin": -6
   },
@@ -9486,9 +9369,8 @@
     "clv": null,
     "clv_devig": null,
     "clv_pct_pts": null,
-    "final_score": "BOS 121, NYK 108",
-    "game_margin": 13,
-    "line_num": -105.0,
+    "final_score": "BOS 107, NY 103",
+    "line_num": 26.5,
     "prop_result": "36 points",
     "prop_margin": 9
   },
@@ -9545,8 +9427,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "TOR 112, WAS 102",
-    "game_margin": -10,
-    "line_num": -110.0,
+    "line_num": 10.5,
     "prop_result": "11 points",
     "prop_margin": 0
   },
@@ -9603,8 +9484,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "HOU 114, SAS 110",
-    "game_margin": -4,
-    "line_num": -112.0,
+    "line_num": 40.5,
     "prop_result": "25 pts / 13 reb / 2 ast = 40 PRA",
     "prop_margin": 0
   },
@@ -9661,8 +9541,7 @@
     "clv_devig": null,
     "clv_pct_pts": null,
     "final_score": "CHI 132, MIL 125",
-    "game_margin": -7,
-    "line_num": -111.0,
+    "line_num": 14.5,
     "prop_result": "19 points",
     "prop_margin": 4
   },
