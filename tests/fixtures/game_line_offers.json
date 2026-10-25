@@ -1,0 +1,294 @@
+{
+ "_source": "BettingPros live, pulled 2026-10-25 05:17-05:28 UTC; trimmed to books 0/12/60/68 and the fields close capture reads. The total market carries participants: [] exactly as the feed serves it; teams come only from /events.",
+ "nfl_event_21915": {
+  "id": 21915,
+  "scheduled": "2026-10-25 13:30:00",
+  "home": "NO",
+  "visitor": "PIT",
+  "participants": [
+   {
+    "id": "NO",
+    "name": "Saints",
+    "team": {
+     "city": "New Orleans",
+     "abbreviation": "NO"
+    }
+   },
+   {
+    "id": "PIT",
+    "name": "Steelers",
+    "team": {
+     "city": "Pittsburgh",
+     "abbreviation": "PIT"
+    }
+   }
+  ]
+ },
+ "nfl_21915_total": {
+  "market_id": 2,
+  "event_id": 21915,
+  "participants": [],
+  "selections": [
+   {
+    "participant": null,
+    "selection": "over",
+    "label": "Over",
+    "books": [
+     {
+      "id": 0,
+      "lines": [
+       {
+        "line": 43.5,
+        "cost": -108,
+        "updated": "2026-10-25 05:14:56",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 12,
+      "lines": [
+       {
+        "line": 43.5,
+        "cost": -105,
+        "updated": "2026-10-25 05:10:59",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 60,
+      "lines": [
+       {
+        "line": 43.5,
+        "cost": 106,
+        "updated": "2026-10-25 05:13:33",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 68,
+      "lines": [
+       {
+        "line": 43.5,
+        "cost": 104,
+        "updated": "2026-10-25 05:10:01",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "participant": null,
+    "selection": "under",
+    "label": "Under",
+    "books": [
+     {
+      "id": 0,
+      "lines": [
+       {
+        "line": 43.5,
+        "cost": -110,
+        "updated": "2026-10-25 05:14:56",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 12,
+      "lines": [
+       {
+        "line": 43.5,
+        "cost": -115,
+        "updated": "2026-10-25 05:10:59",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 60,
+      "lines": [
+       {
+        "line": 43.5,
+        "cost": -111,
+        "updated": "2026-10-25 05:13:33",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 68,
+      "lines": [
+       {
+        "line": 43.5,
+        "cost": -108,
+        "updated": "2026-10-25 05:10:01",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "nfl_21915_spread": {
+  "market_id": 3,
+  "event_id": 21915,
+  "participants": [
+   {
+    "id": "PIT",
+    "name": "Steelers",
+    "team": {
+     "city": "Pittsburgh",
+     "abbreviation": "PIT"
+    }
+   },
+   {
+    "id": "NO",
+    "name": "Saints",
+    "team": {
+     "city": "New Orleans",
+     "abbreviation": "NO"
+    }
+   }
+  ],
+  "selections": [
+   {
+    "participant": "PIT",
+    "selection": "",
+    "label": "Steelers",
+    "books": [
+     {
+      "id": 0,
+      "lines": [
+       {
+        "line": -3,
+        "cost": -110,
+        "updated": "2026-10-25 05:17:45",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 12,
+      "lines": [
+       {
+        "line": -3,
+        "cost": -112,
+        "updated": "2026-10-25 05:16:31",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 60,
+      "lines": [
+       {
+        "line": -3.5,
+        "cost": 120,
+        "updated": "2026-10-25 05:13:33",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 68,
+      "lines": [
+       {
+        "line": -2.5,
+        "cost": -122,
+        "updated": "2026-10-25 05:17:06",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "participant": "NO",
+    "selection": "",
+    "label": "Saints",
+    "books": [
+     {
+      "id": 0,
+      "lines": [
+       {
+        "line": 3,
+        "cost": -109,
+        "updated": "2026-10-25 05:17:45",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 12,
+      "lines": [
+       {
+        "line": 3,
+        "cost": -108,
+        "updated": "2026-10-25 05:16:31",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 60,
+      "lines": [
+       {
+        "line": 3.5,
+        "cost": -122,
+        "updated": "2026-10-25 05:13:33",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 68,
+      "lines": [
+       {
+        "line": 2.5,
+        "cost": 117,
+        "updated": "2026-10-25 05:17:06",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

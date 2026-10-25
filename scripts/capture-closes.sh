@@ -14,7 +14,10 @@
 # makes the off-hours passes no-ops:
 #   */15 * * * * /bin/bash /Users/tylermartinez/Projects/gambling/scripts/capture-closes.sh >> /Users/tylermartinez/.local/state/spacewalk/capture-closes.log 2>&1
 #
-# Covers MLB, NBA and NFL player props (#107).
+# Covers MLB, NBA and NFL player props (#107), MLB/NBA/NFL game lines and every V3
+# observation (#109). Observation closes are written onto the rows of
+# .agents/skills/bet-tracker/v3-observations.json, which the 09:00 run commits with
+# the next day's scan; like closing_lines.json, this job never commits.
 #
 # Writes .agents/skills/bet-tracker/closing_lines.json locally and does NOT commit —
 # at a 15-minute cadence that would be commit spam. The morning run picks the file up

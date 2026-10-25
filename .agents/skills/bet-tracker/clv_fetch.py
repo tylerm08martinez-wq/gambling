@@ -80,6 +80,15 @@ STAT_MARKET = {
     },
 }
 
+# sport -> value_engine market kind -> BettingPros game-line market id (#109). The
+# same ids v3_scan.MARKETS scans (a test pins the two together). Per sport and never
+# borrowed: a wrong id returns an empty market that reads like an outage.
+GAME_LINE_MARKET = {
+    "MLB": {"moneyline": 122, "total": 175, "spread": 176},   # spread = run line
+    "NBA": {"moneyline": 127, "total": 128, "spread": 129},
+    "NFL": {"moneyline": 1, "total": 2, "spread": 3},
+}
+
 # Sports whose settled/open props get a consensus close. MLB first: its behaviour is
 # the original, ADR 0010 path and is unchanged.
 CLOSE_SPORTS = ("MLB", "NBA", "NFL")
