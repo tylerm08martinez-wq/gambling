@@ -489,6 +489,73 @@ def exchange_benchmark(quotes, line, kind, now):
     }
 
 
+def _line_key(line, kind):
+    if kind == "moneyline":
+        return None
+    try:
+        return round(float(line), 6)
+    except (TypeError, ValueError):
+        return ("unparseable", line)
+
+
+def scan_market(quotes, kind, now):
+    """Score every retail price in one market against the Exchange Benchmark.
+
+    Groups quotes by line. For each retail quote (RETAIL_BOOKS only — a benchmark or
+    any other book is never a candidate) and each side it prices, computes projected
+    CLV against the benchmark at that same line and returns one row per side:
+    `log` (clears the kind's gate with ≥1u), `reject` (positive but below the gate or
+    the 1u stake floor) or `no_bet` (at or worse than fair). A line with no
+    benchmark yields no rows: a price is never compared with a different number.
+    Rows are sorted by CLV, best first.
+    """
+    kind = market_kind(kind)
+    gate = gate_threshold(kind)
+    benchmarks = {}
+    rows = []
+    for quote in quotes:
+        if quote.get("book_id") not in RETAIL_BOOKS:
+            continue
+        key = _line_key(quote.get("line"), kind)
+        if isinstance(key, tuple):
+            continue
+        if key not in benchmarks:
+            benchmarks[key] = exchange_benchmark(quotes, quote.get("line"), kind, now)
+        bench = benchmarks[key]
+        if bench is None:
+            continue
+        for side, odds_key, fair_key in (("a", "odds_a", "fair_a"), ("b", "odds_b", "fair_b")):
+            odds = quote.get(odds_key)
+            if odds is None:
+                continue
+            try:
+                p_best = american_to_prob(odds)
+            except OddsParseError:
+                continue
+            fair_p = bench[fair_key]
+            clv = projected_clv(fair_p, p_best)
+            units = units_from_clv(fair_p, p_best, clv, kind) if clv > 0 else 0
+            if clv <= 0:
+                action, reason = "no_bet", "at or worse than the Exchange Benchmark fair price"
+            elif clv >= gate and units >= 1:
+                action, reason = "log", None
+            elif units >= 1:
+                action = "reject"
+                reason = (f"+{clv*100:.1f}% CLV is below the {gate*100:.0f}% "
+                          f"{'player-prop' if kind == 'prop' else 'game-line'} gate")
+            else:
+                action, reason = "reject", "stake below the 1u minimum (½-Kelly < 0.5% bankroll)"
+            rows.append({
+                "book_id": quote["book_id"], "line": quote.get("line"), "side": side,
+                "odds": odds, "p_best": p_best, "fair_p": fair_p, "clv": clv,
+                "gate": gate, "units": units, "action": action, "reason": reason,
+                "edge_type": "clv_value" if clv > 0 else None, "kind": kind,
+                "operators": bench["operators"], "updated": quote.get("updated"),
+            })
+    rows.sort(key=lambda r: r["clv"], reverse=True)
+    return rows
+
+
 # ==================================================================================
 # helpers
 # ==================================================================================

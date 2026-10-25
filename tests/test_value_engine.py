@@ -428,5 +428,74 @@ class TestExchangeBenchmark(unittest.TestCase):
         self.assertIsNone(ve.exchange_benchmark(quotes, 7.5, "total", NOW))
 
 
+class TestScanMarket(unittest.TestCase):
+    BENCH_EVEN = [q(60, 7.5, -105, -105), q(68, 7.5, -105, -105)]   # fair .5000 / .5000
+
+    def _row(self, rows, book_id, side):
+        return next(r for r in rows if r["book_id"] == book_id and r["side"] == side)
+
+    def test_one_row_per_retail_side_with_log_reject_no_bet(self):
+        quotes = self.BENCH_EVEN + [q(12, 7.5, 110, -130), q(10, 7.5, 103, -125)]
+        rows = ve.scan_market(quotes, "total", NOW)
+        self.assertEqual(len(rows), 4)
+        dk_over = self._row(rows, 12, "a")       # +110 = .4762 vs fair .5 -> +5.0%
+        self.assertAlmostEqual(dk_over["clv"], 0.05, places=4)
+        self.assertEqual(dk_over["action"], "log")
+        self.assertEqual(dk_over["edge_type"], "clv_value")
+        self.assertEqual(dk_over["units"], 1)
+        fd_over = self._row(rows, 10, "a")       # +103 = .4926 -> +1.5%, under the 2% gate
+        self.assertAlmostEqual(fd_over["clv"], 0.015, places=4)
+        self.assertEqual(fd_over["action"], "reject")
+        for book in (12, 10):                    # the -130 / -125 sides are worse than fair
+            self.assertEqual(self._row(rows, book, "b")["action"], "no_bet")
+        self.assertEqual(dk_over["operators"], [60, 68])
+
+    def test_prop_kind_uses_the_three_percent_gate(self):
+        quotes = self.BENCH_EVEN + [q(12, 7.5, 104, -140)]    # +104 = .4902 -> +2.0%
+        self.assertEqual(self._row(ve.scan_market(quotes, "total", NOW), 12, "a")["action"], "log")
+        self.assertEqual(self._row(ve.scan_market(quotes, "prop", NOW), 12, "a")["action"], "reject")
+
+    def test_benchmark_and_non_retail_books_are_never_candidates(self):
+        # 60/68 are the benchmark; 36 (Underdog), 15 and 27 (skins), 0 (consensus) aren't retail.
+        quotes = self.BENCH_EVEN + [q(36, 7.5, 150, -200), q(15, 7.5, 150, -200),
+                                    q(27, 7.5, 150, -200), q(0, 7.5, 150, -200)]
+        self.assertEqual(ve.scan_market(quotes, "total", NOW), [])
+
+    def test_line_mismatch_produces_no_row(self):
+        # Retail +2.5 against a benchmark at +3 only: never compared across numbers.
+        quotes = [q(60, 3.0, -105, -105), q(68, 3.0, -104, -106), q(12, 2.5, 150, -200)]
+        self.assertEqual(ve.scan_market(quotes, "spread", NOW), [])
+
+    def test_each_line_is_benchmarked_on_its_own(self):
+        quotes = [q(60, 3.0, -105, -105), q(68, 3.0, -105, -105), q(12, 3.0, 110, -130),
+                  q(60, 2.5, -120, 110), q(12, 2.5, 110, -130)]   # 2.5 has one operator
+        rows = ve.scan_market(quotes, "spread", NOW)
+        self.assertEqual({r["line"] for r in rows}, {3.0})
+        self.assertEqual(len(rows), 2)
+
+    def test_line_without_benchmark_gives_no_row(self):
+        quotes = [q(73, 7.5, -105, -105), q(75, 7.5, -105, -105), q(12, 7.5, 150, -200)]
+        self.assertEqual(ve.scan_market(quotes, "total", NOW), [])
+
+    def test_heavy_favourite_moneyline_longshot_is_negative_clv(self):
+        # Benchmark around -1200/+800 (Novig -1200/+900, Kalshi -1100/+800, both <= 3% hold);
+        # retail +809 on the dog. Power de-vig puts the dog near .087, below +809's .1099.
+        quotes = [q(60, None, -1200, 900), q(68, None, -1100, 800), q(12, None, -1500, 809)]
+        rows = ve.scan_market(quotes, "moneyline", NOW)
+        dog = self._row(rows, 12, "b")
+        self.assertLess(dog["clv"], -0.15)
+        self.assertEqual(dog["action"], "no_bet")
+
+    def test_moneyline_ignores_the_feeds_line_number(self):
+        # BettingPros stamps moneylines with line 1 (bet365 with 0): no number to match.
+        quotes = [q(60, 1, -105, -105), q(68, 1, -105, -105), q(24, 0, 110, -130)]
+        rows = ve.scan_market(quotes, "moneyline", NOW)
+        self.assertEqual(self._row(rows, 24, "a")["action"], "log")
+
+    def test_unknown_kind_raises(self):
+        with self.assertRaises(ValueError):
+            ve.scan_market(self.BENCH_EVEN, "points", NOW)
+
+
 if __name__ == "__main__":
     unittest.main()
