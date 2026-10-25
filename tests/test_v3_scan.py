@@ -339,11 +339,162 @@ class TestRunner(unittest.TestCase):
         self.assertTrue(lines[scan].lstrip().startswith("if "), lines[scan])
         self.assertIn('--date "$TODAY"', lines[scan])
         self.assertIn("V3_VALUE_ENABLED", self.SCRIPT)
-        self.assertRegex(self.SCRIPT, r"git commit [^\n]*v3-observations\.json|v3-observations\.json")
+
+    def _scan_block(self):
+        start = self.SCRIPT.index("# --- V3 Observation Scan")
+        end = self.SCRIPT.index("# ----", start + 10)
+        return self.SCRIPT[start:end]
+
+    def test_the_scan_block_commits_only_the_observations_file_and_pushes_it(self):
+        block = self._scan_block()
+        self.assertIn('V3_OBS=".agents/skills/bet-tracker/v3-observations.json"', block)
+        add = [l for l in block.splitlines() if "git add" in l]
+        commit = [l for l in block.splitlines() if "git commit" in l]
+        self.assertEqual(len(add), 1)
+        self.assertEqual(len(commit), 1)
+        self.assertTrue(add[0].rstrip().endswith('-- "$V3_OBS"'), add[0])
+        self.assertIn('-- "$V3_OBS"', commit[0])          # pathspec: commit nothing else
+        # The push sits inside the `if [ -f "$V3_OBS" ] ...` guard, after the commit.
+        guard = block.index('if [ -f "$V3_OBS" ]')
+        pushes = [i for i in range(len(block)) if block.startswith("git push origin main", i)]
+        self.assertTrue(pushes)
+        self.assertTrue(all(p > block.index("git commit") > guard for p in pushes))
+
+    def test_a_rejected_scan_push_rebases_and_retries_once_before_alerting(self):
+        block = self._scan_block()
+        first_push = block.index("git push origin main")
+        rebase = block.index("git pull --rebase --autostash origin main", first_push)
+        self.assertGreater(block.index("git push origin main", rebase), rebase)
+        self.assertGreater(block.index("notify_failure", rebase), rebase)
 
     def test_v3_step_checks_that_its_skill_file_exists(self):
         self.assertIn('[ -f "$V3_SKILL" ]', self.SCRIPT)
         self.assertIn('V3_VALUE_ENABLED:-0', self.SCRIPT)   # gate default stays OFF
+
+
+class FakeClock:
+    """Monotonic clock that advances `step` seconds every time it is read."""
+
+    def __init__(self, step):
+        self.t, self.step = 0.0, step
+
+    def __call__(self):
+        self.t += self.step
+        return self.t
+
+
+def many_events_board(n=30):
+    events = [_event(30000 + i, "A", "B") for i in range(n)]
+    return FakeBoard({"NFL": events}, {})
+
+
+class TestStopConditionsAndStatus(unittest.TestCase):
+    def test_the_scan_stops_at_its_wall_clock_deadline(self):
+        board = many_events_board()
+        result = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=board,
+                         deadline_sec=10, clock=FakeClock(1.0))
+        run = result["run"]
+        self.assertEqual(run["status"], "failed")
+        self.assertTrue(any("deadline" in e for e in run["errors"]), run["errors"])
+        self.assertLessEqual(len(board.urls), 11)   # stopped, not 30 events x 11 markets
+
+    def test_the_scan_stops_after_five_consecutive_failed_fetches(self):
+        calls = []
+
+        def flaky(url):
+            calls.append(url)
+            if "/events" in url:
+                return {"events": [_event(30000 + i, "A", "B") for i in range(30)]}
+            return None   # every /offers request fails
+
+        run = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=flaky)["run"]
+        self.assertEqual(run["status"], "failed")
+        self.assertTrue(any("consecutive" in e for e in run["errors"]), run["errors"])
+        self.assertEqual(len(calls), 1 + 5)
+        self.assertEqual(run["fetch_failures"], 5)
+
+    def test_a_single_failed_fetch_makes_the_run_degraded_not_ok(self):
+        board = colts_board()
+        failed_once = []
+
+        def one_failure(url):
+            if "market_id=2&" in url + "&" and not failed_once:
+                failed_once.append(url)
+                return None
+            return board(url)
+
+        result = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=one_failure)
+        self.assertEqual(result["run"]["fetch_failures"], 1)
+        self.assertEqual(result["run"]["status"], "degraded")
+        self.assertTrue(result["observations"])   # the healthy markets were still scanned
+
+    def test_a_clean_board_is_ok(self):
+        run = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=colts_board())["run"]
+        self.assertEqual((run["status"], run["fetch_failures"]), ("ok", 0))
+
+    def test_degraded_and_failed_runs_exit_nonzero_so_the_runner_alerts(self):
+        import contextlib
+        import io
+        import tempfile
+        board = colts_board()
+
+        def one_failure(url):
+            return None if "market_id=2&" in url + "&" else board(url)
+
+        with tempfile.TemporaryDirectory() as tmp, contextlib.redirect_stdout(io.StringIO()), \
+                contextlib.redirect_stderr(io.StringIO()):
+            out = str(Path(tmp) / "obs.json")
+            rc = v3.main(["--date", "2026-10-25", "--sports", "NFL", "--apply", "--out", out],
+                         get_json=one_failure, now=LIVE_NOW)
+            self.assertNotEqual(rc, 0)
+            self.assertEqual(json.loads(Path(out).read_text())["runs"][0]["status"], "degraded")
+
+    def test_deadline_flag_reaches_the_scan(self):
+        import contextlib
+        import io
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp, contextlib.redirect_stdout(io.StringIO()), \
+                contextlib.redirect_stderr(io.StringIO()):
+            out = str(Path(tmp) / "obs.json")
+            rc = v3.main(["--date", "2026-10-25", "--sports", "NFL", "--apply", "--out", out,
+                          "--deadline-sec", "5"],
+                         get_json=many_events_board(), now=LIVE_NOW, clock=FakeClock(1.0))
+            self.assertEqual(rc, 2)
+            run = json.loads(Path(out).read_text())["runs"][0]
+            self.assertTrue(any("deadline" in e for e in run["errors"]))
+
+    def test_an_unhandled_exception_still_writes_a_failed_run_row(self):
+        import contextlib
+        import io
+        import tempfile
+
+        def boom(url):
+            raise RuntimeError("feed exploded")
+
+        with tempfile.TemporaryDirectory() as tmp, contextlib.redirect_stdout(io.StringIO()), \
+                contextlib.redirect_stderr(io.StringIO()):
+            out = str(Path(tmp) / "obs.json")
+            rc = v3.main(["--date", "2026-10-25", "--sports", "NFL", "--apply", "--out", out],
+                         get_json=boom, now=LIVE_NOW)
+            self.assertEqual(rc, 2)
+            data = json.loads(Path(out).read_text())
+            self.assertEqual(data["observations"], [])
+            run = data["runs"][0]
+            self.assertEqual((run["status"], run["scan_date"]), ("failed", "2026-10-25"))
+            self.assertTrue(any("feed exploded" in e for e in run["errors"]))
+
+
+class TestBenchmarkCoverageCounts(unittest.TestCase):
+    def test_a_benchmarked_market_with_no_fresh_retail_quote_is_benchmarked_but_not_scored(self):
+        exchanges_only = two_way_offer(("Over", "Under"), {
+            60: (14.5, -105, 14.5, -105), 68: (14.5, -105, 14.5, -105)},
+            participants=[{"id": "1", "name": "Somebody"}])
+        board = FakeBoard({"NFL": [_event(22072, "TB", "CAR")]},
+                          {("NFL", 22072, 105): [[exchanges_only, gainwell_under()]]})
+        run = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=board)["run"]
+        self.assertEqual(run["markets_scanned"], 2)
+        self.assertEqual(run["markets_with_benchmark"], 2)
+        self.assertEqual(run["markets_scored"], 1)
 
 
 if __name__ == "__main__":
