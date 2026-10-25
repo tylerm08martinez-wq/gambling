@@ -119,6 +119,16 @@ class TestOpenPropWithOddsInLineNumStaysOpen(unittest.TestCase):
         self.assertNotIn("units_won_lost", p)
         save.assert_not_called()
         self.assertIn(p["id"], out)
+        self.assertIn("line_num -108", out)     # the skip names the real cause
+        self.assertIn("11.5", out)
+
+    def test_corrupt_pra_row_is_not_reported_as_an_unsummable_combo(self):
+        p = _open_pick(bet="Victor Wembanyama Under 40.5 Points+Rebounds+Assists (HOU @ SAS)",
+                       line_num=-112.0)
+        _, out = _auto_resolve([p], _ace_box(6))
+        self.assertIsNone(p["result"])
+        self.assertIn("line_num -112", out)
+        self.assertNotIn("combined-stat", out)
 
     def test_same_pick_with_true_threshold_grades_from_the_box_score(self):
         p = _open_pick(line_num=11.5)

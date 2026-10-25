@@ -1823,9 +1823,15 @@ def cmd_auto_resolve(_args, sources=None):
                 # extract_prop refuses an un-summable combo (a "+" stat the map only
                 # resolves to a single component); give that a clear reason vs. a plain
                 # parse failure. A proper combo (NBA PRA → tuple) returns a spec and resolves.
-                reason = ("combined-stat (sum of components) — resolve manually"
-                          if _is_combined_stat(bet)
-                          else "could not parse player/stat/side/threshold — resolve manually")
+                parsed = parse_bet_threshold(bet)
+                if parsed is not None and not line_num_agrees(parsed, line_num):
+                    # #113: line_num holds odds or a margin, not the threshold.
+                    reason = (f"line_num {line_num:g} disagrees with the bet text's "
+                              f"{parsed['threshold']:g} — left open, run migrate-line-num")
+                elif _is_combined_stat(bet):
+                    reason = "combined-stat (sum of components) — resolve manually"
+                else:
+                    reason = "could not parse player/stat/side/threshold — resolve manually"
                 skipped.append((p["id"], f"prop: {reason}"))
                 continue
             game = src.find_game(date, bet)
