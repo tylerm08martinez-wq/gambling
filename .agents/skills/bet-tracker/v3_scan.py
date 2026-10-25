@@ -142,21 +142,35 @@ def scan(scan_date, sports, now, get_json=None, log=None):
     get_json = get_json or bp._live_get_json
     log = log or (lambda msg: print(msg, file=sys.stderr))
     scanned_at = _iso_z(now)
-    observations = []
+    observations, errors = [], []
+    events_by_sport, offers_by_market = {}, {}
+    events_started = markets_scanned = markets_with_benchmark = fetch_failures = 0
     for sport in sports:
         events = bp.fetch_events(sport, scan_date, get_json=get_json)
+        events_by_sport[sport] = len(events)
+        upcoming = []
         for event in events:
             start = _parse_utc(event.get("scheduled"))
             if start is None or start <= now:
-                continue
-            for market_id, kind, stat in MARKETS[sport]:
-                offers, _ok = fetch_offer_pages(sport, event["id"], market_id, get_json)
-                gate = ve.gate_threshold(kind)
+                events_started += 1
+            else:
+                upcoming.append((event, start))
+        sport_offers = 0
+        for market_id, kind, stat in MARKETS[sport]:
+            gate = ve.gate_threshold(kind)
+            market_offers = 0
+            for event, start in upcoming:
+                offers, ok = fetch_offer_pages(sport, event["id"], market_id, get_json)
+                fetch_failures += 0 if ok else 1
+                market_offers += len(offers)
                 for offer in offers:
                     parsed = ve.quotes_from_offer(offer, kind)
                     if not parsed["labels"]:
                         continue
-                    for row in ve.scan_market(parsed["quotes"], kind, now):
+                    markets_scanned += 1
+                    rows = ve.scan_market(parsed["quotes"], kind, now)
+                    markets_with_benchmark += 1 if rows else 0
+                    for row in rows:
                         if row["clv"] < gate:
                             continue
                         side = parsed["labels"][0 if row["side"] == "a" else 1]
@@ -184,4 +198,23 @@ def scan(scan_date, sports, now, get_json=None, log=None):
                             "benchmark_max_age_min": round(row["benchmark_max_age_min"], 1),
                             "close": None,
                         })
-    return {"run": {}, "observations": observations}
+            offers_by_market[f"{sport}:{market_id}"] = market_offers
+            sport_offers += market_offers
+            if upcoming:
+                log(f"  {sport} market {market_id} ({stat}): {market_offers} offers "
+                    f"across {len(upcoming)} events")
+        if upcoming and sport_offers == 0:
+            errors.append(f"{sport}: zero offers on every market across {len(upcoming)} "
+                          "not-started events (wrong market ids or a feed outage)")
+    if sports and not any(events_by_sport.values()):
+        errors.append(f"no events for any of {', '.join(sports)} on {scan_date} "
+                      "(events feed outage?)")
+    run = {
+        "scan_date": scan_date, "scanned_at": scanned_at, "sports": list(sports),
+        "events_by_sport": events_by_sport, "events_started": events_started,
+        "markets_scanned": markets_scanned, "markets_with_benchmark": markets_with_benchmark,
+        "candidates": len(observations), "offers_by_market": offers_by_market,
+        "fetch_failures": fetch_failures, "errors": errors,
+        "status": "failed" if errors else "ok",
+    }
+    return {"run": run, "observations": observations}

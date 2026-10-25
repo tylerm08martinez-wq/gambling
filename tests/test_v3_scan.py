@@ -102,5 +102,100 @@ class TestColtsObservation(unittest.TestCase):
         self.assertEqual(obs["scan_date"], "2026-10-25")
 
 
+FRESH = "2026-10-25 02:05:00"   # 7 minutes before LIVE_NOW
+
+
+def two_way_offer(labels, books, participants=None):
+    """A raw /offers market. `books` maps book_id -> (line_a, cost_a, line_b, cost_b)."""
+    sels = []
+    for i, label in enumerate(labels):
+        sels.append({"label": label, "books": [
+            {"id": bid, "lines": [{"line": quote[2 * i], "cost": quote[2 * i + 1],
+                                   "updated": FRESH, "main": True, "active": True,
+                                   "is_off": False}]}
+            for bid, quote in books.items()]})
+    return {"participants": participants or [], "selections": sels}
+
+
+def gainwell_under():
+    # Novig and Kalshi at 14.5 -105/-105 -> fair Under .500; BetMGM Under +110 (.476)
+    # is +5.0%, over the 3% prop gate. The Over at -150 is worse than fair.
+    return two_way_offer(("Over", "Under"), {
+        60: (14.5, -105, 14.5, -105), 68: (14.5, -105, 14.5, -105),
+        19: (14.5, -150, 14.5, 110)}, participants=[{"id": "23310", "name": "Kenny Gainwell"}])
+
+
+def dolphins_spread():
+    # Jets -4.5 / Dolphins +4.5. Benchmark -105/-105 at Jets -4.5 -> fair .500 each;
+    # FanDuel Dolphins +4.5 at +115 (.465) is +7.5%.
+    return two_way_offer(("Jets", "Dolphins"), {
+        60: (-4.5, -105, 4.5, -105), 68: (-4.5, -105, 4.5, -105),
+        10: (-4.5, -140, 4.5, 115)})
+
+
+class TestBoardShapes(unittest.TestCase):
+    def test_a_prop_on_the_second_offers_page_is_observed_with_a_readable_bet(self):
+        board = FakeBoard({"NFL": [_event(22072, "TB", "CAR")]},
+                          {("NFL", 22072, 105): [[], [gainwell_under()]]})
+        obs = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=board)["observations"]
+        self.assertEqual([o["bet"] for o in obs], ["Kenny Gainwell Under 14.5 receiving yards"])
+        self.assertEqual(obs[0]["participant"], "Kenny Gainwell")
+        self.assertEqual((obs[0]["line"], obs[0]["side"], obs[0]["book"]), (14.5, "Under", "BetMGM"))
+        self.assertAlmostEqual(obs[0]["projected_clv"], 0.05, delta=0.001)
+        self.assertTrue(any("page=2" in u for u in board.urls))
+
+    def test_a_spread_reports_the_observed_sides_own_number(self):
+        board = FakeBoard({"NFL": [_event(22069, "MIA", "NYJ")]},
+                          {("NFL", 22069, 3): [[dolphins_spread()]]})
+        obs = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=board)["observations"]
+        self.assertEqual([o["bet"] for o in obs], ["Dolphins +4.5"])
+        self.assertEqual((obs[0]["participant"], obs[0]["line"]), ("Dolphins", 4.5))
+
+    def test_an_event_that_has_started_is_never_scanned(self):
+        board = FakeBoard({"NFL": [_event(22069, "MIA", "NYJ", scheduled="2026-10-25 02:00:00")]},
+                          {("NFL", 22069, 3): [[dolphins_spread()]]})
+        result = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=board)
+        self.assertEqual(result["observations"], [])
+        self.assertFalse(any("/offers" in u for u in board.urls))
+
+
+class TestRunRow(unittest.TestCase):
+    def test_run_row_counts_what_was_scanned(self):
+        result = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=colts_board())
+        run = result["run"]
+        self.assertEqual(run["scan_date"], "2026-10-25")
+        self.assertEqual(run["scanned_at"], "2026-10-25T02:12:00Z")
+        self.assertEqual(run["sports"], ["NFL"])
+        self.assertEqual(run["markets_scanned"], 1)        # the one Colts @ Vikings offer
+        self.assertEqual(run["markets_with_benchmark"], 1)
+        self.assertEqual(run["candidates"], len(result["observations"]))
+        self.assertEqual(run["status"], "ok")
+        # One count per (sport, market id): an empty id is visible, not silent.
+        self.assertEqual(run["offers_by_market"]["NFL:1"], 1)
+        self.assertEqual(run["offers_by_market"]["NFL:105"], 0)
+
+    def test_a_sport_with_events_but_zero_offers_on_every_market_fails_loudly(self):
+        board = FakeBoard({"NFL": [_event(22068, "IND", "MIN")]}, {})
+        run = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=board)["run"]
+        self.assertEqual(run["status"], "failed")
+        self.assertTrue(any("NFL" in e and "zero offers" in e for e in run["errors"]))
+
+    def test_one_sport_with_no_events_is_a_quiet_day_not_a_failure(self):
+        board = colts_board()
+        run = v3.scan("2026-10-25", ["NFL", "MLB"], LIVE_NOW, get_json=board)["run"]
+        self.assertEqual(run["status"], "ok")
+        self.assertEqual(run["events_by_sport"], {"NFL": 1, "MLB": 0})
+
+    def test_no_events_for_any_sport_fails_loudly(self):
+        run = v3.scan("2026-10-25", ["NFL", "NBA"], LIVE_NOW, get_json=FakeBoard({}, {}))["run"]
+        self.assertEqual(run["status"], "failed")
+        self.assertTrue(run["errors"])
+
+    def test_every_event_already_started_is_ok_with_nothing_scanned(self):
+        board = FakeBoard({"NFL": [_event(22068, "IND", "MIN", scheduled="2026-10-25 01:00:00")]}, {})
+        run = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=board)["run"]
+        self.assertEqual((run["status"], run["markets_scanned"], run["events_started"]), ("ok", 0, 1))
+
+
 if __name__ == "__main__":
     unittest.main()
