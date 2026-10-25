@@ -3,20 +3,24 @@
 
 For every pick with a measured de-vigged CLV (`clv_devig` set and `closing_line`
 parsing as American odds, as tracker.is_measured_clv defines it), recompute
-`clv_devig` with the new value_engine and diff it against the stored value.
+`clv_devig` through the REAL backfill path, `clv_backfill.realized_clv`, once with
+the baseline value_engine (pre-ADR-0011, read from git) and once with the new one, on
+the same two-way close, and diff both against the stored value.
 
 picks.json stores only the bet side of the close, not the other side, so the other
-side is reconstructed: it is the price that makes the BASELINE engine (the
-pre-ADR-0011 value_engine, read from git) reproduce the stored value exactly. The new
-engine is then run on that same two-way close. So the diff isolates one thing, the
-change of engine: a prop must come out identical, and a moneyline, spread or total
-may differ only where its de-vig method changed (moneyline: multiplicative -> power).
+side is reconstructed: the price that makes the baseline engine's de-vig reproduce the
+stored value, rounded to whole American odds (the form a real close takes). Both
+engines then see exactly that close through `realized_clv`. So:
+
+  * `baseline - stored` is the reconstruction residual (whole-odds rounding only);
+  * `new - baseline` is the effect of the engine change, and must be exactly 0 for
+    every prop. A moneyline may differ (multiplicative -> power); it is listed.
 
 The market label is the one the backfill path passes: "prop" for player props
 (clv_fetch / close_capture always pass "prop"), else the pick's `bet_type`, else
 "moneyline" (clv_backfill.backfill_pick's default).
 
-Never writes picks.json. Exit status 1 if any prop differs or cannot be recomputed.
+Never writes picks.json. Exit status 1 if any prop changes or cannot be recomputed.
 
     python3 scripts/check_clv_unchanged.py [--picks PATH] [--baseline REV]
 """
@@ -33,7 +37,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / ".agents" / "skills" / "bet-tracker"
 ENGINE_PATH = ".agents/skills/bet-tracker/value_engine.py"
-BASELINE_REV = "4b6a309"   # main before #106: ADR 0011 merged, engine not yet changed
+# main before #106 (ADR 0011 merged, engine not yet changed). Pinned rather than
+# `main` so the check still means something after this branch merges.
+BASELINE_REV = "4b6a309"
+RESIDUAL_TOL = 0.05   # max |baseline - stored| from rounding the rebuilt side to whole odds
 
 
 def _load(name, path):
@@ -51,17 +58,17 @@ def load_baseline_engine(rev):
     return mod
 
 
+def backfill_with(engine, name):
+    """A private copy of clv_backfill whose `ve` is `engine` (the real realized_clv)."""
+    mod = _load(name, SKILL / "clv_backfill.py")
+    mod.ve = engine
+    return mod
+
+
 def market_label(pick, tracker):
     if tracker.classify_bet(pick) == "prop":
         return "prop"
     return pick.get("bet_type") or "moneyline"
-
-
-def _fair_side(engine, label, p_side, p_other):
-    """The engine's de-vigged fair probability on the bet side (probabilities in)."""
-    if engine.devig_method(label) == "power":
-        return engine.power_devig(p_side, p_other)[0]
-    return engine.multiplicative_devig(p_side, p_other)[0]
 
 
 def reconstruct_other_side(method, p_side, fair_side):
@@ -78,35 +85,49 @@ def reconstruct_other_side(method, p_side, fair_side):
     return p_other if 0.0 < p_other < 1.0 else None
 
 
-def check(picks, base, new, tracker, cb):
+def prob_to_american(p):
+    odds = -100.0 * p / (1.0 - p) if p >= 0.5 else 100.0 * (1.0 - p) / p
+    odds = int(round(odds))
+    if -100 < odds < 100:            # whole American odds are never inside (-100, 100)
+        odds = 100 if odds >= 0 else -100
+    return odds
+
+
+def check(picks, base, new, tracker, cb_old, cb_new):
     rows = []
     for pick in picks:
         if pick.get("clv_devig") is None or not tracker.is_measured_clv(pick, "devig"):
             continue
         stored = float(pick["clv_devig"])
         label = market_label(pick, tracker)
+        close_side = tracker.parse_american(pick["closing_line"])
         row = {"id": pick["id"], "label": label, "stored": stored, "new": None,
                "kind": new.market_kind(label), "old_method": base.devig_method(label),
                "new_method": new.devig_method(label), "note": ""}
         try:
-            entry_p = base.american_to_prob(cb._entry_odds(pick.get("line")))
-            p_side = base.american_to_prob(tracker.parse_american(pick["closing_line"]))
+            entry_p = base.american_to_prob(cb_old._entry_odds(pick.get("line")))
+            p_side = base.american_to_prob(close_side)
         except (ValueError, TypeError) as exc:
             row["note"] = f"entry/close unparseable: {exc}"
             rows.append(row)
             continue
-        fair_old = entry_p * (1.0 + stored / 100.0)
-        p_other = reconstruct_other_side(row["old_method"], p_side, fair_old)
+        p_other = reconstruct_other_side(row["old_method"], p_side, entry_p * (1.0 + stored / 100.0))
         if p_other is None:
             row["note"] = ("stored value is not reproducible from this close under the "
                            "baseline engine (legacy value, ADR 0008)")
             rows.append(row)
             continue
-        old_val = (_fair_side(base, label, p_side, p_other) / entry_p - 1.0) * 100.0
-        new_val = (_fair_side(new, label, p_side, p_other) / entry_p - 1.0) * 100.0
-        row["baseline"] = round(old_val, 2)
-        row["new"] = round(new_val, 2)
-        row["implied_other_close"] = round(p_other, 4)
+        close = {"bet": close_side, "other": prob_to_american(p_other)}
+        old_val = cb_old.realized_clv(close, "bet", pick.get("line"), label)
+        new_val = cb_new.realized_clv(close, "bet", pick.get("line"), label)
+        if old_val is None or new_val is None:
+            row["note"] = f"realized_clv returned None (old {old_val}, new {new_val})"
+            rows.append(row)
+            continue
+        row.update(close=close, baseline=old_val, new=new_val,
+                   residual=old_val - stored, engine_delta=new_val - old_val)
+        if abs(row["residual"]) > RESIDUAL_TOL:
+            row["note"] = f"reconstruction residual {row['residual']:+.3f} exceeds {RESIDUAL_TOL}"
         rows.append(row)
     return rows
 
@@ -121,18 +142,28 @@ def main(argv=None):
     new = _load("value_engine", SKILL / "value_engine.py")
     sys.modules["value_engine"] = new
     tracker = _load("tracker_ro", SKILL / "tracker.py")
-    cb = _load("clv_backfill_ro", SKILL / "clv_backfill.py")
     base = load_baseline_engine(args.baseline)
+    cb_old = backfill_with(base, "clv_backfill_baseline")
+    cb_new = backfill_with(new, "clv_backfill_new")
 
     with open(args.picks) as f:
         picks = json.load(f)
-    rows = check(picks, base, new, tracker, cb)
+    rows = check(picks, base, new, tracker, cb_old, cb_new)
 
-    same = [r for r in rows if r["new"] is not None and r["new"] == r["stored"]]
-    diff = [r for r in rows if r["new"] is not None and r["new"] != r["stored"]]
-    unrec = [r for r in rows if r["new"] is None]
-    print(f"measured de-vigged picks: {len(rows)}  (baseline engine {args.baseline})")
-    print(f"  unchanged: {len(same)}   changed: {len(diff)}   not recomputable: {len(unrec)}")
+    done = [r for r in rows if r["new"] is not None and not r["note"]]
+    same = [r for r in done if r["engine_delta"] == 0.0]
+    diff = [r for r in done if r["engine_delta"] != 0.0]
+    unrec = [r for r in rows if r not in done]
+    print(f"measured de-vigged picks: {len(rows)}  (baseline engine {args.baseline}, "
+          f"via clv_backfill.realized_clv)")
+    print(f"  engine change 0: {len(same)}   changed: {len(diff)}   not recomputable: {len(unrec)}")
+    if done:
+        worst = max(done, key=lambda r: abs(r["residual"]))
+        print(f"  reconstruction residual |baseline - stored|: max {abs(worst['residual']):.4f} "
+              f"({worst['id']}); rounded to 2dp, baseline == stored for "
+              f"{sum(round(r['baseline'], 2) == r['stored'] for r in done)}/{len(done)}")
+        print(f"  new == stored at 2dp for "
+              f"{sum(round(r['new'], 2) == r['stored'] for r in done)}/{len(done)}")
     by_kind = {}
     for r in rows:
         by_kind.setdefault(r["kind"], [0, 0, 0])
@@ -141,14 +172,15 @@ def main(argv=None):
         print(f"  {kind:9s} unchanged {s:3d}  changed {d:3d}  not recomputable {u:3d}")
     for r in diff:
         print(f"  CHANGED  {r['id']}  [{r['kind']}, {r['old_method']} -> {r['new_method']}] "
-              f"stored {r['stored']:+.2f}  new {r['new']:+.2f}")
+              f"close {r['close']}  stored {r['stored']:+.2f}  baseline {r['baseline']:+.2f}  "
+              f"new {r['new']:+.2f}")
     for r in unrec:
         print(f"  SKIPPED  {r['id']}  [{r['kind']}] stored {r['stored']:+.2f}: {r['note']}")
     bad = [r for r in diff + unrec if r["kind"] == "prop"]
     if bad:
         print(f"FAIL: {len(bad)} prop pick(s) changed or could not be recomputed")
         return 1
-    print("OK: every prop's realized CLV is unchanged")
+    print("OK: every prop's realized CLV is unchanged through clv_backfill.realized_clv")
     return 0
 
 
