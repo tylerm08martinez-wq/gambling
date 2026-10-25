@@ -129,5 +129,192 @@ class TestBuildCloses(unittest.TestCase):
         self.assertGreater(p["clv"], 5.0)
 
 
+# ── #107: NBA and NFL player props ────────────────────────────────────────────────
+
+class TestMarketForSpecBySport(unittest.TestCase):
+    def _m(self, sport, bet):
+        spec = tracker.extract_prop(bet, 1.5, tracker._stat_map_for_sport(sport))
+        self.assertIsNotNone(spec, bet)
+        return cf.market_for_spec(spec, sport=sport)
+
+    def test_nba_markets(self):
+        self.assertEqual(self._m("NBA", "Peyton Watson Under 13.5 Points"), 156)
+        self.assertEqual(self._m("NBA", "Rudy Gobert Over 11.5 Rebounds"), 157)
+        self.assertEqual(self._m("NBA", "Trae Young Over 10.5 Assists"), 151)
+        self.assertEqual(self._m("NBA", "Steph Curry Over 4.5 threes"), 162)
+        self.assertEqual(self._m("NBA", "Alex Caruso Over 1.5 steals"), 160)
+        self.assertEqual(self._m("NBA", "Victor Wembanyama Over 3.5 blocks"), 152)
+        self.assertEqual(self._m("NBA", "Victor Wembanyama Under 40.5 Points+Rebounds+Assists"), 338)
+        self.assertEqual(self._m("NBA", "Victor Wembanyama Under 40.5 PRA"), 338)
+
+    def test_nfl_markets_discovered_from_v3_markets(self):
+        # /v3/markets?sport=NFL, 2026-10-24: 103 pass yds, 105 rec yds, 107 rush yds,
+        # 104 receptions, 333 pass attempts, 100 completions, 106 rush attempts, 406 rush+rec.
+        self.assertEqual(self._m("NFL", "Aaron Rodgers (PIT) Under 216.5 passing yards vs ATL"), 103)
+        self.assertEqual(self._m("NFL", "Travis Kelce (KC) Over 38.5 receiving yards vs DEN"), 105)
+        self.assertEqual(self._m("NFL", "Chase Brown (CIN) Over 75.5 rushing yards vs HOU"), 107)
+        self.assertEqual(self._m("NFL", "Travis Kelce Over 5.5 receptions"), 104)
+        self.assertEqual(self._m("NFL", "Patrick Mahomes (KC) Under 32.5 pass attempts vs DEN"), 333)
+        self.assertEqual(self._m("NFL", "Jordan Love Over 21.5 completions"), 100)
+        self.assertEqual(self._m("NFL", "Kenneth Walker III Over 15.5 rushing attempts"), 106)
+        self.assertEqual(self._m("NFL", "Kyle Monangai Over 50.5 rushing + receiving yards"), 406)
+
+    def test_market_ids_are_never_borrowed_across_sports(self):
+        nba_points = {"stat_group": "scoring", "stat_key": "points"}
+        self.assertIsNone(cf.market_for_spec(nba_points))                 # MLB default
+        self.assertIsNone(cf.market_for_spec(nba_points, sport="NFL"))
+        outs = {"stat_group": "pitching", "stat_key": "outs"}
+        self.assertIsNone(cf.market_for_spec(outs, sport="NBA"))
+        self.assertEqual(cf.market_for_spec(outs, sport="MLB"), 405)
+
+    def test_every_mapped_market_is_reachable_from_the_sports_stat_map(self):
+        # "Map only stats that extract_prop can parse for that sport": a market keyed by a
+        # (group, key) that no stat keyword produces is dead weight that hides a typo.
+        for sport in ("NBA", "NFL"):
+            produced = set(tracker._stat_map_for_sport(sport).values())
+            for key in cf.STAT_MARKET[sport]:
+                with self.subTest(sport=sport, key=key):
+                    self.assertIn(key, produced)
+
+    def test_nba_combos_extract_prop_cannot_parse_are_unmapped(self):
+        # P+A (335), P+R (336), R+A (337) have markets, but extract_prop returns None for
+        # them, so they must stay unmeasured (memory: nba-combo-prop-bet-phrasing).
+        self.assertNotIn(335, cf.STAT_MARKET["NBA"].values())
+        self.assertNotIn(336, cf.STAT_MARKET["NBA"].values())
+        self.assertNotIn(337, cf.STAT_MARKET["NBA"].values())
+
+
+class TestStrictExtractProp(unittest.TestCase):
+    """NBA/NFL picks carry line_num values that are not the bet's line (odds stored as
+    line_num, 235.0 for a 224.5 bet). extract_prop trusts line_num, so a close would be
+    matched at the WRONG line. The strict wrapper refuses anything it cannot verify."""
+
+    strict = staticmethod(cf.strict_extract_prop(tracker.extract_prop))
+
+    def _s(self, bet, ln, sport):
+        return self.strict(bet, ln, tracker._stat_map_for_sport(sport))
+
+    def test_accepts_a_pick_whose_line_num_matches_its_text(self):
+        s = self._s("Peyton Watson Under 13.5 Points (BKN @ CLE)", 13.5, "NBA")
+        self.assertEqual((s["player"], s["side"], s["threshold"]), ("peyton watson", "under", 13.5))
+
+    def test_rejects_line_num_that_disagrees_with_the_bet_text(self):
+        self.assertIsNone(self._s("Aaron Rodgers Under 224.5 passing yards (IND @ PIT)", 235.0, "NFL"))
+
+    def test_rejects_odds_stored_as_line_num(self):
+        self.assertIsNone(self._s("Ace Bailey Over 11.5 Points (NOR @ UTA)", -108.0, "NBA"))
+
+    def test_rejects_bet_with_no_number_after_the_side(self):
+        self.assertIsNone(self._s("Peyton Watson Under Points", 13.5, "NBA"))
+
+    def test_rejects_two_stats_joined_by_and(self):
+        # "points and rebounds" silently grades as rebounds (memory note); a close for
+        # the rebounds market would be the wrong market.
+        self.assertIsNone(self._s("Naz Reid Over 23.5 points and rebounds", 23.5, "NBA"))
+
+    def test_rejects_combo_extract_prop_cannot_parse(self):
+        self.assertIsNone(self._s("Domantas Sabonis Over 21.5 Points + Assists (SAC @ LAC)", 21.5, "NBA"))
+
+    def test_accepts_parseable_pra_combo(self):
+        s = self._s("Victor Wembanyama Under 40.5 Points+Rebounds+Assists (HOU @ SAS)", 40.5, "NBA")
+        self.assertEqual(s["stat_key"], ("points", "rebounds", "assists"))
+
+    def test_n_plus_form_needs_no_line_num(self):
+        s = self._s("Jalen Brunson 25+ Points", None, "NBA")
+        self.assertEqual((s["side"], s["threshold"]), ("over", 24.5))
+
+
+class FakeBP:
+    """Stands in for the bettingpros module: records which sport every call used."""
+
+    def __init__(self, props=None, events=None, ladders=None):
+        self.props = props or {}        # sport -> [normalized prop]
+        self.events = events or {}      # sport -> [normalized event]
+        self.ladders = ladders or {}    # (sport, event_id, market_id) -> ladder list
+        self.calls = []
+
+    def fetch_props(self, sport, date=None):
+        self.calls.append(("props", sport, date))
+        return self.props.get(sport, [])
+
+    def fetch_events(self, sport, date):
+        self.calls.append(("events", sport, date))
+        return self.events.get(sport, [])
+
+    def fetch_offer_ladder(self, event_id, market_id, *, sport="MLB"):
+        self.calls.append(("ladder", sport, event_id, market_id))
+        return self.ladders.get((sport, event_id, market_id), [])
+
+
+def _bp_prop(name, event_id):
+    return {"event_id": event_id, "player": {"name": name}}
+
+
+def _settled(pid, sport, bet, line_num, line="-110", date="2026-10-25"):
+    return {"id": pid, "sport": sport, "bet": bet, "line_num": line_num, "line": line,
+            "date": date, "result": "win", "closing_line": None, "clv": None,
+            "bet_type": "prop"}
+
+
+class TestBuildClosesLiveNbaNfl(unittest.TestCase):
+    def _bp(self):
+        return FakeBP(
+            props={"NBA": [_bp_prop("Rui Hachimura", 27926), _bp_prop("Austin Reaves", 27926)],
+                   "NFL": [_bp_prop("Aaron Rodgers", 21915), _bp_prop("Josh Allen", 22000),
+                           _bp_prop("Josh Allen", 22001)]},
+            ladders={
+                ("NBA", 27926, 156): [{"player": "Rui Hachimura",
+                                       "sides": {"over": {16.5: -119}, "under": {16.5: -107}}}],
+                ("NFL", 21915, 103): [{"player": "Aaron Rodgers",
+                                       "sides": {"over": {229.5: -113}, "under": {229.5: -113}}}],
+            })
+
+    def test_nba_and_nfl_props_get_a_consensus_close_from_their_own_sport(self):
+        bp = self._bp()
+        picks = [_settled("nba1", "NBA", "Rui Hachimura Under 16.5 Points (LAL @ OKC)", 16.5),
+                 _settled("nfl1", "NFL", "Aaron Rodgers (PIT) Over 229.5 passing yards vs NO", 229.5)]
+        closes = cf.build_closes_live(picks, tracker=tracker, bp=bp)
+        self.assertEqual(closes["nba1"], {"close": {"under": "-107", "over": "-119"},
+                                          "side": "under", "market": "prop"})
+        self.assertEqual(closes["nfl1"], {"close": {"under": "-113", "over": "-113"},
+                                          "side": "over", "market": "prop"})
+        self.assertIn(("ladder", "NBA", 27926, 156), bp.calls)
+        self.assertIn(("ladder", "NFL", 21915, 103), bp.calls)
+        self.assertIn(("props", "NBA", "2026-10-25"), bp.calls)
+
+    def test_player_listed_in_two_events_is_never_guessed(self):
+        bp = self._bp()
+        picks = [_settled("nfl2", "NFL", "Josh Allen Over 250.5 passing yards", 250.5)]
+        self.assertEqual(cf.build_closes_live(picks, tracker=tracker, bp=bp), {})
+        self.assertFalse([c for c in bp.calls if c[0] == "ladder"])
+
+    def test_wrong_line_num_is_unmeasured_not_matched(self):
+        bp = self._bp()
+        picks = [_settled("nfl3", "NFL", "Aaron Rodgers Under 224.5 passing yards", 229.5)]
+        self.assertEqual(cf.build_closes_live(picks, tracker=tracker, bp=bp), {})
+
+    def test_line_not_priced_both_sides_is_unmeasured(self):
+        bp = self._bp()
+        picks = [_settled("nba2", "NBA", "Rui Hachimura Under 17.5 Points", 17.5)]
+        self.assertEqual(cf.build_closes_live(picks, tracker=tracker, bp=bp), {})
+
+    def test_unsupported_sport_is_ignored(self):
+        bp = self._bp()
+        picks = [_settled("nhl1", "NHL", "Connor McDavid Over 0.5 goals", 0.5)]
+        self.assertEqual(cf.build_closes_live(picks, tracker=tracker, bp=bp), {})
+        self.assertFalse([c for c in bp.calls if c[1] == "NHL"])
+
+    def test_mlb_still_resolves_through_probable_pitchers_with_sport_mlb(self):
+        bp = FakeBP(
+            events={"MLB": [{"id": 98219, "pitchers": {"home": {"name": "Patrick Corbin"},
+                                                       "visitor": None}}]},
+            ladders={("MLB", 98219, 405): LADDERS})
+        picks = [_pick()]
+        closes = cf.build_closes_live(picks, tracker=tracker, bp=bp)
+        self.assertEqual(closes["p1"], {"close": {"under": "-115", "over": "-125"},
+                                        "side": "under", "market": "prop"})
+        self.assertNotIn(("props", "MLB", "2026-06-26"), bp.calls)   # pitcher index sufficed
+
+
 if __name__ == "__main__":
     unittest.main()
