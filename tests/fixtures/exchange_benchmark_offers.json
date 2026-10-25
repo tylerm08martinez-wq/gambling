@@ -1,0 +1,966 @@
+{
+ "_source": "BettingPros /offers, live board pulled 2026-10-24 19:12 AZ (2026-10-25 02:12 UTC), trimmed to the fields value_engine reads. Colts @ Vikings moneyline is poll1/NFL_22068_1.json; Kenny Gainwell receiving yards is the Gainwell offer from poll1/NFL_22072_105.json.",
+ "captured_at_utc": "2026-10-25 02:12:00",
+ "colts_vikings_moneyline": {
+  "market_id": 1,
+  "event_id": 22068,
+  "participants": [
+   {
+    "id": "IND",
+    "name": "Colts"
+   },
+   {
+    "id": "MIN",
+    "name": "Vikings"
+   }
+  ],
+  "selections": [
+   {
+    "selection": "",
+    "label": "Colts",
+    "books": [
+     {
+      "id": 0,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 240,
+        "updated": "2026-10-25 02:09:30",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 12,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 260,
+        "updated": "2026-10-25 02:09:30",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 10,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 245,
+        "updated": "2026-10-25 02:09:27",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 13,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 240,
+        "updated": "2026-10-25 02:05:47",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 33,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 240,
+        "updated": "2026-10-25 02:02:48",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 19,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 240,
+        "updated": "2026-10-25 02:08:40",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 49,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 240,
+        "updated": "2026-10-25 02:06:52",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 14,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 240,
+        "updated": "2026-10-25 02:02:34",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 60,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 257,
+        "updated": "2026-10-25 02:09:32",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 38,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 255,
+        "updated": "2026-10-25 02:08:33",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 73,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 245,
+        "updated": "2026-10-25 02:07:06",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 68,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 245,
+        "updated": "2026-10-25 02:01:13",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 39,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 230,
+        "updated": "2026-10-25 02:09:10",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 45,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 243,
+        "updated": "2026-10-25 02:09:50",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 18,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 230,
+        "updated": "2026-10-25 02:08:31",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 15,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 230,
+        "updated": "2026-10-25 02:08:37",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 27,
+      "lines": [
+       {
+        "line": 1,
+        "cost": 240,
+        "updated": "2026-10-25 02:03:33",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 24,
+      "lines": [
+       {
+        "line": 0,
+        "cost": 250,
+        "updated": "2026-10-25 02:08:54",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "selection": "",
+    "label": "Vikings",
+    "books": [
+     {
+      "id": 0,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -300,
+        "updated": "2026-10-25 02:09:30",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 12,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -325,
+        "updated": "2026-10-25 02:09:30",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 10,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -300,
+        "updated": "2026-10-25 02:09:27",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 13,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -295,
+        "updated": "2026-10-25 02:05:47",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 33,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -290,
+        "updated": "2026-10-25 02:02:48",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 19,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -300,
+        "updated": "2026-10-25 02:08:40",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 49,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -300,
+        "updated": "2026-10-25 02:06:52",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 14,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -300,
+        "updated": "2026-10-25 02:02:34",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 60,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -264,
+        "updated": "2026-10-25 02:09:32",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 38,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -260,
+        "updated": "2026-10-25 02:08:33",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 73,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -257,
+        "updated": "2026-10-25 02:07:06",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 68,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -257,
+        "updated": "2026-10-25 02:01:13",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 39,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -320,
+        "updated": "2026-10-25 02:09:10",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 45,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -333,
+        "updated": "2026-10-25 02:09:50",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 18,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -295,
+        "updated": "2026-10-25 02:08:31",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 15,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -295,
+        "updated": "2026-10-25 02:08:37",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 27,
+      "lines": [
+       {
+        "line": 1,
+        "cost": -295,
+        "updated": "2026-10-25 02:03:33",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 24,
+      "lines": [
+       {
+        "line": 0,
+        "cost": -310,
+        "updated": "2026-10-25 02:08:54",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "gainwell_receiving_yards": {
+  "market_id": 105,
+  "event_id": 22072,
+  "participants": [
+   {
+    "id": "23310",
+    "name": "Kenny Gainwell"
+   }
+  ],
+  "selections": [
+   {
+    "selection": "over",
+    "label": "Over",
+    "books": [
+     {
+      "id": 0,
+      "lines": [
+       {
+        "line": 13.5,
+        "cost": -113,
+        "updated": "2026-10-25 02:03:05",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 10,
+      "lines": [
+       {
+        "line": 11.5,
+        "cost": -113,
+        "updated": "2026-10-25 02:02:14",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 12,
+      "lines": [
+       {
+        "line": 13.5,
+        "cost": -111,
+        "updated": "2026-10-25 02:02:39",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 33,
+      "lines": [
+       {
+        "line": 13.5,
+        "cost": -115,
+        "updated": "2026-10-25 02:03:05",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 13,
+      "lines": [
+       {
+        "line": 12.5,
+        "cost": -113,
+        "updated": "2026-10-25 01:50:49",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 19,
+      "lines": [
+       {
+        "line": 14.5,
+        "cost": 110,
+        "updated": "2026-10-25 02:03:11",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 49,
+      "lines": [
+       {
+        "line": 12.5,
+        "cost": -115,
+        "updated": "2026-10-25 02:02:46",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 14,
+      "lines": [
+       {
+        "line": 10.5,
+        "cost": -140,
+        "updated": "2026-10-25 01:49:31",
+        "main": true,
+        "active": true,
+        "is_off": true
+       }
+      ]
+     },
+     {
+      "id": 37,
+      "lines": [
+       {
+        "line": 11.5,
+        "cost": -118,
+        "updated": "2026-10-25 02:04:37",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 38,
+      "lines": [
+       {
+        "line": 11.5,
+        "cost": -109,
+        "updated": "2026-10-25 02:03:11",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 36,
+      "lines": [
+       {
+        "line": 9.5,
+        "cost": -148,
+        "updated": "2026-10-25 02:02:04",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 60,
+      "lines": [
+       {
+        "line": 14.5,
+        "cost": 113,
+        "updated": "2026-10-25 02:02:26",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 68,
+      "lines": [
+       {
+        "line": 9.5,
+        "cost": -122,
+        "updated": "2026-10-25 02:04:07",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 63,
+      "lines": [
+       {
+        "line": 12.5,
+        "cost": -123,
+        "updated": "2026-10-25 02:05:27",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 39,
+      "lines": [
+       {
+        "line": 12.5,
+        "cost": -115,
+        "updated": "2026-10-25 02:04:56",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 45,
+      "lines": [
+       {
+        "line": 11.5,
+        "cost": -120,
+        "updated": "2026-10-25 02:04:47",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 27,
+      "lines": [
+       {
+        "line": 14.5,
+        "cost": 110,
+        "updated": "2026-10-25 02:03:41",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "selection": "under",
+    "label": "Under",
+    "books": [
+     {
+      "id": 0,
+      "lines": [
+       {
+        "line": 13.5,
+        "cost": -114,
+        "updated": "2026-10-25 02:03:05",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 10,
+      "lines": [
+       {
+        "line": 11.5,
+        "cost": -113,
+        "updated": "2026-10-25 02:02:14",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 12,
+      "lines": [
+       {
+        "line": 13.5,
+        "cost": -113,
+        "updated": "2026-10-25 02:02:39",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 33,
+      "lines": [
+       {
+        "line": 13.5,
+        "cost": -115,
+        "updated": "2026-10-25 02:03:05",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 13,
+      "lines": [
+       {
+        "line": 12.5,
+        "cost": -117,
+        "updated": "2026-10-25 01:50:49",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 19,
+      "lines": [
+       {
+        "line": 14.5,
+        "cost": -150,
+        "updated": "2026-10-25 02:03:11",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 49,
+      "lines": [
+       {
+        "line": 12.5,
+        "cost": -115,
+        "updated": "2026-10-25 02:02:46",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 14,
+      "lines": [
+       {
+        "line": 10.5,
+        "cost": 105,
+        "updated": "2026-10-25 01:49:31",
+        "main": true,
+        "active": true,
+        "is_off": true
+       }
+      ]
+     },
+     {
+      "id": 37,
+      "lines": [
+       {
+        "line": 11.5,
+        "cost": -118,
+        "updated": "2026-10-25 02:04:37",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 36,
+      "lines": [
+       {
+        "line": 9.5,
+        "cost": 120,
+        "updated": "2026-10-25 02:02:04",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 38,
+      "lines": [
+       {
+        "line": 11.5,
+        "cost": -108,
+        "updated": "2026-10-25 02:03:11",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 60,
+      "lines": [
+       {
+        "line": 14.5,
+        "cost": -99900,
+        "updated": "2026-10-25 02:02:26",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 68,
+      "lines": [
+       {
+        "line": 9.5,
+        "cost": 117,
+        "updated": "2026-10-25 02:04:07",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 63,
+      "lines": [
+       {
+        "line": 12.5,
+        "cost": -133,
+        "updated": "2026-10-25 02:05:27",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 39,
+      "lines": [
+       {
+        "line": 12.5,
+        "cost": -125,
+        "updated": "2026-10-25 02:04:56",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 45,
+      "lines": [
+       {
+        "line": 11.5,
+        "cost": -115,
+        "updated": "2026-10-25 02:04:47",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     },
+     {
+      "id": 27,
+      "lines": [
+       {
+        "line": 14.5,
+        "cost": -150,
+        "updated": "2026-10-25 02:03:41",
+        "main": true,
+        "active": true,
+        "is_off": false
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

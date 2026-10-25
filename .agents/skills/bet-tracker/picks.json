@@ -8094,8 +8094,8 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "5:15 PM",
-    "result": "win",
-    "units_won_lost": 0.84,
+    "result": "loss",
+    "units_won_lost": -1.0,
     "closing_line": null,
     "clv": null,
     "clv_devig": null,
@@ -8103,7 +8103,7 @@
     "final_score": "CHI 27, PHI 7",
     "game_margin": 20,
     "line_num": 62.5,
-    "prop_result": "19 rush yds (u62.5)",
+    "prop_result": "84 rush yds (u62.5)",
     "prop_margin": -44
   },
   {
