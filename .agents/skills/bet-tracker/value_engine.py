@@ -103,19 +103,38 @@ def prob_to_decimal(p: float) -> float:
 # ==================================================================================
 # de-vig — strip the overround to a fair probability
 # ==================================================================================
+def _require_probabilities(p_a, p_b) -> None:
+    """Both inputs must be implied probabilities strictly inside (0, 1).
+
+    Passing American odds by mistake used to reach `p ** k` with a negative base and
+    die as a complex-number TypeError deep inside power_devig (or, multiplicatively,
+    return nonsense silently). Fail at the boundary with a clear ValueError instead.
+    """
+    for p in (p_a, p_b):
+        if isinstance(p, bool) or not isinstance(p, (int, float)) or not 0.0 < p < 1.0:
+            raise ValueError(
+                f"de-vig needs implied probabilities in (0, 1), got {p_a!r}, {p_b!r} "
+                "(convert American odds with american_to_prob first)")
+
+
 def multiplicative_devig(p_a: float, p_b: float):
-    """Default for two-way ML / props: fair_i = p_i / (p_a + p_b). Returns (fair_a, fair_b)."""
+    """Two-way props: fair_i = p_i / (p_a + p_b). Returns (fair_a, fair_b).
+
+    Raises ValueError unless both inputs are probabilities in (0, 1)."""
+    _require_probabilities(p_a, p_b)
     s = p_a + p_b
     return p_a / s, p_b / s
 
 
 def power_devig(p_a: float, p_b: float, iterations: int = 80):
-    """Spreads / totals / heavy favorites: solve k s.t. p_a^k + p_b^k = 1, fair_i = p_i^k.
+    """Every game line (ML / spread / total): solve k s.t. p_a^k + p_b^k = 1, fair_i = p_i^k.
 
     Bisection on k ∈ [0.5, 1.5] (REFERENCE.md §2). Spreads the vig correctly where the
     multiplicative method under-corrects the longshot. Returns (fair_a, fair_b) which
-    sum to 1 by construction.
+    sum to 1 by construction. Raises ValueError unless both inputs are probabilities
+    in (0, 1).
     """
+    _require_probabilities(p_a, p_b)
     lo, hi = 0.5, 1.5
     # Expand the upper bound so the root is always bracketed. Wide/lopsided markets
     # (large overround) push k above the nominal 1.5; a clamped k would silently return
@@ -170,7 +189,10 @@ def ev_per_dollar(fair_p: float, p_best: float) -> float:
 
 
 def gate_threshold(market: str) -> float:
-    """Minimum projected CLV to log: 3% for player props, 2% for game lines."""
+    """Minimum projected CLV to log: 3% for player props, 2% for the three game kinds.
+
+    `market` is a kind or a label `market_kind` maps; anything else raises ValueError
+    (it used to fall through to the 2% game-line gate)."""
     return PLAYER_PROP_GATE if _is_prop(market) else GAME_LINE_GATE
 
 
@@ -337,7 +359,8 @@ def evaluate_board(board: dict) -> dict:
 # helpers
 # ==================================================================================
 def _is_prop(market: str) -> bool:
-    return "prop" in (market or "").strip().lower()
+    """Kind lookup, not a substring search (raises ValueError on an unknown label)."""
+    return market_kind(market) == "prop"
 
 
 class OddsParseError(ValueError):

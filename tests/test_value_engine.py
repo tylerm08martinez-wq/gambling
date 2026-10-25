@@ -319,5 +319,35 @@ class TestDevigByKind(unittest.TestCase):
         self.assertLess(ve.projected_clv(dog, ve.american_to_prob(809)), -0.2)
 
 
+class TestGateByKind(unittest.TestCase):
+    def test_three_percent_for_props_two_for_game_kinds(self):
+        self.assertEqual(ve.gate_threshold("prop"), 0.03)
+        for kind in ("moneyline", "spread", "total"):
+            self.assertEqual(ve.gate_threshold(kind), 0.02, msg=kind)
+
+    def test_stat_named_labels_no_longer_get_the_game_line_gate(self):
+        # Regression: "points" and "PRA" used to get 2% because they lack the word "prop".
+        for label in ("points", "PRA", "rebounds"):
+            with self.assertRaises(ValueError, msg=label):
+                ve.gate_threshold(label)
+            with self.assertRaises(ValueError, msg=label):
+                ve.clears_gate(0.025, label)
+
+
+class TestDevigInputValidation(unittest.TestCase):
+    def test_american_odds_are_rejected_not_turned_into_complex_numbers(self):
+        for fn in (ve.power_devig, ve.multiplicative_devig):
+            with self.assertRaises(ValueError, msg=fn.__name__):
+                fn(-110, -110)
+            with self.assertRaises(ValueError, msg=fn.__name__):
+                fn(0.52, 150)
+
+    def test_probabilities_must_be_strictly_inside_zero_one(self):
+        for fn in (ve.power_devig, ve.multiplicative_devig):
+            for bad in ((0.0, 0.5), (0.5, 1.0), (1.2, 0.3), (None, 0.5), (True, 0.5)):
+                with self.assertRaises(ValueError, msg=f"{fn.__name__}{bad}"):
+                    fn(*bad)
+
+
 if __name__ == "__main__":
     unittest.main()
