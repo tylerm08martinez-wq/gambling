@@ -26,6 +26,8 @@ The same review found engine defects that would mis-state projected CLV regardle
 
 **Observation week:** V3 runs at 09:00 AZ for seven consecutive days, starting the first morning the scan is live, as plain code with no model call. It writes candidates to `v3-observations.json` and never to `picks.json`. Observations never count toward stats, the dashboard or the Daily Pick Cap. Close capture snapshots each observation's market before start, so every candidate gets a realized CLV against both the exchange close and the retail consensus close.
 
+Realized CLV on an observation is stored as a **fraction**, in `realized_clv_exchange_frac` and `realized_clv_retail_frac` (0.0224 = +2.24%). That is the same unit as the row's `projected_clv` and `gate`, not the percent the picks ledger stores in `clv_devig` (#109).
+
 **Pre-registered review the day after the seventh scan.** V3 is promoted to logging picks under ADR 0009 measurement mode only if all of these hold:
 1. The scan completed on at least 6 of the 7 days.
 2. Candidates averaged between 0.3 and 5 per day.

@@ -258,11 +258,13 @@ GAME_LINE_KIND = {"ml": "moneyline", "spread": "spread", "rl": "spread", "total"
 # A partial-game or team market is NOT the full-game market BettingPros prices under
 # these ids. Capturing the full-game close for "Chiefs -3 1H" or "Knicks Under 110.5
 # team total" would be a close for a different bet, so these are refused outright.
+# Only the explicit forms: a bare "half" also appears in "half-Kelly". Alt lines are
+# not refused; exact-line matching already prices them only at their own number.
 _PARTIAL_MARKET_RE = re.compile(
-    r"\b(1h|2h|1q|2q|3q|4q|1p|2p|3p|f5|first\s+(half|quarter|period|five|5)|"
-    r"second\s+(half|quarter|period)|1st\s+(half|quarter|period|5|five)|"
-    r"2nd\s+(half|quarter|period)|3rd\s+(quarter|period)|4th\s+quarter|"
-    r"half|quarter|period|innings?|team\s+total|alt(ernate)?)\b", re.IGNORECASE)
+    r"\b(1h|2h|1q|2q|3q|4q|f5|"
+    r"(first|second|1st|2nd)\s+half|"
+    r"(first|second|third|fourth|1st|2nd|3rd|4th)\s+quarter|"
+    r"(first|1st)\s+(5|five)(\s+innings?)?|team\s+total)\b", re.IGNORECASE)
 
 # A signed handicap: the same test classify_bet's spread branch applies (|value| < 100
 # so an American price is never read as a spread).
@@ -278,6 +280,20 @@ def _same_number(a, b):
         return abs(float(a) - float(b)) < 1e-9
     except (TypeError, ValueError):
         return False
+
+
+# A consensus (book 0) line whose `updated` is more than this before the capture is a
+# dead line, not a close: no close is stored (#116 review, decided). Every stored
+# consensus close records `quote_updated` so the #110 review can filter tighter.
+CONSENSUS_MAX_AGE_MIN = 24 * 60
+
+
+def consensus_is_fresh(updated, now):
+    """True if a BettingPros `updated` stamp (UTC) is within CONSENSUS_MAX_AGE_MIN of
+    `now`. A missing or unparseable stamp is never assumed fresh."""
+    import value_engine as ve
+    ts = ve._as_utc(updated)
+    return ts is not None and (now - ts).total_seconds() / 60.0 <= CONSENSUS_MAX_AGE_MIN
 
 
 def parse_game_line_bet(pick, bet_kind):
@@ -339,18 +355,15 @@ def parse_game_line_bet(pick, bet_kind):
 
 
 def _team_patterns(participant):
-    """(regex, flags) that name this team: its nickname, 'city nickname', or its
-    abbreviation in capitals. A city alone is deliberately NOT a match — 'Los Angeles'
-    is two NBA teams playing the same day (LAL, LAC)."""
+    """(regex, flags) that name this team: its nickname (which also covers 'city
+    nickname'), or its abbreviation in capitals. A city alone is deliberately NOT a
+    match — 'Los Angeles' is two NBA teams playing the same day (LAL, LAC)."""
     pats = []
-    name, city = (participant.get("name") or "").strip(), (participant.get("city") or "").strip()
+    name = (participant.get("name") or "").strip()
     abbr = (participant.get("abbreviation") or participant.get("id") or "").strip()
     edge = r"(?<![A-Za-z0-9]){}(?![A-Za-z0-9])"
     if name:
         pats.append((edge.format(re.escape(name).replace(r"\ ", r"\s+")), re.IGNORECASE))
-        if city:
-            full = re.escape(f"{city} {name}").replace(r"\ ", r"\s+")
-            pats.append((edge.format(full), re.IGNORECASE))
     if abbr:
         pats.append((edge.format(re.escape(abbr)), 0))
     return pats
@@ -371,15 +384,17 @@ def capture_game_lines(picks, now, *, events_for, fetch_ladders, market_for_kind
     """Snapshot the two-way consensus close for open game-line picks of ONE sport.
 
     Injected seams (live wiring in `capture_live`):
-      events_for(date) -> [{"id", "start": aware datetime}]   (the day's /events)
+      events_for(date) -> [{"id", "start": aware datetime, "participants"}]  (/events)
       fetch_ladders(event_id, market_id) -> [bettingpros.game_line_ladder(...)]
       market_for_kind(kind) -> market_id | None                (per sport)
       classify_bet(pick) -> ml / spread / rl / total / prop    (tracker.classify_bet)
 
     Matching, all of it required: the bet parses (`parse_game_line_bet`); exactly one
     event starting inside the window has the bet's team (or, for a total, BOTH of the
-    bet's teams), and every team the text names belongs to that event; the consensus
-    prices both sides at the bet's own number (`bettingpros.two_way_game_line`).
+    bet's teams) among its /events teams, and every team the text names belongs to
+    that event; that event's market has the event's two teams (or over/under) as its
+    selections; the consensus prices both sides at the bet's own number
+    (`bettingpros.two_way_game_line`), updated within 24h (CONSENSUS_MAX_AGE_MIN).
     Snapshot keys are the side ('LAC', or 'over'/'under') so clv_backfill de-vigs the
     close with the power method for every game line (ADR 0011).
 
@@ -435,55 +450,59 @@ def capture_game_lines(picks, now, *, events_for, fetch_ladders, market_for_kind
             report.append((pid, "skip", "no event starting inside the window"))
             continue
 
-        by_event, failed = {}, None
-        for ev in in_window:
-            ck = (ev["id"], market_id)
-            if ck not in ladder_cache:
-                try:
-                    ladder_cache[ck] = fetch_ladders(ev["id"], market_id) or []
-                except Exception as e:                 # noqa: BLE001 - network boundary
-                    failed = e
-                    break
-            by_event[ev["id"]] = ladder_cache[ck]
-        if failed is not None:
-            report.append((pid, "error", f"ladder fetch failed: {failed}"))
-            continue
-
-        def _teams(text, ladders):
-            out = set()
-            for lad in ladders:
-                out |= match_teams(text, lad.get("participants"))
-            return out
-
-        named = {eid: _teams(parsed["text"], lads) for eid, lads in by_event.items()}
+        # The game is found from /events (home + visitor), never from the offer: a live
+        # total market carries `participants: []`, so offer-side matching skipped every
+        # total. Only the matched game's market is then fetched.
+        named = {ev["id"]: match_teams(parsed["text"], ev.get("participants"))
+                 for ev in in_window}
         named = {eid: t for eid, t in named.items() if t}
         if len(named) != 1:
             report.append((pid, "skip", "bet's teams not found in exactly one game "
                                         f"starting inside the window ({len(named)} games)"))
             continue
         (event_id, teams), = named.items()
-        ladders = by_event[event_id]
+        event = next(ev for ev in in_window if ev["id"] == event_id)
+        event_teams = {pp.get("id") for pp in event.get("participants") or [] if pp.get("id")}
+        if len(event_teams) != 2:
+            report.append((pid, "skip", "the event does not list exactly two teams"))
+            continue
         if kind == "total":
-            all_ids = {pp.get("id") for lad in ladders for pp in lad.get("participants") or []}
-            if len(all_ids) != 2 or teams != all_ids:
+            if teams != event_teams:
                 report.append((pid, "skip", "a game total must name both teams of the game"))
                 continue
-            side_key = parsed["side"]
+            side_key, market_keys = parsed["side"], {"over", "under"}
         else:
-            side = _teams(parsed["team_text"], ladders)
+            side = match_teams(parsed["team_text"], event.get("participants"))
             if len(side) != 1:
                 report.append((pid, "skip", "bet side is not exactly one team of the game"))
                 continue
-            side_key, = side
-        candidates = [lad for lad in ladders if side_key in (lad.get("keys") or [])]
-        closes = [c for c in (bp.two_way_game_line(lad, kind, side_key, parsed["line"])
-                              for lad in candidates) if c is not None]
-        if len(closes) != 1:
+            (side_key,), market_keys = side, event_teams
+
+        ck = (event_id, market_id)
+        if ck not in ladder_cache:
+            try:
+                ladder_cache[ck] = fetch_ladders(event_id, market_id) or []
+            except Exception as e:                     # noqa: BLE001 - network boundary
+                report.append((pid, "error", f"ladder fetch failed: {e}"))
+                continue
+        # The market's two selections must be this game's two teams (or over/under).
+        candidates = [lad for lad in ladder_cache[ck]
+                      if set(lad.get("keys") or []) == market_keys]
+        priced = [(c, lad) for c, lad in
+                  ((bp.two_way_game_line(lad, kind, side_key, parsed["line"]), lad)
+                   for lad in candidates) if c is not None]
+        if len(priced) != 1:
             # No pair (or, impossibly, two different pairs) at our number: not de-viggable.
             report.append((pid, "skip", "line not priced on both sides"
-                           if not closes else "more than one consensus market matches"))
+                           if not priced else "more than one consensus market matches"))
             continue
-        close = closes[0]
+        close, ladder = priced[0]
+        quote_updated = bp.game_line_quote_updated(ladder, kind, side_key, parsed["line"])
+        if not consensus_is_fresh(quote_updated, now):
+            # A consensus number nobody has touched for a day is a dead line, not a close.
+            report.append((pid, "skip", f"consensus line not updated within 24h "
+                                        f"(updated {quote_updated})"))
+            continue
 
         start_source = "game_time"
         if start is None:
@@ -503,6 +522,7 @@ def capture_game_lines(picks, now, *, events_for, fetch_ladders, market_for_kind
             "minutes_before_start": round(mins, 1),
             "vintage": "close" if mins <= CLOSE_GRADE_MINUTES else "pre-close",
             "source": "bettingpros_consensus",
+            "quote_updated": quote_updated,
         }
         if start_source != "game_time":
             snaps[pid]["start_source"] = start_source
@@ -519,7 +539,7 @@ def capture_game_lines(picks, now, *, events_for, fetch_ladders, market_for_kind
 # and from them two realized CLVs, `fair_p(close) / p(entry) - 1`, kind-correct de-vig
 # (power for game lines, multiplicative for props). They are FRACTIONS, the same scale
 # as the row's own `projected_clv` and `gate` (0.0224 = +2.24%), not the percent the
-# picks ledger stores in clv_devig. Each close keeps the capture closest to the start
+# picks ledger stores in clv_devig; hence the `_frac` field names. Each close keeps the capture closest to the start
 # on its own: an exchange benchmark that goes stale at T-5 does not erase a good T-20
 # one. Nothing else on the row is ever touched (the first-seen price is what the
 # week-end review measures).
@@ -562,106 +582,116 @@ def capture_observations(store, now, *, fetch_offers, window_minutes=45):
     updates, report = {}, []
     offers_cache = {}
     for obs in (store or {}).get("observations") or []:
-        oid = obs.get("id")
-        start = _obs_start(obs)
-        if start is None:
-            report.append((oid, "skip", "no parseable start_utc"))
-            continue
-        mins = (start - now).total_seconds() / 60.0
-        if not 0 < mins <= window_minutes:
-            report.append((oid, "skip", f"outside window ({mins:.0f}m to start)" if mins > 0
-                           else f"already started ({-mins:.0f}m ago)"))
-            continue
-        existing = obs.get("close") or {}
-        want = {name: should_replace(existing.get(name), mins)
-                for name in ("retail_consensus", "exchange")}
-        if not any(want.values()):
-            report.append((oid, "keep", "existing closes are closer to the start"))
-            continue
+        oid = obs.get("id") if isinstance(obs, dict) else None
+        # One malformed row is reported and skipped; it never ends the pass.
         try:
-            kind = ve.market_kind(obs.get("kind"))
-            p_entry = ve.american_to_prob(obs.get("odds"))
-        except ValueError as e:
-            report.append((oid, "skip", f"unusable observation: {e}"))
+            row = _capture_observation(obs, now, ve, fetch_offers, offers_cache,
+                                       window_minutes)
+        except Exception as e:                       # noqa: BLE001 - per-row isolation
+            report.append((oid, "error", f"bad observation row: {type(e).__name__}: {e}"))
             continue
-
-        ck = (obs.get("sport"), obs.get("event_id"), obs.get("market_id"))
-        if ck not in offers_cache:
-            try:
-                offers_cache[ck] = fetch_offers(*ck) or []
-            except Exception as e:                     # noqa: BLE001 - network boundary
-                report.append((oid, "error", f"offers fetch failed: {e}"))
-                continue
-        side = obs.get("side")
-        matches = []
-        for off in offers_cache[ck]:
-            if kind == "prop":
-                parts = off.get("participants") or []
-                if not parts or parts[0].get("name") != obs.get("participant"):
-                    continue
-            parsed = ve.quotes_from_offer(off, kind)
-            labels = parsed["labels"]
-            if not labels or labels[0] == labels[1] or side not in labels:
-                continue
-            matches.append((parsed["quotes"], labels.index(side)))
-        if len(matches) != 1:
-            report.append((oid, "skip", f"observation's market/side found {len(matches)} "
-                                        "times in the feed (need exactly 1)"))
-            continue
-        quotes, idx = matches[0]
-        qline = _obs_quote_line(obs, kind, idx)
-        mine, theirs = ("odds_a", "odds_b") if idx == 0 else ("odds_b", "odds_a")
-        stamp = {"captured_at": now.isoformat(), "minutes_before_start": round(mins, 1),
-                 "vintage": "close" if mins <= CLOSE_GRADE_MINUTES else "pre-close"}
-
-        retail = None
-        book0 = [q for q in quotes if q.get("book_id") == 0
-                 and (kind == "moneyline" or _same_number(q.get("line"), qline))]
-        if len(book0) == 1 and not any(ve.is_placeholder_odds(book0[0][k]) for k in (mine, theirs)):
-            q = book0[0]
-            fair = ve.fair_two_way(q["odds_a"], q["odds_b"], kind)
-            retail = dict(stamp, line=obs.get("line"), odds_side=q[mine], odds_other=q[theirs],
-                          fair_p=fair[idx], updated=q.get("updated"),
-                          source="bettingpros_consensus")
-
-        exchange = None
-        bench = ve.exchange_benchmark(quotes, qline, kind, now)
-        if bench is not None:
-            fair_keys = ("fair_a", "fair_b") if idx == 0 else ("fair_b", "fair_a")
-            exchange = dict(stamp, line=obs.get("line"), fair_p=bench[fair_keys[0]],
-                            fair_other=bench[fair_keys[1]], operators=bench["operators"],
-                            quotes_used=[{"book_id": u["book_id"], "odds_side": u[mine],
-                                          "odds_other": u[theirs], "updated": u.get("updated")}
-                                         for u in bench["quotes_used"]],
-                            source="exchange_benchmark")
-
-        new = {"retail_consensus": retail, "exchange": exchange}
-        replaced = [name for name in new if want[name] and new[name] is not None]
-        if not replaced:
-            if retail is None and exchange is None:
-                report.append((oid, "skip", "no two-way consensus and no exchange benchmark "
-                                            "at the observation's line"))
-            else:
-                report.append((oid, "keep", "existing closes are closer to the start"))
-            continue
-        close = {"retail_consensus": existing.get("retail_consensus"),
-                 "exchange": existing.get("exchange")}
-        for name in replaced:
-            close[name] = new[name]
-        close.update(side=side, captured_at=stamp["captured_at"],
-                     minutes_before_start=stamp["minutes_before_start"])
-
-        def _realized(sub):
-            return None if not sub else round(ve.projected_clv(sub["fair_p"], p_entry), 6)
-
-        updates[oid] = {"close": close,
-                        "realized_clv_exchange": _realized(close["exchange"]),
-                        "realized_clv_retail": _realized(close["retail_consensus"])}
-        report.append((oid, "captured",
-                       f"T-{mins:.0f}m {obs.get('bet') or side} "
-                       f"exchange={updates[oid]['realized_clv_exchange']} "
-                       f"retail={updates[oid]['realized_clv_retail']} ({stamp['vintage']})"))
+        update, rep = row
+        report.append(rep)
+        if update is not None:
+            updates[oid] = update
     return updates, report
+
+
+def _capture_observation(obs, now, ve, fetch_offers, offers_cache, window_minutes):
+    """One observation -> (update | None, report row). See capture_observations."""
+    oid = obs.get("id")
+    start = _obs_start(obs)
+    if start is None:
+        return None, (oid, "skip", "no parseable start_utc")
+    mins = (start - now).total_seconds() / 60.0
+    if not 0 < mins <= window_minutes:
+        return None, (oid, "skip", f"outside window ({mins:.0f}m to start)" if mins > 0
+                       else f"already started ({-mins:.0f}m ago)")
+    existing = obs.get("close") or {}
+    want = {name: should_replace(existing.get(name), mins)
+            for name in ("retail_consensus", "exchange")}
+    if not any(want.values()):
+        return None, (oid, "keep", "existing closes are closer to the start")
+    try:
+        kind = ve.market_kind(obs.get("kind"))
+        p_entry = ve.american_to_prob(obs.get("odds"))
+    except ValueError as e:
+        return None, (oid, "skip", f"unusable observation: {e}")
+
+    ck = (obs.get("sport"), obs.get("event_id"), obs.get("market_id"))
+    if ck not in offers_cache:
+        try:
+            offers_cache[ck] = fetch_offers(*ck) or []
+        except Exception as e:                     # noqa: BLE001 - network boundary
+            return None, (oid, "error", f"offers fetch failed: {e}")
+    side = obs.get("side")
+    matches = []
+    for off in offers_cache[ck]:
+        if kind == "prop":
+            parts = off.get("participants") or []
+            if not parts or parts[0].get("name") != obs.get("participant"):
+                continue
+        parsed = ve.quotes_from_offer(off, kind)
+        labels = parsed["labels"]
+        if not labels or labels[0] == labels[1] or side not in labels:
+            continue
+        matches.append((parsed["quotes"], labels.index(side)))
+    if len(matches) != 1:
+        return None, (oid, "skip", f"observation's market/side found {len(matches)} "
+                                    "times in the feed (need exactly 1)")
+    quotes, idx = matches[0]
+    qline = _obs_quote_line(obs, kind, idx)
+    mine, theirs = ("odds_a", "odds_b") if idx == 0 else ("odds_b", "odds_a")
+    stamp = {"captured_at": now.isoformat(), "minutes_before_start": round(mins, 1),
+             "vintage": "close" if mins <= CLOSE_GRADE_MINUTES else "pre-close"}
+
+    retail = None
+    book0 = [q for q in quotes if q.get("book_id") == 0
+             and (kind == "moneyline" or _same_number(q.get("line"), qline))]
+    if (len(book0) == 1
+            and not any(ve.is_placeholder_odds(book0[0][k]) for k in (mine, theirs))
+            and consensus_is_fresh(book0[0].get("updated"), now)):
+        q = book0[0]
+        fair = ve.fair_two_way(q["odds_a"], q["odds_b"], kind)
+        retail = dict(stamp, line=obs.get("line"), odds_side=q[mine], odds_other=q[theirs],
+                      fair_p=fair[idx], quote_updated=q.get("updated"),
+                      source="bettingpros_consensus")
+
+    exchange = None
+    bench = ve.exchange_benchmark(quotes, qline, kind, now)
+    if bench is not None:
+        fair_keys = ("fair_a", "fair_b") if idx == 0 else ("fair_b", "fair_a")
+        exchange = dict(stamp, line=obs.get("line"), fair_p=bench[fair_keys[0]],
+                        fair_other=bench[fair_keys[1]], operators=bench["operators"],
+                        quotes_used=[{"book_id": u["book_id"], "odds_side": u[mine],
+                                      "odds_other": u[theirs], "updated": u.get("updated")}
+                                     for u in bench["quotes_used"]],
+                        source="exchange_benchmark")
+
+    new = {"retail_consensus": retail, "exchange": exchange}
+    replaced = [name for name in new if want[name] and new[name] is not None]
+    if not replaced:
+        if retail is None and exchange is None:
+            return None, (oid, "skip", "no fresh two-way consensus and no exchange "
+                                       "benchmark at the observation's line")
+        return None, (oid, "keep", "existing closes are closer to the start")
+    close = {"retail_consensus": existing.get("retail_consensus"),
+             "exchange": existing.get("exchange")}
+    for name in replaced:
+        close[name] = new[name]
+    close.update(side=side, captured_at=stamp["captured_at"],
+                 minutes_before_start=stamp["minutes_before_start"])
+
+    def _realized(sub):
+        return None if not sub else round(ve.projected_clv(sub["fair_p"], p_entry), 6)
+
+    update = {"close": close,
+              "realized_clv_exchange_frac": _realized(close["exchange"]),
+              "realized_clv_retail_frac": _realized(close["retail_consensus"])}
+    return update, (oid, "captured",
+                    f"T-{mins:.0f}m {obs.get('bet') or side} "
+                    f"exchange={update['realized_clv_exchange_frac']} "
+                    f"retail={update['realized_clv_retail_frac']} ({stamp['vintage']})")
 
 
 def apply_observation_updates(store, updates):
@@ -671,24 +701,32 @@ def apply_observation_updates(store, updates):
     for obs in (store or {}).get("observations") or []:
         u = (updates or {}).get(obs.get("id"))
         if u:
-            obs.update(close=u["close"], realized_clv_exchange=u["realized_clv_exchange"],
-                       realized_clv_retail=u["realized_clv_retail"])
+            obs.update(close=u["close"],
+                       realized_clv_exchange_frac=u["realized_clv_exchange_frac"],
+                       realized_clv_retail_frac=u["realized_clv_retail_frac"])
             n += 1
     return n
 
 
-def save_observation_closes(path, updates):
+def save_observation_closes(path, updates, lock_timeout=None):
     """Re-read the observations file, apply `updates`, write it back atomically.
 
     Re-reading right before the write (not reusing the copy loaded before the network
-    calls) keeps an observation or run row the 09:00 scan appended meanwhile. Returns
-    the number of rows updated."""
+    calls) keeps an observation or run row the 09:00 scan appended meanwhile, and the
+    read-merge-write holds `v3_scan.store_lock` (the scan's --apply holds it too). If
+    the lock stays held past `lock_timeout` (default v3_scan.LOCK_TIMEOUT_SEC), this
+    write is skipped and logged; the next pass captures again. Returns # rows updated."""
     import v3_scan
-    store = v3_scan.load_store(path)
-    n = apply_observation_updates(store, updates)
-    if n:
-        v3_scan.save_store(path, store)
-    return n
+    with v3_scan.store_lock(path, lock_timeout) as locked:
+        if not locked:
+            print(f"  ⚠️  v3 observations: {v3_scan.lock_path(path)} held past the timeout; "
+                  "closes NOT written this pass", file=sys.stderr)
+            return 0
+        store = v3_scan.load_store(path)
+        n = apply_observation_updates(store, updates)
+        if n:
+            v3_scan.save_store(path, store)
+        return n
 
 
 def make_event_start(sport, *, bp):
@@ -720,15 +758,16 @@ def _parse_scheduled(ts):
 
 
 def make_events_for(sport, *, bp):
-    """`events_for(date) -> [{"id", "start"}]` for capture_game_lines, from the day's
-    /events (scheduled UTC start). An event with no parseable start is dropped: it can
-    never be shown to be pre-game."""
+    """`events_for(date) -> [{"id", "start", "participants"}]` for capture_game_lines,
+    from the day's /events (scheduled UTC start; home + visitor teams). An event with
+    no parseable start is dropped: it can never be shown to be pre-game."""
     def events_for(date):
         out = []
         for ev in bp.fetch_events(sport, date):
             start = _parse_scheduled(ev.get("scheduled"))
             if ev.get("id") is not None and start is not None:
-                out.append({"id": ev["id"], "start": start})
+                out.append({"id": ev["id"], "start": start,
+                            "participants": ev.get("participants") or []})
         return out
     return events_for
 

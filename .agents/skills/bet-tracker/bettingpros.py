@@ -140,6 +140,13 @@ def _normalize_prop(raw: dict) -> dict:
     }
 
 
+def _normalize_participant(p: dict) -> dict:
+    """A team as /events and /offers list it -> {id, name, city, abbreviation}."""
+    team = p.get("team") or {}
+    return {"id": p.get("id"), "name": p.get("name"), "city": team.get("city"),
+            "abbreviation": team.get("abbreviation") or p.get("id")}
+
+
 def _normalize_event(raw: dict) -> dict:
     pitchers = raw.get("pitchers") or {}
     return {
@@ -153,6 +160,9 @@ def _normalize_event(raw: dict) -> dict:
             "home": pitchers.get("home_probable"),
             "visitor": pitchers.get("visitor_probable"),
         },
+        # The two teams with their names (home/visitor are abbreviations only). Game-
+        # line close capture matches a bet's team names against these (#109).
+        "participants": [_normalize_participant(p) for p in raw.get("participants") or []],
     }
 
 
@@ -289,8 +299,12 @@ def game_line_ladder(offer):
     opposite signs ({'LAC': {14.5: -108}, 'OKC': {-14.5: -112}}). Lines flagged
     `is_off` or inactive and placeholder prices are dropped (not prices).
 
-    Returns {"participants": [{id, name, city}], "sides": {key: {line: odds}}}, or
-    None unless the market has exactly two selections with two distinct keys.
+    Returns {"participants", "keys", "sides": {key: {line: odds}}, "updated": {key:
+    {line: ts}}}, or None unless the market has exactly two selections with two
+    distinct keys. `participants` is often [] (a total), so never match teams on it.
+
+    TODO: the line filtering here duplicates value_engine.quotes_from_offer /
+    _usable_lines (is_off, inactive, unparseable cost); fold them into one reader.
     """
     sels = offer.get("selections") or []
     if len(sels) != 2:
@@ -298,10 +312,10 @@ def game_line_ladder(offer):
     keys = [_selection_key(s) for s in sels]
     if None in keys or keys[0] == keys[1]:
         return None
-    sides = {}
+    sides, updated = {}, {}
     for key, sel in zip(keys, sels):
         book0 = next((b for b in sel.get("books") or [] if b.get("id") == 0), None)
-        ladder = {}
+        ladder, stamps = {}, {}
         for ln in (book0 or {}).get("lines") or []:
             if ln.get("is_off") or ln.get("active") is False:
                 continue
@@ -317,16 +331,13 @@ def game_line_ladder(offer):
                 ladder[line] = None          # two prices at one number: not a price
                 continue
             ladder[line] = cost
+            stamps[line] = ln.get("updated")
         ladder = {k: v for k, v in ladder.items() if v is not None}
         if ladder:
             sides[key] = ladder
-    participants = []
-    for p in offer.get("participants") or []:
-        team = p.get("team") or {}
-        participants.append({"id": p.get("id"), "name": p.get("name"),
-                             "city": team.get("city"),
-                             "abbreviation": team.get("abbreviation") or p.get("id")})
-    return {"participants": participants, "keys": keys, "sides": sides}
+            updated[key] = {k: stamps.get(k) for k in ladder}
+    participants = [_normalize_participant(p) for p in offer.get("participants") or []]
+    return {"participants": participants, "keys": keys, "sides": sides, "updated": updated}
 
 
 def _fmt_american(o):
@@ -334,16 +345,9 @@ def _fmt_american(o):
     return f"+{o}" if o > 0 else str(o)
 
 
-def two_way_game_line(ladder, kind, side_key, line):
-    """Consensus {side_key: odds, other_key: odds} at the bet's own number, or None.
-
-    `kind` is 'moneyline', 'spread' or 'total'. A spread side at L pairs with the other
-    team at -L (SAS +6.5 against OKC -6.5); a total's over at L pairs with the under at
-    L; a moneyline has no number (the feed's line value, 1 or 0, is ignored) and each
-    side must carry exactly one price. Anything else — an unknown side, a side or
-    number not priced on both sides — is None: never fabricated, never borrowed from a
-    neighbouring number.
-    """
+def _paired_lines(ladder, kind, side_key, line):
+    """(side_key, my_line, other_key, their_line) for the de-viggable pair, or None.
+    The one place the pairing rules live; see two_way_game_line."""
     if not ladder:
         return None
     keys = ladder.get("keys") or list((ladder.get("sides") or {}).keys())
@@ -353,10 +357,9 @@ def two_way_game_line(ladder, kind, side_key, line):
     sides = ladder.get("sides") or {}
     mine, theirs = sides.get(side_key) or {}, sides.get(other) or {}
     if kind == "moneyline":
-        a, b = set(mine.values()), set(theirs.values())
-        if len(a) != 1 or len(b) != 1:
+        if len(set(mine.values())) != 1 or len(set(theirs.values())) != 1:
             return None
-        return {side_key: _fmt_american(a.pop()), other: _fmt_american(b.pop())}
+        return side_key, next(iter(mine)), other, next(iter(theirs))
     if line is None:
         return None
     try:
@@ -373,7 +376,38 @@ def two_way_game_line(ladder, kind, side_key, line):
         return None
     if line not in mine or want not in theirs:
         return None
-    return {side_key: _fmt_american(mine[line]), other: _fmt_american(theirs[want])}
+    return side_key, line, other, want
+
+
+def game_line_quote_updated(ladder, kind, side_key, line):
+    """The OLDER `updated` stamp of the pair two_way_game_line prices (a pair is only
+    as fresh as its staler side), or None if there is no pair or a stamp is missing."""
+    pair = _paired_lines(ladder, kind, side_key, line)
+    if pair is None:
+        return None
+    k1, l1, k2, l2 = pair
+    stamps = [((ladder.get("updated") or {}).get(k) or {}).get(ln) for k, ln in ((k1, l1), (k2, l2))]
+    if any(not isinstance(t, str) or not t for t in stamps):
+        return None
+    return min(stamps)          # same fixed-width UTC format, so string order is time order
+
+
+def two_way_game_line(ladder, kind, side_key, line):
+    """Consensus {side_key: odds, other_key: odds} at the bet's own number, or None.
+
+    `kind` is 'moneyline', 'spread' or 'total'. A spread side at L pairs with the other
+    team at -L (SAS +6.5 against OKC -6.5); a total's over at L pairs with the under at
+    L; a moneyline has no number (the feed's line value, 1 or 0, is ignored) and each
+    side must carry exactly one price. Anything else — an unknown side, a side or
+    number not priced on both sides — is None: never fabricated, never borrowed from a
+    neighbouring number.
+    """
+    pair = _paired_lines(ladder, kind, side_key, line)
+    if pair is None:
+        return None
+    k1, l1, k2, l2 = pair
+    sides = ladder["sides"]
+    return {k1: _fmt_american(sides[k1][l1]), k2: _fmt_american(sides[k2][l2])}
 
 
 def fetch_raw_offers(event_id, market_id, *, sport, get_json=None):

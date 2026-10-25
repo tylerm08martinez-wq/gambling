@@ -30,10 +30,12 @@ outage looks like). Every outcome, a crash included, still writes its run row un
 """
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 
@@ -345,12 +347,60 @@ def load_store(path):
 
 
 def save_store(path, store):
-    """Atomic write: a crash mid-write never leaves a truncated observations file."""
-    tmp = f"{path}.tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(store, f, indent=1)
-        f.write("\n")
-    os.replace(tmp, path)
+    """Atomic write: a crash mid-write never leaves a truncated observations file.
+
+    The temp file is unique (mkstemp, same directory so os.replace stays atomic): the
+    scan and close capture both write this file, and a shared fixed `.tmp` name let
+    one writer's temp be replaced or truncated by the other's."""
+    d = os.path.dirname(os.path.abspath(path))
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=os.path.basename(path) + ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(store, f, indent=1)
+            f.write("\n")
+        os.replace(tmp, path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(tmp)
+        raise
+
+
+LOCK_TIMEOUT_SEC = 60   # how long a writer waits for the observations-file lock
+
+
+def lock_path(path):
+    """The lock file guarding the observations file's read-merge-write (gitignored).
+    Deliberately NOT scripts/.tracker.lock, which capture-closes.sh already holds."""
+    return f"{path}.lock"
+
+
+@contextlib.contextmanager
+def store_lock(path, timeout=None):
+    """Exclusive flock on `lock_path(path)`, waiting at most `timeout` seconds (default
+    LOCK_TIMEOUT_SEC). Yields True when held, False on timeout: the caller then skips
+    its write and logs. Without fcntl (no flock on this platform) it yields True
+    unlocked, as the shell scripts run unlocked without flock."""
+    timeout = LOCK_TIMEOUT_SEC if timeout is None else timeout
+    try:
+        import fcntl
+    except ImportError:
+        yield True
+        return
+    with open(lock_path(path), "a+") as fh:
+        deadline = time.monotonic() + timeout
+        while True:
+            try:
+                fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except OSError:
+                if time.monotonic() >= deadline:
+                    yield False
+                    return
+                time.sleep(0.05)
+        try:
+            yield True
+        finally:
+            fcntl.flock(fh, fcntl.LOCK_UN)
 
 
 # ==================================================================================
@@ -388,9 +438,16 @@ def main(argv=None, get_json=None, now=None, clock=None):
         result = {"run": failed_run(args.date, sports, now, error), "observations": []}
     run = result["run"]
     if args.apply:
-        store = merge(load_store(args.out), result)
-        save_store(args.out, store)
-        run = store["runs"][-1]
+        with store_lock(args.out) as locked:
+            if locked:
+                store = merge(load_store(args.out), result)
+                save_store(args.out, store)
+                run = store["runs"][-1]
+        if not locked:
+            err = (f"{lock_path(args.out)} held for over {LOCK_TIMEOUT_SEC:g}s; "
+                   "observations NOT written")
+            run = dict(run, status="failed", errors=list(run["errors"]) + [err],
+                       new_observations=0)
     print(json.dumps({"run": run, "observations": result["observations"]}, indent=1))
     for err in run["errors"]:
         print(f"ERROR: {err}", file=sys.stderr)

@@ -76,10 +76,16 @@ class TestFetchEvents(unittest.TestCase):
         )
         self.assertTrue(events, "expected at least one normalized event")
         e = events[0]
-        self.assertEqual(set(e), {"id", "scheduled", "home", "visitor", "pitchers"})
+        self.assertEqual(set(e), {"id", "scheduled", "home", "visitor", "pitchers",
+                                  "participants"})
         # scheduled is the source UTC timestamp — the game-time of record (no DST table)
         self.assertEqual(e["scheduled"], "2026-06-01 22:40:00")
         self.assertEqual(set(e["pitchers"]), {"home", "visitor"})
+        # The teams by name: game-line close capture matches bet text against these
+        # (home/visitor are abbreviations only) (#109).
+        self.assertEqual(e["participants"], [
+            {"id": "TB", "name": "Rays", "city": "Tampa Bay", "abbreviation": "TB"},
+            {"id": "DET", "name": "Tigers", "city": "Detroit", "abbreviation": "DET"}])
 
     def test_returns_empty_when_fetch_fails_never_fabricates(self):
         self.assertEqual(

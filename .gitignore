@@ -18,6 +18,9 @@ scripts/.LAST-RUN-FAILED
 scripts/.capture-closes.log
 scripts/.CAPTURE-FAILED
 scripts/.tracker.lock
+# V3 observations file: its read-merge-write lock and any temp left by a crash (#109)
+.agents/skills/bet-tracker/v3-observations.json.lock
+.agents/skills/bet-tracker/v3-observations.json.*.tmp
 
 # Agent worktrees (Claude Code isolation) — never commit; the auto-sync hook would add them as gitlinks
 .claude/worktrees/
