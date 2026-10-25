@@ -2143,6 +2143,84 @@ def cmd_migrate_clv_schema(args):
         print("[dry-run] re-run with --apply to write picks.json.")
 
 
+# Issue #113: rows whose `final_score` TEXT is wrong although the result is right
+# (re-checked against ESPN box scores). The result and units are not touched.
+FINAL_SCORE_CORRECTIONS = {
+    "20261023-nba-v1-jayson-prop": "BOS 107, NY 103",
+    "20260919-nfl-v1-jonath-prop": "KC 33, IND 30 OT",
+}
+
+
+def _money_columns(picks: list) -> list:
+    return [(p.get("id"), p.get("result"), p.get("units"), p.get("units_won_lost"), p.get("line"))
+            for p in picks]
+
+
+def cmd_migrate_line_num(args):
+    """One-shot repair of the game-line fields the nightly resolver wrote onto props and
+    totals (issue #113). Dry-run by default; --apply writes.
+
+      - `game_margin` is removed from every prop and total (classify_bet), any date.
+      - `line_num` is restored from the bet text where the text states exactly one
+        Over/Under threshold. Every other disagreeing row (no threshold, two different
+        thresholds, or an "N+" bet, whose line_num convention is N or N-0.5) is listed
+        and left alone.
+      - the `final_score` strings in FINAL_SCORE_CORRECTIONS are fixed.
+
+    It never changes `result`, `units`, `units_won_lost` or `line`: those columns are
+    compared before and after, and any difference aborts without writing.
+    """
+    picks = load_picks()
+    money_before = _money_columns(picks)
+    changes = []      # (id, field, old, new)
+    left_alone = []   # (id, line_num, why)
+    for p in picks:
+        pid = p.get("id")
+        fixed_score = FINAL_SCORE_CORRECTIONS.get(pid)
+        if fixed_score is not None and p.get("final_score") != fixed_score:
+            changes.append((pid, "final_score", p.get("final_score"), fixed_score))
+            p["final_score"] = fixed_score
+        if classify_bet(p) not in ("prop", "total"):
+            continue
+        if p.get("game_margin") is not None:
+            changes.append((pid, "game_margin", p["game_margin"], None))
+            del p["game_margin"]
+        ln = p.get("line_num")
+        if ln is None:
+            continue
+        parsed = parse_bet_threshold(p.get("bet", ""))
+        if parsed is not None and line_num_agrees(parsed, ln):
+            continue
+        if parsed is None:
+            left_alone.append((pid, ln, "bet text has no single unambiguous threshold"))
+        elif len(parsed["accepts"]) != 1:
+            left_alone.append((pid, ln, "N+ bet: line_num could mean N or N-0.5"))
+        else:
+            changes.append((pid, "line_num", ln, parsed["threshold"]))
+            p["line_num"] = parsed["threshold"]
+
+    if _money_columns(picks) != money_before:   # cannot happen; refuse rather than trust it
+        print("❌ result/units columns changed during migration — aborting, nothing written.",
+              file=sys.stderr)
+        sys.exit(1)
+
+    for field in ("game_margin", "line_num", "final_score"):
+        rows = [c for c in changes if c[1] == field]
+        print(f"\n{field}: {len(rows)} row(s)")
+        for pid, _, old, new in rows:
+            print(f"  {pid:40} {old!r} → {new!r}")
+    print(f"\nleft alone (line_num disagrees, not restorable): {len(left_alone)} row(s)")
+    for pid, ln, why in left_alone:
+        print(f"  {pid:40} line_num={ln!r}  ({why})")
+    print(f"\n  changed rows: {len({c[0] for c in changes})}   field edits: {len(changes)}   "
+          f"result/units changed: 0")
+    if args.apply:
+        save_picks(picks)
+        print("✅ picks.json written.")
+    else:
+        print("[dry-run] re-run with --apply to write picks.json.")
+
+
 # ── CLI wiring ────────────────────────────────────────────────────────────────
 
 def main():
@@ -2164,6 +2242,11 @@ def main():
     mig_p = sub.add_parser("migrate-clv-schema",
                            help="One-shot: split legacy `clv` into clv_devig + clv_pct_pts")
     mig_p.add_argument("--apply", action="store_true", help="Write picks.json (default: dry-run)")
+
+    mln_p = sub.add_parser("migrate-line-num",
+                           help="One-shot (#113): clear game_margin on props/totals, restore "
+                                "line_num from the bet text, fix two final_score strings")
+    mln_p.add_argument("--apply", action="store_true", help="Write picks.json (default: dry-run)")
 
     log_p = sub.add_parser("log", help="Log a new pick")
     log_p.add_argument("--model", required=True, choices=[m["id"] for m in MODELS])
@@ -2230,6 +2313,8 @@ def main():
         cmd_capture_closes(args)
     elif args.command == "migrate-clv-schema":
         cmd_migrate_clv_schema(args)
+    elif args.command == "migrate-line-num":
+        cmd_migrate_line_num(args)
     elif args.command == "migrate-actual-bets":
         cmd_migrate_actual_bets(args)
     elif args.command == "log":

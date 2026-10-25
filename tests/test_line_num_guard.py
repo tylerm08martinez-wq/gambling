@@ -263,5 +263,106 @@ class TestGameTotalGradesFromTheBetText(unittest.TestCase):
         self.assertEqual(p["result"], "loss")
 
 
+
+def _ledger():
+    """Row shapes taken from the real picks.json (ids and values as of 2026-10-24)."""
+    return [
+        # odds in line_num + a game margin on a prop → both repaired
+        _open_pick(result="loss", units_won_lost=-1.0, game_margin=1,
+                   final_score="UTA 120, NOR 119", prop_result="6 points", prop_margin=-6),
+        # line_num already right, game margin only
+        {"id": "20261022-nfl-v1-hunter-prop", "date": "2026-10-22", "sport": "NFL",
+         "model": "v1-trends", "bet": "Hunter Henry Over 31.5 receiving yards (NE @ CHI)",
+         "bet_type": "prop", "line": "-110", "units": 1, "result": "win",
+         "units_won_lost": 0.909, "line_num": 31.5, "game_margin": -6},
+        # signed total
+        {"id": "20260524-mlb-v1-under-total", "date": "2026-05-24", "sport": "MLB",
+         "model": "v1-trends", "bet": "Under 7.5 Guardians at Phillies (Citizens Bank Park)",
+         "line": "-110", "units": 1, "result": "win", "units_won_lost": 0.909,
+         "line_num": -7.5, "game_margin": -4},
+        # wrong final_score, correct result
+        _settled_prop(line_num=-105.0, result="loss", units_won_lost=-1.0, game_margin=13,
+                      final_score="NYK 107, BOS 103"),
+        # ambiguous text: two thresholds → listed, left alone
+        {"id": "amb-prop", "date": "2026-08-01", "sport": "MLB", "model": "v1-trends",
+         "bet": "Corbin Burnes Under 5.5 strikeouts (moved from Under 6.5)", "bet_type": "prop",
+         "line": "-110", "units": 1, "result": "loss", "units_won_lost": -1.0, "line_num": -110.0},
+        # N+ with odds → convention ambiguous → listed, left alone
+        {"id": "nplus-prop", "date": "2026-08-01", "sport": "MLB", "model": "v1-trends",
+         "bet": "Mookie Betts 2+ hits", "bet_type": "prop", "line": "+120", "units": 1,
+         "result": "win", "units_won_lost": 1.2, "line_num": 120.0},
+        # moneyline keeps its game_margin and line_num
+        {"id": "ml", "date": "2026-08-01", "sport": "MLB", "model": "v1-trends",
+         "bet": "Yankees ML", "bet_type": "ml", "line": "-150", "units": 1, "result": "win",
+         "units_won_lost": 0.667, "line_num": 0.0, "game_margin": 3},
+    ]
+
+
+def _money(picks):
+    return [(p["id"], p.get("result"), p.get("units"), p.get("units_won_lost"), p.get("line"))
+            for p in picks]
+
+
+def _migrate(picks, apply=False):
+    out = io.StringIO()
+    with patch.object(tracker, "load_picks", return_value=picks), \
+         patch.object(tracker, "save_picks") as save, contextlib.redirect_stdout(out):
+        tracker.cmd_migrate_line_num(argparse.Namespace(apply=apply))
+    return save, out.getvalue()
+
+
+class TestMigrateLineNum(unittest.TestCase):
+    def setUp(self):
+        self.picks = _ledger()
+        self.by_id = {p["id"]: p for p in self.picks}
+
+    def test_dry_run_reports_but_never_writes(self):
+        save, out = _migrate(self.picks)
+        save.assert_not_called()
+        self.assertIn("dry-run", out)
+        self.assertIn("20261023-nba-v1-ace-prop", out)
+
+    def test_apply_writes(self):
+        save, _ = _migrate(self.picks, apply=True)
+        save.assert_called_once()
+
+    def test_game_margin_cleared_on_props_and_totals_only(self):
+        _migrate(self.picks, apply=True)
+        for pid in ("20261023-nba-v1-ace-prop", "20261022-nfl-v1-hunter-prop",
+                    "20260524-mlb-v1-under-total", "20261023-nba-v1-jayson-prop"):
+            self.assertIsNone(self.by_id[pid].get("game_margin"), pid)
+        self.assertEqual(self.by_id["ml"]["game_margin"], 3)
+
+    def test_line_num_restored_from_unambiguous_bet_text(self):
+        _migrate(self.picks, apply=True)
+        self.assertEqual(self.by_id["20261023-nba-v1-ace-prop"]["line_num"], 11.5)
+        self.assertEqual(self.by_id["20261023-nba-v1-jayson-prop"]["line_num"], 26.5)
+        self.assertEqual(self.by_id["20260524-mlb-v1-under-total"]["line_num"], 7.5)
+        self.assertEqual(self.by_id["20261022-nfl-v1-hunter-prop"]["line_num"], 31.5)
+        self.assertEqual(self.by_id["ml"]["line_num"], 0.0)
+
+    def test_ambiguous_rows_are_listed_and_left_alone(self):
+        _, out = _migrate(self.picks, apply=True)
+        self.assertEqual(self.by_id["amb-prop"]["line_num"], -110.0)
+        self.assertEqual(self.by_id["nplus-prop"]["line_num"], 120.0)
+        self.assertIn("amb-prop", out)
+        self.assertIn("nplus-prop", out)
+
+    def test_the_two_named_final_scores_are_fixed(self):
+        _migrate(self.picks, apply=True)
+        self.assertEqual(self.by_id["20261023-nba-v1-jayson-prop"]["final_score"], "BOS 107, NY 103")
+        self.assertEqual(self.by_id["20261023-nba-v1-ace-prop"]["final_score"], "UTA 120, NOR 119")
+
+    def test_no_result_or_units_change(self):
+        before = _money(self.picks)
+        _migrate(self.picks, apply=True)
+        self.assertEqual(_money(self.picks), before)
+
+    def test_second_run_is_a_no_op(self):
+        _migrate(self.picks, apply=True)
+        save, out = _migrate(self.picks, apply=True)
+        self.assertIn("changed rows: 0", out)
+
+
 if __name__ == "__main__":
     unittest.main()
