@@ -22,6 +22,7 @@ The fetchers are injected so the matching core is unit-tested offline against fi
 import importlib.util
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 _DIR = Path(__file__).resolve().parent
@@ -120,7 +121,7 @@ _NON_STAT_WORDS = {"and", "made", "yards", "yds"}
 
 
 def _words(text):
-    return set(re.findall(r"[a-z0-9]+", (text or "").lower()))
+    return re.findall(r"[a-z0-9]+", (text or "").lower())
 
 
 def strict_extract_prop(extract_prop):
@@ -132,19 +133,27 @@ def strict_extract_prop(extract_prop):
     (-113.0), or 235.0 on a "Under 224.5" bet. Matched as-is, a close would be taken at
     the wrong line. So, beyond extract_prop's own checks, this refuses (returns None):
 
-      * an Over/Under bet whose text has no number right after the side, or whose
-        number differs from the threshold extract_prop used;
-      * a bet naming a second stat after the matched keyword is removed, e.g.
-        "points and rebounds", which extract_prop silently reads as rebounds alone.
+      * a bet whose text names an Over/Under side but has no number right after the
+        side extract_prop chose, or a different number. An "N+" anywhere in the text
+        does NOT exempt it: extract_prop reads "N+" first, so "Bo Nix (3+ games) Under
+        224.5 passing yards" would otherwise come back as Over 2.5. Only a bet with no
+        Over/Under word at all ("Jalen Brunson 25+ Points") is taken in N+ form;
+      * a bet naming a second stat once the matched keyword and the player's own name
+        are removed, e.g. "points and rebounds", which extract_prop silently reads as
+        rebounds alone. The player's name is removed first so "Cooper Rush ... passing
+        yards" is not refused for the word "rush";
+      * a missing or empty stat map (callers pass none for a sport with no map).
 
     A refusal leaves the pick Unmeasured. Never a guess.
     """
-    def _strict(bet, line_num, stat_map):
+    def _strict(bet, line_num, stat_map=None):
+        if not stat_map:
+            return None
         spec = extract_prop(bet, line_num, stat_map)
         if not spec:
             return None
         text = bet or ""
-        if not re.search(r"\d+(?:\.\d+)?\+", text):
+        if re.search(r"\b(over|under)\b", text, flags=re.IGNORECASE):
             m = re.search(rf"\b{spec['side']}\s+(\d+(?:\.\d+)?)", text, flags=re.IGNORECASE)
             if not m or float(m.group(1)) != float(spec["threshold"]):
                 return None
@@ -154,10 +163,12 @@ def strict_extract_prop(extract_prop):
         for kw in sorted(stat_map, key=len, reverse=True):
             pat = rf"\b{re.escape(kw)}\b"
             if re.search(pat, low):
-                low = re.sub(pat, " ", low)
+                low = re.sub(pat, " ", low, count=1)
                 break
-        stat_words = set().union(*(_words(k) for k in stat_map)) - _NON_STAT_WORDS
-        if _words(low) & stat_words:
+        remaining = Counter(_words(low))
+        remaining.subtract(Counter(_words(spec["player"])))   # one use per name word
+        stat_words = {w for k in stat_map for w in _words(k)} - _NON_STAT_WORDS
+        if any(n > 0 for w, n in remaining.items() if w in stat_words):
             return None
         return spec
     return _strict

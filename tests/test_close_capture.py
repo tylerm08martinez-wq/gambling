@@ -76,6 +76,13 @@ class TestCaptureWindow(unittest.TestCase):
     def test_exactly_at_first_pitch_is_not_due(self):
         self.assertFalse(cc.due_for_capture(_pick(), _at(17, 10), window_minutes=45))
 
+    def test_explicit_start_overrides_game_time(self):
+        # Used for picks timed by their event's scheduled start (no game_time).
+        p = _pick(game_time="")
+        self.assertTrue(cc.due_for_capture(p, _at(16, 40), window_minutes=45, start=_at(17, 10)))
+        self.assertFalse(cc.due_for_capture(p, _at(17, 10), window_minutes=45, start=_at(17, 10)))
+        self.assertFalse(cc.due_for_capture(p, _at(16, 40), window_minutes=45))
+
 
 class TestSnapshotPrecedence(unittest.TestCase):
     def test_closer_to_first_pitch_wins(self):

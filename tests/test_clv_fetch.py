@@ -223,6 +223,24 @@ class TestStrictExtractProp(unittest.TestCase):
         s = self._s("Jalen Brunson 25+ Points", None, "NBA")
         self.assertEqual((s["side"], s["threshold"]), ("over", 24.5))
 
+    def test_n_plus_elsewhere_in_the_text_does_not_skip_the_line_check(self):
+        # Review of #112: extract_prop reads "3+" first and returns OVER 2.5 for an
+        # Under 224.5 bet. A stray N+ must never bypass the Over/Under line check.
+        self.assertIsNone(self._s("Bo Nix (3+ games) Under 224.5 passing yards", 224.5, "NFL"))
+
+    def test_missing_or_empty_stat_map_returns_none_instead_of_raising(self):
+        # build_closes / capture call extract_prop(bet, line_num) with 2 args when the
+        # stat map is empty; that must leave the pick Unmeasured, not crash the pass.
+        self.assertIsNone(self.strict("Peyton Watson Under 13.5 Points", 13.5))
+        self.assertIsNone(self.strict("Peyton Watson Under 13.5 Points", 13.5, {}))
+
+    def test_stat_word_inside_the_player_name_is_not_a_second_stat(self):
+        s = self._s("Cooper Rush Over 200.5 passing yards", 200.5, "NFL")
+        self.assertEqual((s["player"], s["stat_key"]), ("cooper rush", "passingYards"))
+
+    def test_second_stat_is_still_refused_when_the_name_shares_a_stat_word(self):
+        self.assertIsNone(self._s("Cooper Rush Over 200.5 passing yards and rush yards", 200.5, "NFL"))
+
 
 class FakeBP:
     """Stands in for the bettingpros module: records which sport every call used."""
@@ -297,6 +315,17 @@ class TestBuildClosesLiveNbaNfl(unittest.TestCase):
         bp = self._bp()
         picks = [_settled("nba2", "NBA", "Rui Hachimura Under 17.5 Points", 17.5)]
         self.assertEqual(cf.build_closes_live(picks, tracker=tracker, bp=bp), {})
+
+    def test_empty_stat_map_does_not_abort_the_pass(self):
+        # An empty map makes build_closes call extract_prop with 2 args. That used to
+        # raise TypeError and abort the whole pass (MLB included); now it is a skip.
+        bp = self._bp()
+        picks = [_settled("nba1", "NBA", "Rui Hachimura Under 16.5 Points", 16.5)]
+        closes = cf.build_closes(
+            picks, sport="NBA", stat_map={}, resolve_event=lambda d, pl: 27926,
+            fetch_ladders=lambda ev, mk: [], normalize_name=_norm,
+            extract_prop=cf.strict_extract_prop(tracker.extract_prop))
+        self.assertEqual(closes, {})
 
     def test_unsupported_sport_is_ignored(self):
         bp = self._bp()

@@ -75,12 +75,14 @@ def minutes_until(pick, now, *, tz=AZ):
     return (start - now).total_seconds() / 60.0
 
 
-def due_for_capture(pick, now, *, window_minutes, tz=AZ):
+def due_for_capture(pick, now, *, window_minutes, tz=AZ, start=None):
     """True if this pick's game starts within the window and hasn't started yet.
 
     Strictly pre-game: once first pitch passes, the price is no longer a closing line.
+    `start` overrides the pick's game_time (a pick timed by its event's scheduled start).
     """
-    mins = minutes_until(pick, now, tz=tz)
+    mins = minutes_until(pick, now, tz=tz) if start is None \
+        else (start - now).total_seconds() / 60.0
     return mins is not None and 0 < mins <= window_minutes
 
 
@@ -173,8 +175,7 @@ def capture(picks, now, *, resolve_event, fetch_ladders, extract_prop, normalize
             report.append((pid, "skip", "no parseable game_time"))
             continue
         mins = (start - now).total_seconds() / 60.0
-        if not 0 < mins <= window_minutes:
-            # Strictly pre-game: once the start passes, the price is no longer a close.
+        if not due_for_capture(p, now, window_minutes=window_minutes, tz=tz, start=start):
             report.append((pid, "skip",
                            f"outside window ({mins:.0f}m to start)" if mins > 0
                            else f"already started ({-mins:.0f}m ago)"))
