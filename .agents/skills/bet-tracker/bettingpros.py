@@ -190,22 +190,41 @@ def _normalize_offer(raw: dict) -> dict:
     }
 
 
-def fetch_offers(event_id, market_id, *, get_json=None):
+def _fetch_offer_pages(sport, event_id, market_id, get_json):
+    """Every raw /offers row for an event+market, following `_pagination.total_pages`.
+
+    /offers pages at 10 rows (one row per player on prop markets), so reading page 1
+    only silently dropped every player after the tenth — an NBA points market for one
+    game is 2 pages. A page-1 failure returns [] (no data, never fabricated); a later
+    page failing returns what was already read rather than looping.
+    """
+    base = f"{BP_API_BASE}/offers?sport={sport}&event_id={event_id}&market_id={market_id}"
+    rows, page = [], 1
+    while True:
+        data = get_json(base if page == 1 else f"{base}&page={page}")
+        if not data:
+            break
+        rows.extend(data.get("offers", []))
+        total = (data.get("_pagination") or {}).get("total_pages") or 1
+        if page >= total:
+            break
+        page += 1
+    return rows
+
+
+def fetch_offers(event_id, market_id, *, sport="MLB", get_json=None):
     """Return normalized cross-book offers (opening + per-book current) for an event/market.
 
     Each selection carries its `opening_line` and every book's current line/odds, the
     inputs a Steam Move check needs (3+ books off their opening in the same direction).
+    `sport` defaults to MLB (the original, only caller); market ids are per sport.
     Empty list on failure — never fabricated.
     """
     get_json = get_json or _live_get_json
-    url = f"{BP_API_BASE}/offers?sport=MLB&event_id={event_id}&market_id={market_id}"
-    data = get_json(url)
-    if not data:
-        return []
-    return [_normalize_offer(o) for o in data.get("offers", [])]
+    return [_normalize_offer(o) for o in _fetch_offer_pages(sport, event_id, market_id, get_json)]
 
 
-def fetch_offer_ladder(event_id, market_id, *, get_json=None):
+def fetch_offer_ladder(event_id, market_id, *, sport="MLB", get_json=None):
     """Full per-player CONSENSUS line ladder for an event+market (every line, not just main).
 
     Returns [{"player": name, "team": team, "sides": {"over": {line: odds}, "under": {line: odds}}}]
@@ -215,14 +234,14 @@ def fetch_offer_ladder(event_id, market_id, *, get_json=None):
     displayed main line is split (e.g. Under 14.5 / Over 15.5). Empty list on failure —
     never fabricated. Powers the realized-CLV backfill (clv_fetch); Pinnacle is absent
     from the prop grid (#51), so the de-vigged two-way close comes from consensus.
+
+    `sport` defaults to MLB; NBA and NFL prop closes pass their own (market ids are per
+    sport, and a wrong sport returns an empty market that reads like an outage). Every
+    page is read — see `_fetch_offer_pages`.
     """
     get_json = get_json or _live_get_json
-    url = f"{BP_API_BASE}/offers?sport=MLB&event_id={event_id}&market_id={market_id}"
-    data = get_json(url)
-    if not data:
-        return []
     out = []
-    for off in data.get("offers", []):
+    for off in _fetch_offer_pages(sport, event_id, market_id, get_json):
         parts = off.get("participants") or []
         name = parts[0].get("name") if parts else None
         team = (parts[0].get("player") or {}).get("team") if parts else None
