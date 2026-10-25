@@ -128,5 +128,104 @@ class TestOpenPropWithOddsInLineNumStaysOpen(unittest.TestCase):
         self.assertEqual(p["prop_margin"], -5.5)
 
 
+
+def _resolve_cli(pick, *argv):
+    """Run `tracker.py resolve ...` through main() (so the argparse block is covered).
+    Returns (exit_code, stderr, save_mock); exit_code is None on success."""
+    picks = [pick]
+    err = io.StringIO()
+    code = None
+    with patch.object(tracker, "load_picks", return_value=picks), \
+         patch.object(tracker, "save_picks") as save, \
+         patch.object(sys, "argv", ["tracker.py", "resolve", pick["id"], *argv]), \
+         contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err):
+        try:
+            tracker.main()
+        except SystemExit as e:
+            code = e.code
+    return code, err.getvalue(), save
+
+
+def _settled_prop(**over):
+    base = {"id": "20261023-nba-v1-jayson-prop", "date": "2026-10-23", "sport": "NBA",
+            "model": "v1-trends", "bet": "Jayson Tatum Under 26.5 Points (NYK @ BOS)",
+            "bet_type": "prop", "line": "-105", "units": 1, "line_num": 26.5, "result": None}
+    base.update(over)
+    return base
+
+
+def _total(**over):
+    base = {"id": "20260830-mlb-v2-sea-total", "date": "2026-08-30", "sport": "MLB",
+            "model": "v2-sharp", "bet": "SEA @ TOR Under 8.5 total runs", "bet_type": "total",
+            "line": "-130", "units": 1, "line_num": 8.5, "result": None}
+    base.update(over)
+    return base
+
+
+class TestResolveRefusesGameLineFieldsOnPropsAndTotals(unittest.TestCase):
+    def test_game_margin_refused_on_a_prop(self):
+        p = _settled_prop()
+        code, err, save = _resolve_cli(p, "loss", "--game-margin", "4")
+        self.assertEqual(code, 1)
+        self.assertIn("--game-margin", err)
+        save.assert_not_called()
+        self.assertIsNone(p["result"])          # nothing mutated
+        self.assertNotIn("game_margin", p)
+
+    def test_game_margin_refused_on_a_total(self):
+        p = _total()
+        code, err, save = _resolve_cli(p, "win", "--game-margin", "7")
+        self.assertEqual(code, 1)
+        save.assert_not_called()
+        self.assertIsNone(p["result"])
+
+    def test_game_margin_still_accepted_on_a_moneyline(self):
+        p = {"id": "x-ml", "date": "2026-08-30", "sport": "MLB", "model": "v1-trends",
+             "bet": "Yankees ML", "bet_type": "ml", "line": "-150", "units": 1, "result": None}
+        code, _, save = _resolve_cli(p, "win", "--game-margin", "3", "--line-num", "0")
+        self.assertIsNone(code)
+        save.assert_called_once()
+        self.assertEqual((p["result"], p["game_margin"]), ("win", 3))
+
+    def test_odds_passed_as_line_num_refused_on_a_prop(self):
+        p = _settled_prop()
+        code, err, save = _resolve_cli(p, "loss", "--line-num", "-105")
+        self.assertEqual(code, 1)
+        self.assertIn("26.5", err)
+        save.assert_not_called()
+        self.assertEqual(p["line_num"], 26.5)
+
+    def test_margin_passed_as_line_num_refused_on_a_total(self):
+        p = _total()
+        code, _, save = _resolve_cli(p, "win", "--line-num", "7")
+        self.assertEqual(code, 1)
+        save.assert_not_called()
+
+    def test_true_threshold_accepted_as_line_num(self):
+        p = _settled_prop(line_num=None)
+        code, _, save = _resolve_cli(p, "loss", "--line-num", "26.5")
+        self.assertIsNone(code)
+        self.assertEqual((p["result"], p["line_num"]), ("loss", 26.5))
+
+    def test_line_num_refused_when_bet_text_has_no_threshold(self):
+        p = _settled_prop(bet="Jayson Tatum Under Points (NYK @ BOS)", line_num=None)
+        code, _, save = _resolve_cli(p, "loss", "--line-num", "26.5")
+        self.assertEqual(code, 1)
+        save.assert_not_called()
+
+    def test_prop_margin_accepts_a_half_point(self):
+        # Thresholds end in .5, so a real margin is fractional: 13 pts vs U26.5 → -13.5.
+        p = _settled_prop()
+        code, _, _ = _resolve_cli(p, "win", "--prop-result", "13 points", "--prop-margin", "-13.5")
+        self.assertIsNone(code)
+        self.assertEqual(p["prop_margin"], -13.5)
+
+    def test_whole_prop_margin_is_stored_as_an_int(self):
+        p = _settled_prop(bet="Peter Lambert Over 4 Strikeouts", line_num=4.0, sport="MLB")
+        _resolve_cli(p, "win", "--prop-margin", "2")
+        self.assertEqual(p["prop_margin"], 2)
+        self.assertIsInstance(p["prop_margin"], int)
+
+
 if __name__ == "__main__":
     unittest.main()

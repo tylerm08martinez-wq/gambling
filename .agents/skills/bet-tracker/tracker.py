@@ -1939,6 +1939,26 @@ def cmd_resolve(args):
         print(f"❌ Pick not found: {args.id}", file=sys.stderr)
         sys.exit(1)
 
+    # Issue #113: the nightly resolver passed --game-margin and --line-num on EVERY
+    # resolve, writing a game margin onto props/totals and odds into line_num. Both are
+    # validated before anything is mutated, so a refusal leaves the pick untouched.
+    kind = classify_bet(pick)
+    if kind in ("prop", "total"):
+        if args.game_margin is not None:
+            print(f"❌ --game-margin applies only to moneyline/spread/run-line bets; "
+                  f"{args.id} is a {kind}. Pass --prop-result/--prop-margin instead.",
+                  file=sys.stderr)
+            sys.exit(1)
+        if args.line_num is not None:
+            parsed = parse_bet_threshold(pick.get("bet", ""))
+            if parsed is None or not line_num_agrees(parsed, args.line_num):
+                want = ("no unambiguous threshold in the bet text" if parsed is None
+                        else f"the bet text says {parsed['threshold']:g}")
+                print(f"❌ --line-num {args.line_num:g} disagrees with {args.id} ({want}). "
+                      f"line_num is the bet's threshold, never odds or a margin; "
+                      f"omit it rather than guess.", file=sys.stderr)
+                sys.exit(1)
+
     pick["result"] = args.outcome
     pick["units_won_lost"] = calc_units_won_lost(pick["line"], pick["units"], args.outcome)
     if args.closing_line:
@@ -1967,7 +1987,8 @@ def cmd_resolve(args):
     if args.prop_result:
         pick["prop_result"] = args.prop_result
     if args.prop_margin is not None:
-        pick["prop_margin"] = args.prop_margin
+        pm = args.prop_margin
+        pick["prop_margin"] = int(pm) if float(pm).is_integer() else round(pm, 1)
 
     save_picks(picks)
     sign = "+" if pick["units_won_lost"] >= 0 else ""
@@ -2178,12 +2199,15 @@ def main():
                        help="American odds at close, e.g. '-110' or '+105'. Used to compute CLV.")
     res_p.add_argument("--final-score", default="", help="e.g. 'ARI 6, TOR 3'")
     res_p.add_argument("--game-margin", type=int, default=None,
-                       help="Actual game margin (positive = our team won by X)")
+                       help="Moneyline/spread/run line ONLY: actual game margin (positive = "
+                            "our team won by X). Refused on props and totals.")
     res_p.add_argument("--line-num", type=float, default=None,
-                       help="Spread/RL number for cover check display")
+                       help="Spread/RL: the handicap, SIGNED as the bet reads (0 for ML). "
+                            "Prop/total: the bet's threshold, and it must match the bet "
+                            "text. Never odds or a margin.")
     res_p.add_argument("--prop-result", default="", help="e.g. '3/9 from three'")
-    res_p.add_argument("--prop-margin", type=int, default=None,
-                       help="actual - threshold (negative = short)")
+    res_p.add_argument("--prop-margin", type=float, default=None,
+                       help="actual - threshold, e.g. -5.5 (negative = short)")
 
     args = parser.parse_args()
 
