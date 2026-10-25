@@ -87,6 +87,23 @@ if ! python3 "$PROJECT_DIR/.agents/skills/bet-tracker/bettingpros.py" props MLB 
   exit 1
 fi
 
+# Shared lock with capture-closes.sh (every 15 min, including 09:00): it writes
+# closing_lines.json, which the pull below autostashes and the backfill commit stages.
+# Held for the pull + backfill + commit/push only, then released BEFORE the long claude
+# step so captures for 9:15-10:00 starts (NFL Sunday 10am kickoffs) are not skipped.
+# capture-closes waits for nothing (flock -n); this side waits up to 10 minutes, longer
+# than capture's own 300s timeout. No flock (stock macOS) = run unlocked, as before.
+TRACKER_LOCK="$PROJECT_DIR/scripts/.tracker.lock"
+if command -v flock >/dev/null 2>&1; then
+  exec 9>"$TRACKER_LOCK"
+  if ! flock -w 600 9; then
+    echo "❌ scripts/.tracker.lock still held after 10 min — aborting before git pull" | tee -a "$LOG"
+    exit 1
+  fi
+else
+  echo "⚠️  flock not found — pull/backfill run without scripts/.tracker.lock" | tee -a "$LOG"
+fi
+
 # --autostash is load-bearing, not defensive: capture-closes.sh deliberately
 # leaves closing_lines.json uncommitted (see its header), and the CLV backfill
 # below dirties picks.json. This pull therefore ALWAYS runs against a dirty
@@ -116,6 +133,9 @@ if python3 "$PROJECT_DIR/.agents/skills/bet-tracker/tracker.py" \
     notify_failure "⚠️ Daily Bet Picks: CLV backfill for $YESTERDAY committed locally but PUSH FAILED on $(hostname). Dashboard is serving stale CLV until this is pushed."
   fi
 fi
+
+# Release the tracker lock (see above) before the long-running claude step.
+exec 9>&-
 
 # The routine prompt: execute the betting skills exactly as written. Mirrors the
 # retired cloud trigger's prompt. Requires the `claude` CLI + Slack MCP on this host.

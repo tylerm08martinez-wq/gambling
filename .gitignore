@@ -17,3 +17,4 @@ scripts/.last-run-status.json
 scripts/.LAST-RUN-FAILED
 scripts/.capture-closes.log
 scripts/.CAPTURE-FAILED
+scripts/.tracker.lock
