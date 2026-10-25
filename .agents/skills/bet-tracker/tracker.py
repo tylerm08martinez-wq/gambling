@@ -1000,10 +1000,65 @@ def _normalize_name(s: str) -> str:
     return re.sub(r'[^a-z\s]', '', s.lower()).strip()
 
 
+# A side word followed by its threshold: "Over 11.5", "UNDER 7", "Under 8.5".
+_SIDE_THRESHOLD_RE = re.compile(r'\b(over|under)\s*(\d+(?:\.\d+)?)', re.IGNORECASE)
+_NPLUS_RE = re.compile(r'(\d+(?:\.\d+)?)\+')
+
+
+def parse_bet_threshold(bet: str) -> Optional[dict]:
+    """Side and threshold as the BET TEXT states them, or None if absent or ambiguous.
+
+    Returns {side, threshold, start, accepts}: `start` is where the side/threshold
+    token begins (the player segment is everything before it) and `accepts` is the set
+    of `line_num` values that agree with this text.
+
+    The bet text is the source of truth for the threshold, not `line_num`. The nightly
+    resolver wrote odds and game margins into `line_num` on props and totals (issue
+    #113: Ace Bailey "Over 11.5 Points" carries line_num -108), and grading against
+    that value makes every Over a WIN and every Under a LOSS.
+
+    "N+" means at least N, i.e. Over N-0.5, and accepts a line_num of N or N-0.5.
+    Ambiguous means two different side/threshold pairs ("Under 5.5 ... (moved from
+    Under 6.5)") or both an N+ and an Over/Under form; the caller then leaves the pick
+    open rather than choosing one.
+    """
+    bet = bet or ""
+    nplus = {float(m.group(1)) for m in _NPLUS_RE.finditer(bet)}
+    pairs = [(m.group(1).lower(), float(m.group(2)), m.start())
+             for m in _SIDE_THRESHOLD_RE.finditer(bet)]
+    if nplus and pairs:
+        return None
+    if nplus:
+        if len(nplus) != 1:
+            return None
+        n = nplus.pop()
+        return {"side": "over", "threshold": n - 0.5,
+                "start": _NPLUS_RE.search(bet).start(), "accepts": (n, n - 0.5)}
+    if len({(side, value) for side, value, _ in pairs}) != 1:
+        return None
+    side, value, start = pairs[0]
+    return {"side": side, "threshold": value, "start": start, "accepts": (value,)}
+
+
+def line_num_agrees(parsed: dict, line_num) -> bool:
+    """True when `line_num` is absent or equals a threshold the bet text allows."""
+    if line_num is None:
+        return True
+    try:
+        ln = float(line_num)
+    except (TypeError, ValueError):
+        return False
+    return any(abs(ln - a) < 1e-9 for a in parsed["accepts"])
+
+
 def extract_prop(bet: str, line_num, stat_map: dict = PROP_STAT_MAP) -> Optional[dict]:
     """
     Parse a player prop. Returns {player, stat_group, stat_key, side, threshold}
     or None if any component can't be resolved (caller then skips — never guesses).
+
+    The side and threshold come from the bet text (parse_bet_threshold). `line_num` is
+    only a cross-check: when present it must equal the text's threshold, otherwise this
+    returns None and the pick stays OPEN (issue #113). When absent, the text is used.
 
     `stat_map` is the sport's stat-keyword → (group, key) map, supplied by the pick's
     Player Prop Source (the resolver passes src.stat_map). Defaults to the MLB map for
@@ -1011,23 +1066,12 @@ def extract_prop(bet: str, line_num, stat_map: dict = PROP_STAT_MAP) -> Optional
     Return shape is unchanged so downstream callers are untouched.
     """
     low = bet.lower()
-    # Side + threshold. "N+" means at least N → Over (N-0.5). Else Over/Under + line_num.
-    nplus = re.search(r'(\d+(?:\.\d+)?)\+', bet)
-    if nplus:
-        side, threshold = "over", float(nplus.group(1)) - 0.5
-        player_cut = bet[:nplus.start()]
-    elif re.search(r'\bover\b', low):
-        side = "over"
-        player_cut = re.split(r'\bover\b', bet, flags=re.IGNORECASE)[0]
-        threshold = float(line_num) if line_num is not None else None
-    elif re.search(r'\bunder\b', low):
-        side = "under"
-        player_cut = re.split(r'\bunder\b', bet, flags=re.IGNORECASE)[0]
-        threshold = float(line_num) if line_num is not None else None
-    else:
+    # Side + threshold from the TEXT. "N+" means at least N → Over (N-0.5).
+    parsed = parse_bet_threshold(bet)
+    if parsed is None or not line_num_agrees(parsed, line_num):
         return None
-    if threshold is None:
-        return None
+    side, threshold = parsed["side"], parsed["threshold"]
+    player_cut = bet[:parsed["start"]]
     # Stat: first mapped keyword present (check multiword keys before single).
     stat_group = stat_key = None
     matched_kw = None
