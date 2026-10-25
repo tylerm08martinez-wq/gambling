@@ -218,3 +218,87 @@ def scan(scan_date, sports, now, get_json=None, log=None):
         "status": "failed" if errors else "ok",
     }
     return {"run": run, "observations": observations}
+
+
+# ==================================================================================
+# the observations file
+# ==================================================================================
+def merge(store, result):
+    """Fold one scan result into the {"runs", "observations"} store; returns the store.
+
+    Appends the run row (stamped with `new_observations`) and every observation whose
+    id isn't already stored. A stored observation is never touched: its first-seen
+    price is the one the review measures."""
+    store.setdefault("runs", [])
+    store.setdefault("observations", [])
+    seen = {o.get("id") for o in store["observations"]}
+    added = 0
+    for obs in result["observations"]:
+        if obs["id"] in seen:
+            continue
+        seen.add(obs["id"])
+        store["observations"].append(obs)
+        added += 1
+    store["runs"].append(dict(result["run"], new_observations=added))
+    return store
+
+
+def load_store(path):
+    if not os.path.exists(path):
+        return {"runs": [], "observations": []}
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    if not isinstance(data, dict) or not isinstance(data.get("runs"), list) \
+            or not isinstance(data.get("observations"), list):
+        raise ValueError(f"{path} is not a {{runs, observations}} observations file")
+    return data
+
+
+def save_store(path, store):
+    """Atomic write: a crash mid-write never leaves a truncated observations file."""
+    tmp = f"{path}.tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(store, f, indent=1)
+        f.write("\n")
+    os.replace(tmp, path)
+
+
+# ==================================================================================
+# CLI
+# ==================================================================================
+def main(argv=None, get_json=None, now=None):
+    ap = argparse.ArgumentParser(description="V3 Observation Scan (ADR 0011, #108)")
+    ap.add_argument("--date", required=True, help="slate date, YYYY-MM-DD")
+    ap.add_argument("--sports", default="NBA,NFL,MLB", help="comma list (default NBA,NFL,MLB)")
+    ap.add_argument("--apply", action="store_true", help="write to --out (default: print only)")
+    ap.add_argument("--out", default=OBSERVATIONS_FILE, help="observations file path")
+    args = ap.parse_args(argv)
+    try:
+        datetime.strptime(args.date, "%Y-%m-%d")
+    except ValueError:
+        ap.error(f"--date must be YYYY-MM-DD, got {args.date!r}")
+    sports = [s.strip().upper() for s in args.sports.split(",") if s.strip()]
+    if not sports or any(s not in MARKETS for s in sports):
+        ap.error(f"--sports must be from {sorted(MARKETS)}, got {args.sports!r}")
+
+    now = now or datetime.now(timezone.utc)
+    print(f"V3 Observation Scan {args.date} at {_iso_z(now)} ({', '.join(sports)})",
+          file=sys.stderr)
+    result = scan(args.date, sports, now, get_json=get_json)
+    run = result["run"]
+    if args.apply:
+        store = merge(load_store(args.out), result)
+        save_store(args.out, store)
+        run = store["runs"][-1]
+    print(json.dumps({"run": run, "observations": result["observations"]}, indent=1))
+    for err in run["errors"]:
+        print(f"ERROR: {err}", file=sys.stderr)
+    print(f"status={run['status']} markets_scanned={run['markets_scanned']} "
+          f"with_benchmark={run['markets_with_benchmark']} candidates={run['candidates']}"
+          + (f" new={run['new_observations']} -> {args.out}" if args.apply else " (dry run)"),
+          file=sys.stderr)
+    return 0 if run["status"] == "ok" else 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

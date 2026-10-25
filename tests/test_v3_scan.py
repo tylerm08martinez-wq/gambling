@@ -197,5 +197,72 @@ class TestRunRow(unittest.TestCase):
         self.assertEqual((run["status"], run["markets_scanned"], run["events_started"]), ("ok", 0, 1))
 
 
+def gainwell_board(under_cost=110):
+    offer = gainwell_under()
+    offer["selections"][1]["books"][2]["lines"][0]["cost"] = under_cost   # BetMGM Under
+    return FakeBoard({"NFL": [_event(22072, "TB", "CAR")]}, {("NFL", 22072, 105): [[offer]]})
+
+
+class TestMergeAndIdempotence(unittest.TestCase):
+    def test_id_is_deterministic_and_keyed_on_book(self):
+        a = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=gainwell_board())["observations"][0]
+        b = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=gainwell_board())["observations"][0]
+        self.assertEqual(a["id"], b["id"])
+        self.assertNotEqual(a["id"], v3.observation_id("2026-10-25", 22072, 105, "Kenny Gainwell",
+                                                       14.5, "Under", 10))
+        self.assertNotEqual(a["id"], v3.observation_id("2026-10-26", 22072, 105, "Kenny Gainwell",
+                                                       14.5, "Under", 19))
+
+    def test_rerun_appends_a_run_row_but_never_duplicates_or_overwrites(self):
+        store = v3.merge({"runs": [], "observations": []},
+                         v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=gainwell_board(110)))
+        # Later the same morning BetMGM has moved to +115: the first-seen +110 stands.
+        store = v3.merge(store, v3.scan("2026-10-25", ["NFL"], LIVE_NOW,
+                                        get_json=gainwell_board(115)))
+        self.assertEqual(len(store["runs"]), 2)
+        self.assertEqual(len(store["observations"]), 1)
+        self.assertEqual(store["observations"][0]["odds"], 110)
+        self.assertEqual([r["new_observations"] for r in store["runs"]], [1, 0])
+
+
+class TestCli(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp = Path(tempfile.mkdtemp())
+        self.out = self.tmp / "v3-observations.json"
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _main(self, *extra, board=None):
+        import contextlib
+        import io
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(io.StringIO()):
+            rc = v3.main(["--date", "2026-10-25", "--sports", "NFL", "--out", str(self.out), *extra],
+                         get_json=board or gainwell_board(), now=LIVE_NOW)
+        return rc, buf.getvalue()
+
+    def test_without_apply_it_prints_and_writes_nothing(self):
+        rc, printed = self._main()
+        self.assertEqual(rc, 0)
+        self.assertFalse(self.out.exists())
+        self.assertIn("Kenny Gainwell Under 14.5 receiving yards", printed)
+
+    def test_apply_writes_runs_and_observations(self):
+        self._main("--apply")
+        self._main("--apply")
+        data = json.loads(self.out.read_text())
+        self.assertEqual(sorted(data), ["observations", "runs"])
+        self.assertEqual(len(data["runs"]), 2)
+        self.assertEqual(len(data["observations"]), 1)
+
+    def test_a_failed_scan_exits_nonzero_and_still_records_the_run(self):
+        rc, _ = self._main("--apply", board=FakeBoard({"NFL": [_event(1, "A", "B")]}, {}))
+        self.assertEqual(rc, 2)
+        self.assertEqual(json.loads(self.out.read_text())["runs"][0]["status"], "failed")
+
+
 if __name__ == "__main__":
     unittest.main()
