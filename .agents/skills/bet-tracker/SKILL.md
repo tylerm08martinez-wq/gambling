@@ -49,7 +49,7 @@ python3 ".agents/skills/bet-tracker/tracker.py" log \
   --score <score_or_omit> \
   --edge "<primary edge>" \
   --run-type manual \
-  --line-num <spread_number> \
+  --line-num <signed spread/RL handicap, 0 for ML; for a prop or total, the threshold in the bet text, never odds> \
   --game-time "<start time in AZ time, e.g. '5:10 PM'>"
 ```
 
@@ -76,22 +76,31 @@ Confirm the logged pick to the user.
 
 ## Action: `result <id> <win|loss|push|void>`
 
-Look up the pick by ID, then run:
+Look up the pick by ID and check its `bet_type`. **The flags depend on the bet type. Never pass the game-line flags on a prop or total.**
+
+**Player prop or game total** (`bet_type` `prop` or `total`):
+```bash
+python3 ".agents/skills/bet-tracker/tracker.py" resolve <id> <outcome> \
+  --closing-line "<american_odds>" \
+  --final-score "<score>" \
+  --prop-result "<stat line>" \
+  --prop-margin <float>
+```
+
+**Moneyline, spread or run line** (`bet_type` `ml`, `spread` or `rl`):
 ```bash
 python3 ".agents/skills/bet-tracker/tracker.py" resolve <id> <outcome> \
   --closing-line "<american_odds>" \
   --final-score "<score>" \
   --game-margin <int> \
-  --line-num <float> \
-  [--prop-result "<stat line>"] \
-  [--prop-margin <int>]
+  --line-num <float>
 ```
 
-- `--closing-line`: American odds for this exact bet at game start, from a sharp book (Pinnacle preferred, then DK/FanDuel consensus). E.g. `-110`, `+105`. Used to compute CLV automatically.
-- `--game-margin`: actual whole-number game margin, positive = our team won by X (e.g. won 6-3 → 3; lost 90-121 → -31)
-- `--line-num`: the spread number for cover check display (e.g. 3 for -3 spread; 0 for ML)
-- `--prop-result`: for player props, the stat line (e.g. "3/9 from three")
-- `--prop-margin`: actual stat minus threshold (e.g. needed 4, got 3 → -1)
+- `--closing-line`: American odds for this exact bet at game start, from a sharp book (Pinnacle preferred, then DK/FanDuel consensus). E.g. `-110`, `+105`. Used to compute CLV automatically. This is the only place odds go.
+- `--prop-result`: the stat line, e.g. `"3/9 from three"`, `"6 points"`, `"7 total runs"`.
+- `--prop-margin`: actual stat minus the threshold, as a decimal. For example, needed Over 11.5 and got 6, so `-5.5`. For a total, it is total runs minus the line.
+- `--game-margin`: **moneyline, spread and run line only.** The whole-number game margin, positive when our team won by X (won 6-3 → `3`, lost 90-121 → `-31`). `resolve` refuses it on a prop or total.
+- `--line-num`: **moneyline, spread and run line:** the handicap, signed as the bet reads (`-1.5` for a -1.5 favourite, `+6.5` for a +6.5 underdog, `0` for a moneyline). **Prop or total:** leave it out, because it was set when the pick was logged. If you pass it, it must be the threshold written in the bet text (`11.5` for "Over 11.5 Points"). It is never the odds and never a margin. `resolve` refuses a value that disagrees with the bet text.
 - Use `void` when a wager did not stand (for example, pitcher/player DNP). Voids are recorded with `0` units and excluded from win-rate/ROI calculations.
 
 Then run `tracker.py stats` and show the output.
@@ -112,14 +121,12 @@ This classifies each open MLB pick (moneyline, run line, game total, or player p
 - Team bets: `"[teams] final score [date]"`
 - Player props: `"[player name] [stat] [date] [opponent]"`
 
-Determine win/loss/push from the result. For each resolved pick, ALSO web-search for the closing line of the exact bet (e.g. "MLB closing line Cardinals -1.5 [date]" or "[player] [prop] closing line [date]"). Prefer Pinnacle; fall back to DK/FanDuel consensus. Then run:
-```bash
-python3 ".agents/skills/bet-tracker/tracker.py" resolve <id> <outcome> \
-  --closing-line "<american_odds>" \
-  --final-score "<score>" \
-  --game-margin <int> \
-  --line-num <float>
-```
+Determine win/loss/push from the result. For each resolved pick, ALSO web-search for the closing line of the exact bet (e.g. "MLB closing line Cardinals -1.5 [date]" or "[player] [prop] closing line [date]"). Prefer Pinnacle; fall back to DK/FanDuel consensus. Then run the `resolve` command for the pick's bet type, exactly as in **Action: `result`** above:
+
+- **Prop or total:** pass `--closing-line`, `--final-score`, `--prop-result` and `--prop-margin`. Do **not** pass `--game-margin`. Do **not** pass `--line-num`; the threshold is already on the pick.
+- **Moneyline, spread or run line:** pass `--closing-line`, `--final-score`, `--game-margin` and `--line-num` (the signed handicap, `0` for a moneyline).
+
+`resolve` exits with an error and writes nothing if a prop or total gets `--game-margin`, or gets a `--line-num` that disagrees with its bet text. Fix the command and run it again. Do not try to get around the check.
 
 If the closing line cannot be found, omit `--closing-line` — the pick will resolve without CLV (better than blocking the whole resolve).
 
