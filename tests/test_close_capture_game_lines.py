@@ -182,5 +182,242 @@ class TestTwoWayGameLine(unittest.TestCase):
         self.assertIsNone(bp.two_way_game_line(lad, "spread", "SAS", 14.5))
 
 
+# ── game-line PICKS ──────────────────────────────────────────────────────────────
+
+tracker = _load("tracker")
+cc = _load("close_capture")
+clv_backfill = _load("clv_backfill")
+AZ = cc.AZ
+
+KNICKS = _team("NYK", "Knicks", "New York")
+MAGIC = _team("ORL", "Magic", "Orlando")
+JAZZ = _team("UTH", "Jazz", "Utah")
+LAKERS = _team("LAL", "Lakers", "Los Angeles")
+
+
+def _at(h, m, date="2026-10-25"):
+    y, mo, d = (int(x) for x in date.split("-"))
+    return datetime(y, mo, d, h, m, tzinfo=AZ)
+
+
+def _utc(h, m, day=25):
+    return datetime(2026, 10, day, h, m, tzinfo=timezone.utc)
+
+
+def nba_total_offer():
+    off = total_offer(over=((220.5, -105),), under=((220.5, -115),))
+    off.update(market_id=128, event_id=27927, participants=[MAGIC, KNICKS])
+    return off
+
+
+def _respread(event_id, away, home):
+    off = spread_offer()
+    off.update(event_id=event_id, participants=[away, home])
+    off["selections"][0]["participant"] = away["id"]
+    off["selections"][1]["participant"] = home["id"]
+    return off
+
+
+class FakeGameBoard:
+    """events_for / fetch_ladders seams over a small NBA 2026-10-25 slate.
+
+    LAC @ OKC and ORL @ NYK tip 23:00 UTC (16:00 AZ); LAL @ UTH at 21:00 UTC (14:00 AZ).
+    Market ids: 127 moneyline, 128 total, 129 spread."""
+
+    def __init__(self, offers=None):
+        self.events = [{"id": 27926, "start": _utc(23, 0)},
+                       {"id": 27927, "start": _utc(23, 0)},
+                       {"id": 27924, "start": _utc(21, 0)}]
+        self.offers = offers if offers is not None else {
+            (27926, 129): [spread_offer()], (27926, 127): [moneyline_offer()],
+            (27927, 128): [nba_total_offer()],
+            (27927, 129): [_respread(27927, MAGIC, KNICKS)],
+            (27924, 129): [_respread(27924, LAKERS, JAZZ)]}
+        self.calls = []
+
+    def events_for(self, date):
+        self.calls.append(("events", date))
+        return list(self.events) if date == "2026-10-25" else []
+
+    def fetch_ladders(self, event_id, market_id):
+        self.calls.append(("ladders", event_id, market_id))
+        return [bp.game_line_ladder(o) for o in self.offers.get((event_id, market_id), [])]
+
+    def ladder_calls(self):
+        return [c for c in self.calls if c[0] == "ladders"]
+
+
+MARKET_IDS = {"moneyline": 127, "total": 128, "spread": 129}
+
+
+def _gl(pid, bet, line_num, *, game_time="4:00 PM", date="2026-10-25", result=None,
+        bet_type=None, line="-110 @ FanDuel"):
+    return {"id": pid, "sport": "NBA", "bet": bet, "line_num": line_num, "line": line,
+            "units": 1, "date": date, "game_time": game_time, "result": result,
+            "bet_type": bet_type}
+
+
+def _capture(picks, now, board=None, snapshots=None):
+    board = board or FakeGameBoard()
+    snaps, report = cc.capture_game_lines(
+        picks, now, events_for=board.events_for, fetch_ladders=board.fetch_ladders,
+        market_for_kind=MARKET_IDS.get, classify_bet=tracker.classify_bet,
+        window_minutes=45, snapshots=snapshots or {})
+    return snaps, report, board
+
+
+class TestParseGameLineBet(unittest.TestCase):
+    def test_spread_reads_team_and_signed_line(self):
+        b = cc.parse_game_line_bet(_gl("s", "San Antonio Spurs +6.5 vs Oklahoma City Thunder "
+                                           "(WCF Game 1)", 6.5), "spread")
+        self.assertEqual((b["kind"], b["team_text"], b["line"]),
+                         ("spread", "San Antonio Spurs", 6.5))
+
+    def test_spread_whose_line_num_disagrees_with_the_text_is_refused(self):
+        self.assertIsInstance(cc.parse_game_line_bet(_gl("s", "Spurs +6.5 vs OKC", 7.5),
+                                                     "spread"), str)
+
+    def test_moneyline_needs_an_explicit_ml_marker(self):
+        b = cc.parse_game_line_bet(_gl("m", "New York Mets ML vs New York Yankees", 0.0), "ml")
+        self.assertEqual((b["kind"], b["team_text"], b["line"]),
+                         ("moneyline", "New York Mets", None))
+        self.assertIsInstance(cc.parse_game_line_bet(_gl("m", "Mets vs Yankees", 0.0), "ml"), str)
+
+    def test_total_reads_side_and_number_after_it(self):
+        b = cc.parse_game_line_bet(_gl("t", "CLE @ PHI Under 7.0 (correlated: Wheeler)", 7.0),
+                                   "total")
+        self.assertEqual((b["kind"], b["side"], b["line"]), ("total", "under", 7.0))
+        b = cc.parse_game_line_bet(_gl("t", "Over 8.5 Giants vs Diamondbacks (at Chase Field)",
+                                       8.5), "total")
+        self.assertEqual((b["side"], b["line"]), ("over", 8.5))
+
+    def test_total_with_a_line_num_that_is_not_the_total_is_refused(self):
+        # Real ledger rows carry line_num -7.5 and -125.0 on totals.
+        self.assertIsInstance(cc.parse_game_line_bet(
+            _gl("t", "Under 7.5 Guardians at Phillies", -7.5), "total"), str)
+
+    def test_partial_game_and_team_totals_are_refused(self):
+        for bet, kind in (("Clippers +7.5 1H vs Thunder", "spread"),
+                          ("Clippers +3.5 first half", "spread"),
+                          ("Knicks Under 110.5 team total", "total"),
+                          ("Yankees @ Red Sox Under 4.5 first 5 innings", "total"),
+                          ("Thunder ML 1st quarter", "ml")):
+            with self.subTest(bet=bet):
+                self.assertIsInstance(cc.parse_game_line_bet(_gl("x", bet, None), kind), str)
+
+
+class TestMatchTeams(unittest.TestCase):
+    def setUp(self):
+        self.parts = bp.game_line_ladder(spread_offer())["participants"]
+
+    def test_nickname_full_name_and_uppercase_abbreviation_match(self):
+        self.assertEqual(cc.match_teams("Clippers", self.parts), {"LAC"})
+        self.assertEqual(cc.match_teams("Oklahoma City Thunder", self.parts), {"OKC"})
+        self.assertEqual(cc.match_teams("LAC @ OKC", self.parts), {"LAC", "OKC"})
+
+    def test_city_alone_lowercase_abbreviation_and_substrings_do_not_match(self):
+        self.assertEqual(cc.match_teams("Los Angeles", self.parts), set())
+        self.assertEqual(cc.match_teams("okc lac", self.parts), set())
+        self.assertEqual(cc.match_teams("Clipperson", self.parts), set())
+
+
+class TestCaptureGameLinePicks(unittest.TestCase):
+    def test_spread_dog_is_captured_keyed_by_team_at_its_number(self):
+        snaps, report, _ = _capture([_gl("g1", "Clippers +14.5 vs Thunder", 14.5)],
+                                    _at(15, 50))
+        s = snaps["g1"]
+        self.assertEqual(s["close"], {"LAC": "-108", "OKC": "-112"})
+        self.assertEqual((s["side"], s["market"], s["line"], s["event_id"]),
+                         ("LAC", "spread", 14.5, 27926))
+        self.assertEqual((s["minutes_before_start"], s["vintage"], s["source"]),
+                         (10.0, "close", "bettingpros_consensus"))
+        self.assertEqual([r[1] for r in report], ["captured"])
+
+    def test_the_favourite_side_of_the_same_market_is_its_own_team(self):
+        snaps, _, _ = _capture([_gl("g2", "Oklahoma City Thunder -14.5 vs Clippers", -14.5)],
+                               _at(15, 50))
+        self.assertEqual(snaps["g2"]["side"], "OKC")
+        self.assertEqual(snaps["g2"]["close"], {"OKC": "-112", "LAC": "-108"})
+
+    def test_off_line_spread_is_unmeasured(self):
+        snaps, report, _ = _capture([_gl("g3", "Clippers +13.5 vs Thunder", 13.5)], _at(15, 50))
+        self.assertEqual(snaps, {})
+        self.assertIn("both sides", report[0][2])
+
+    def test_opponent_from_another_game_is_ambiguous_not_guessed(self):
+        snaps, report, _ = _capture([_gl("g4", "Clippers +14.5 vs Knicks", 14.5)], _at(15, 50))
+        self.assertEqual(snaps, {})
+        self.assertEqual(report[0][1], "skip")
+
+    def test_team_named_by_city_only_is_not_found(self):
+        snaps, report, _ = _capture([_gl("g5", "Los Angeles +14.5 vs Oklahoma City", 14.5)],
+                                    _at(15, 50))
+        self.assertEqual(snaps, {})
+        self.assertEqual(report[0][1], "skip")
+
+    def test_game_total_needs_both_teams_of_one_game(self):
+        snaps, _, _ = _capture([_gl("t1", "Magic @ Knicks Under 220.5", 220.5)], _at(15, 50))
+        self.assertEqual(snaps["t1"]["close"], {"under": "-115", "over": "-105"})
+        self.assertEqual((snaps["t1"]["side"], snaps["t1"]["market"]), ("under", "total"))
+        snaps, report, _ = _capture([_gl("t2", "Knicks Under 220.5 (game total)", 220.5)],
+                                    _at(15, 50))
+        self.assertEqual(snaps, {})
+
+    def test_moneyline_is_captured_both_sides(self):
+        snaps, _, _ = _capture([_gl("m1", "Clippers ML vs Thunder", 0.0, line="+750")],
+                               _at(15, 50))
+        self.assertEqual(snaps["m1"]["close"], {"LAC": "+700", "OKC": "-1100"})
+        self.assertEqual(snaps["m1"]["market"], "moneyline")
+        self.assertIsNone(snaps["m1"]["line"])
+
+    def test_outside_window_or_started_fetches_nothing(self):
+        for now in (_at(12, 0), _at(16, 1)):
+            with self.subTest(now=now):
+                snaps, report, board = _capture(
+                    [_gl("g1", "Clippers +14.5 vs Thunder", 14.5)], now)
+                self.assertEqual(snaps, {})
+                self.assertEqual(board.ladder_calls(), [])
+
+    def test_unparseable_bet_fetches_nothing(self):
+        snaps, report, board = _capture([_gl("g6", "Clippers +14.5 vs Thunder", 13.5)],
+                                        _at(15, 50))
+        self.assertEqual(snaps, {})
+        self.assertEqual(board.calls, [])
+
+    def test_no_game_time_is_timed_by_the_event(self):
+        snaps, _, _ = _capture([_gl("g7", "Clippers +14.5 vs Thunder", 14.5, game_time="")],
+                               _at(15, 50))
+        self.assertEqual(snaps["g7"]["minutes_before_start"], 10.0)
+        self.assertEqual(snaps["g7"]["start_source"], "event_scheduled")
+
+    def test_a_closer_existing_snapshot_is_kept(self):
+        prior = {"g1": {"close": {"LAC": "-110", "OKC": "-110"}, "minutes_before_start": 3.0}}
+        snaps, report, _ = _capture([_gl("g1", "Clippers +14.5 vs Thunder", 14.5)],
+                                    _at(15, 50), snapshots=prior)
+        self.assertEqual(snaps["g1"]["close"], {"LAC": "-110", "OKC": "-110"})
+        self.assertEqual(report[0][1], "keep")
+
+    def test_settled_and_prop_picks_are_not_touched(self):
+        picks = [_gl("g1", "Clippers +14.5 vs Thunder", 14.5, result="win"),
+                 _gl("p1", "Shai Gilgeous-Alexander Over 30.5 points", 30.5, bet_type="prop")]
+        snaps, report, board = _capture(picks, _at(15, 50))
+        self.assertEqual(snaps, {})
+        self.assertEqual(board.calls, [])
+
+
+class TestGameLineBackfill(unittest.TestCase):
+    """The captured close flows through the existing backfill with POWER de-vig."""
+
+    def test_moneyline_close_is_power_devigged_not_multiplicative(self):
+        pick = _gl("m1", "Clippers ML vs Thunder", 0.0, line="+750 @ FanDuel")
+        snaps, _, _ = _capture([pick], _at(15, 50))
+        self.assertTrue(clv_backfill.backfill_pick(pick, snaps["m1"]))
+        # Hand-checked: -1100/+700 power de-vig gives LAC fair 0.094143 (k = 1.13633);
+        # against +750 (0.117647) that is -19.98%. Multiplicative would say +2.00%.
+        self.assertAlmostEqual(pick["clv_devig"], -19.98, places=2)
+        self.assertEqual(pick["closing_line"], "+700")
+        self.assertAlmostEqual(pick["clv_pct_pts"], 0.74, places=2)
+
+
 if __name__ == "__main__":
     unittest.main()

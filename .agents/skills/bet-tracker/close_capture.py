@@ -30,6 +30,7 @@ market id and stay out until #109. Residential IP only — BettingPros 403s data
 
 import json
 import os
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 
@@ -227,6 +228,274 @@ def capture(picks, now, *, resolve_event, fetch_ladders, extract_prop, normalize
         report.append((pid, "captured",
                        f"T-{mins:.0f}m {close} ({snaps[pid]['vintage']})"))
 
+    return snaps, report
+
+
+# ── Game lines (#109) ────────────────────────────────────────────────────────────
+#
+# Moneyline, spread / run line and game total picks. Same capture rules as props
+# (strictly pre-game, closest-to-start wins, both sides at our number or nothing), plus
+# the matching a game line needs: which GAME (team names against the event's two
+# participants) and which TEAM (the side), from the bet text. Every step that cannot be
+# made with certainty leaves the pick unmeasured.
+
+# classify_bet's game-line tokens -> value_engine market kind. 'rl' (run line) is a
+# spread. The kind picks the de-vig (power for all three, ADR 0011) and the market id.
+GAME_LINE_KIND = {"ml": "moneyline", "spread": "spread", "rl": "spread", "total": "total"}
+
+# A partial-game or team market is NOT the full-game market BettingPros prices under
+# these ids. Capturing the full-game close for "Chiefs -3 1H" or "Knicks Under 110.5
+# team total" would be a close for a different bet, so these are refused outright.
+_PARTIAL_MARKET_RE = re.compile(
+    r"\b(1h|2h|1q|2q|3q|4q|1p|2p|3p|f5|first\s+(half|quarter|period|five|5)|"
+    r"second\s+(half|quarter|period)|1st\s+(half|quarter|period|5|five)|"
+    r"2nd\s+(half|quarter|period)|3rd\s+(quarter|period)|4th\s+quarter|"
+    r"half|quarter|period|innings?|team\s+total|alt(ernate)?)\b", re.IGNORECASE)
+
+# A signed handicap: the same test classify_bet's spread branch applies (|value| < 100
+# so an American price is never read as a spread).
+_HANDICAP_RE = re.compile(r"(?<![\w.])([+-]\d+(?:\.\d+)?)\b")
+
+
+def _depar(text):
+    return re.sub(r"\([^)]*\)|\[[^\]]*\]", " ", text or "")
+
+
+def _same_number(a, b):
+    try:
+        return abs(float(a) - float(b)) < 1e-9
+    except (TypeError, ValueError):
+        return False
+
+
+def parse_game_line_bet(pick, bet_kind):
+    """Read a game-line pick's market from its text -> dict, or a refusal reason (str).
+
+    `bet_kind` is tracker.classify_bet's token (ml / spread / rl / total). Returns
+    {"kind", "team_text", "side", "line", "text"}:
+      * moneyline: team_text = the words before an explicit ML / moneyline marker.
+        Without the marker there is no confident side (a bare "Mets -150" could be a
+        price or a typo), so it is refused.
+      * spread / run line: team_text = the words before the first signed handicap,
+        line = that handicap SIGNED AS THE BET READS (ADR 0008).
+      * total: side = the first Over/Under, line = the number right after it.
+    `line_num`, when present, must equal the text's number: logged picks carry
+    line_num values that are not the bet's line (odds stored as -125.0, -7.5 on an
+    Under 7.5), and a close taken at line_num would be the wrong line. Partial-game
+    (1H, quarter, F5) and team-total bets are refused: no full-game close fits them.
+    """
+    kind = GAME_LINE_KIND.get(bet_kind)
+    if kind is None:
+        return f"{bet_kind} is not a game line"
+    text = " ".join(_depar(pick.get("bet")).split())
+    if not text:
+        return "empty bet text"
+    if _PARTIAL_MARKET_RE.search(text):
+        return "partial-game or team market — no full-game close fits it"
+    line_num = pick.get("line_num")
+    out = {"kind": kind, "team_text": None, "side": None, "line": None, "text": text}
+    if kind == "moneyline":
+        m = re.search(r"\b(ml|moneyline|money\s+line)\b", text, flags=re.IGNORECASE)
+        if not m or not text[:m.start()].strip():
+            return "no team before an explicit ML marker"
+        out["team_text"] = text[:m.start()].strip()
+        return out
+    if kind == "spread":
+        if re.search(r"\b(over|under)\b", text, flags=re.IGNORECASE):
+            return "spread text names an Over/Under"
+        m = next((h for h in _HANDICAP_RE.finditer(text) if abs(float(h.group(1))) < 100),
+                 None)
+        if not m or not text[:m.start()].strip():
+            return "no team before a signed handicap"
+        line = float(m.group(1))
+        if line_num is not None and not _same_number(line_num, line):
+            return f"line_num {line_num} disagrees with the bet's {m.group(1)}"
+        out.update(team_text=text[:m.start()].strip(), line=line)
+        return out
+    m = re.search(r"\b(over|under)\s+(\d+(?:\.\d+)?)\b", text, flags=re.IGNORECASE)
+    if not m:
+        return "no Over/Under number"
+    sides = re.findall(r"\b(over|under)\b", text, flags=re.IGNORECASE)
+    if len(sides) != 1:
+        return "more than one Over/Under in the bet"
+    line = float(m.group(2))
+    if line_num is not None and not _same_number(line_num, line):
+        return f"line_num {line_num} disagrees with the bet's {m.group(2)}"
+    out.update(side=m.group(1).lower(), line=line,
+               text=(text[:m.start()] + " " + text[m.end():]).strip())
+    return out
+
+
+def _team_patterns(participant):
+    """(regex, flags) that name this team: its nickname, 'city nickname', or its
+    abbreviation in capitals. A city alone is deliberately NOT a match — 'Los Angeles'
+    is two NBA teams playing the same day (LAL, LAC)."""
+    pats = []
+    name, city = (participant.get("name") or "").strip(), (participant.get("city") or "").strip()
+    abbr = (participant.get("abbreviation") or participant.get("id") or "").strip()
+    edge = r"(?<![A-Za-z0-9]){}(?![A-Za-z0-9])"
+    if name:
+        pats.append((edge.format(re.escape(name).replace(r"\ ", r"\s+")), re.IGNORECASE))
+        if city:
+            full = re.escape(f"{city} {name}").replace(r"\ ", r"\s+")
+            pats.append((edge.format(full), re.IGNORECASE))
+    if abbr:
+        pats.append((edge.format(re.escape(abbr)), 0))
+    return pats
+
+
+def match_teams(text, participants):
+    """The participant ids (abbreviations) that `text` names. Pure."""
+    found = set()
+    for p in participants or []:
+        pid = p.get("id")
+        if pid and any(re.search(pat, text or "", flags) for pat, flags in _team_patterns(p)):
+            found.add(pid)
+    return found
+
+
+def capture_game_lines(picks, now, *, events_for, fetch_ladders, market_for_kind,
+                       classify_bet, window_minutes=45, snapshots=None, tz=AZ):
+    """Snapshot the two-way consensus close for open game-line picks of ONE sport.
+
+    Injected seams (live wiring in `capture_live`):
+      events_for(date) -> [{"id", "start": aware datetime}]   (the day's /events)
+      fetch_ladders(event_id, market_id) -> [bettingpros.game_line_ladder(...)]
+      market_for_kind(kind) -> market_id | None                (per sport)
+      classify_bet(pick) -> ml / spread / rl / total / prop    (tracker.classify_bet)
+
+    Matching, all of it required: the bet parses (`parse_game_line_bet`); exactly one
+    event starting inside the window has the bet's team (or, for a total, BOTH of the
+    bet's teams), and every team the text names belongs to that event; the consensus
+    prices both sides at the bet's own number (`bettingpros.two_way_game_line`).
+    Snapshot keys are the side ('LAC', or 'over'/'under') so clv_backfill de-vigs the
+    close with the power method for every game line (ADR 0011).
+
+    Returns (snapshots, report) like `capture`. Prop picks are not this function's.
+    """
+    import bettingpros as bp
+
+    snaps = dict(snapshots or {})
+    report = []
+    events_cache, ladder_cache = {}, {}
+    today = now.astimezone(tz).date().isoformat()
+
+    for p in picks:
+        pid = p.get("id")
+        if p.get("result") is not None:
+            continue
+        bet_kind = classify_bet(p)
+        if bet_kind not in GAME_LINE_KIND:
+            continue                                  # props are capture()'s
+        parsed = parse_game_line_bet(p, bet_kind)
+        if isinstance(parsed, str):
+            report.append((pid, "skip", parsed))
+            continue
+        kind = parsed["kind"]
+        market_id = market_for_kind(kind)
+        if market_id is None:
+            report.append((pid, "skip", f"no BettingPros {kind} market id for this sport"))
+            continue
+        start = parse_start(p, tz=tz)
+        if start is not None:
+            mins = (start - now).total_seconds() / 60.0
+            if not 0 < mins <= window_minutes:
+                report.append((pid, "skip", f"outside window ({mins:.0f}m to start)"
+                               if mins > 0 else f"already started ({-mins:.0f}m ago)"))
+                continue
+            if not should_replace(snaps.get(pid), mins):
+                report.append((pid, "keep", "existing snapshot is closer to first pitch"))
+                continue
+        elif (p.get("date") or "") < today:
+            report.append((pid, "skip", "no game_time and the pick's date has passed"))
+            continue
+
+        date = p.get("date")
+        if date not in events_cache:
+            try:
+                events_cache[date] = events_for(date) or []
+            except Exception as e:                     # noqa: BLE001 - network boundary
+                report.append((pid, "error", f"events fetch failed: {e}"))
+                continue
+        in_window = [ev for ev in events_cache[date] if ev.get("start") is not None
+                     and 0 < (ev["start"] - now).total_seconds() / 60.0 <= window_minutes]
+        if not in_window:
+            report.append((pid, "skip", "no event starting inside the window"))
+            continue
+
+        by_event, failed = {}, None
+        for ev in in_window:
+            ck = (ev["id"], market_id)
+            if ck not in ladder_cache:
+                try:
+                    ladder_cache[ck] = fetch_ladders(ev["id"], market_id) or []
+                except Exception as e:                 # noqa: BLE001 - network boundary
+                    failed = e
+                    break
+            by_event[ev["id"]] = ladder_cache[ck]
+        if failed is not None:
+            report.append((pid, "error", f"ladder fetch failed: {failed}"))
+            continue
+
+        def _teams(text, ladders):
+            out = set()
+            for lad in ladders:
+                out |= match_teams(text, lad.get("participants"))
+            return out
+
+        named = {eid: _teams(parsed["text"], lads) for eid, lads in by_event.items()}
+        named = {eid: t for eid, t in named.items() if t}
+        if len(named) != 1:
+            report.append((pid, "skip", "bet's teams not found in exactly one game "
+                                        f"starting inside the window ({len(named)} games)"))
+            continue
+        (event_id, teams), = named.items()
+        ladders = by_event[event_id]
+        if kind == "total":
+            all_ids = {pp.get("id") for lad in ladders for pp in lad.get("participants") or []}
+            if len(all_ids) != 2 or teams != all_ids:
+                report.append((pid, "skip", "a game total must name both teams of the game"))
+                continue
+            side_key = parsed["side"]
+        else:
+            side = _teams(parsed["team_text"], ladders)
+            if len(side) != 1:
+                report.append((pid, "skip", "bet side is not exactly one team of the game"))
+                continue
+            side_key, = side
+        candidates = [lad for lad in ladders if side_key in (lad.get("keys") or [])]
+        closes = [c for c in (bp.two_way_game_line(lad, kind, side_key, parsed["line"])
+                              for lad in candidates) if c is not None]
+        if len(closes) != 1:
+            # No pair (or, impossibly, two different pairs) at our number: not de-viggable.
+            report.append((pid, "skip", "line not priced on both sides"
+                           if not closes else "more than one consensus market matches"))
+            continue
+        close = closes[0]
+
+        start_source = "game_time"
+        if start is None:
+            start = next(ev["start"] for ev in in_window if ev["id"] == event_id)
+            start_source = "event_scheduled"
+        mins = (start - now).total_seconds() / 60.0
+        if not should_replace(snaps.get(pid), mins):
+            report.append((pid, "keep", "existing snapshot is closer to first pitch"))
+            continue
+        snaps[pid] = {
+            "close": close,
+            "side": side_key,
+            "market": kind,
+            "line": parsed["line"],
+            "event_id": event_id,
+            "captured_at": now.isoformat(),
+            "minutes_before_start": round(mins, 1),
+            "vintage": "close" if mins <= CLOSE_GRADE_MINUTES else "pre-close",
+            "source": "bettingpros_consensus",
+        }
+        if start_source != "game_time":
+            snaps[pid]["start_source"] = start_source
+        report.append((pid, "captured", f"T-{mins:.0f}m {kind} {side_key} {close} "
+                                        f"({snaps[pid]['vintage']})"))
     return snaps, report
 
 
