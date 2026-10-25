@@ -66,10 +66,16 @@ Agreement between public-facing pick sites, projection models, or analysts. Supp
 A Primary Edge supported by current market price evidence such as CLV, cross-book gaps, hard RLM, steam, or line value.
 
 ## Line-Value Edge
-The price currently available at a book beats the de-vigged Pinnacle (`book_id` 2) fair line by a threshold margin (≥2% for game lines, ≥3% for player props), expressed as projected CLV. Its canonical [[Primary Edge Type]] is `clv_value`. A [[Market-Confirmed Primary Edge]] computed purely from cross-book odds — it needs no [[Public Ticket Data]], so unlike [[Hard RLM]] it is sourceable on a [[Scheduled Run]] from the BettingPros `/offers` feed. The documented engine of [[V3-Value]].
+The price currently available at a retail sportsbook beats the [[Exchange Benchmark]] fair price at the same line by a threshold margin (≥2% for game lines, ≥3% for player props), expressed as projected CLV. Its canonical [[Primary Edge Type]] is `clv_value`. A [[Market-Confirmed Primary Edge]] computed purely from cross-book odds, sourceable on a [[Scheduled Run]] from the BettingPros `/offers` feed. The documented engine of [[V3-Value]]. Defined against de-vigged Pinnacle until 2026-10-24, when Pinnacle was found absent from the feed (ADR 0011).
+
+## Exchange Benchmark
+The median de-vigged two-way price across low-hold exchange venues (Novig, Kalshi, Polymarket, ProphetX) quoting the identical line, where each quote has hold of at most 3% and was updated within 60 minutes. At least 2 distinct operators are required; Polymarket and Polymarket US count as one. With fewer, the market has no benchmark and is skipped. [[V3-Value]]'s fair price (ADR 0011).
+
+## Observation Scan
+A deterministic run of the [[V3-Value]] engine that writes candidates to `v3-observations.json` instead of logging [[Pick]]s. Observations never count toward stats, the dashboard or the Daily Pick Cap, but they receive captured closes so their realized CLV can be measured. Runs for seven consecutive days ahead of a pre-registered review (ADR 0011).
 
 ## V3-Value
-The third pick-generation model, after V1-Trends and V2-Sharp: a pure CLV/+EV engine that logs a [[Pick]] only when an available price beats the de-vigged Pinnacle fair line — a [[Line-Value Edge]]. Optimizes for [[CLV-Positive +EV Candidate]]s and is judged by CLV (CLV+ rate, average CLV) and [[Sharp Score]], never short-run win rate. Its originating Primary Edges are `clv_value` and [[Cross-Book Prop Gap]]; [[Steam Move]] and consensus win probability are confirmation-only.
+The third pick-generation model, after V1-Trends and V2-Sharp: a pure CLV/+EV engine that logs a [[Pick]] only when an available retail price beats the [[Exchange Benchmark]] fair price — a [[Line-Value Edge]]. Originally benchmarked against de-vigged Pinnacle (ADR 0007); switched to the Exchange Benchmark in ADR 0011. Optimizes for [[CLV-Positive +EV Candidate]]s and is judged by CLV (CLV+ rate, average CLV) and [[Sharp Score]], never short-run win rate. Its originating Primary Edges are `clv_value` and [[Cross-Book Prop Gap]]; [[Steam Move]] and consensus win probability are confirmation-only.
 
 ## V4-Matchup
 The fourth pick-generation model: builds its own fair price from **matchup projections** — how a player or team performs against a specific opponent trait (defensive scheme, coverage type, defender, position-level defense), adjusted for injuries and availability — and logs a [[Pick]] when an available price beats that projection. Distinct from [[V3-Value]], whose fair price is the de-vigged market rather than a model. Scoped to NFL and NBA, covering player props, alt lines, spreads and totals. Runs under measurement mode and is judged by de-vigged CLV, never short-run win rate.
