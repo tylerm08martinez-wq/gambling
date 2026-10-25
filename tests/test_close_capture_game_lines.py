@@ -419,5 +419,224 @@ class TestGameLineBackfill(unittest.TestCase):
         self.assertAlmostEqual(pick["clv_pct_pts"], 0.74, places=2)
 
 
+# ── V3 OBSERVATIONS ──────────────────────────────────────────────────────────────
+
+v3 = _load("v3_scan")
+_LIVE = json.loads((_ROOT / "tests" / "fixtures" / "exchange_benchmark_offers.json").read_text())
+LIVE_NOW = datetime(2026, 10, 25, 2, 12, 0, tzinfo=timezone.utc)   # fixture pull time
+
+
+def _colts_offer():
+    """The live Colts @ Vikings moneyline without ProphetX (as test_v3_scan uses it)."""
+    off = copy.deepcopy(_LIVE["colts_vikings_moneyline"])
+    for sel in off["selections"]:
+        sel["books"] = [b for b in sel["books"] if b.get("id") != 38]
+    return off
+
+
+def _colts_observation(start_utc="2026-10-25T02:30:00Z"):
+    """The real scan's DraftKings Colts +260 observation, re-timed to start soon."""
+    board = lambda url: ({"events": [{"id": 22068, "scheduled": "2026-10-25 17:00:00",
+                                      "visitor": "IND", "home": "MIN"}]}
+                         if "/events" in url else
+                         {"offers": [_colts_offer()] if "market_id=1&" in url + "&" else [],
+                          "_pagination": {"total_pages": 1}})
+    result = v3.scan("2026-10-25", ["NFL"], LIVE_NOW, get_json=board, log=lambda m: None)
+    obs = next(o for o in result["observations"] if o["book_id"] == 12)
+    return dict(obs, start_utc=start_utc)
+
+
+def _spread_observation():
+    # DraftKings Thunder -14.5 at -105; scan row side B of a LAC/OKC spread market.
+    return {"id": "v3obs-okc", "sport": "NBA", "event_id": 27926, "market_id": 129,
+            "kind": "spread", "participant": "Thunder", "side": "Thunder", "selection": "b",
+            "line": -14.5, "book_id": 12, "odds": -105, "projected_clv": 0.021,
+            "start_utc": "2026-10-25T23:00:00Z", "close": None}
+
+
+def _okc_spread_offer(reorder=False):
+    off = spread_offer(extra={12: ((14.5, -115), (-14.5, -105)),
+                              60: ((14.5, 104), (-14.5, -106)),
+                              68: ((14.5, 104), (-14.5, -108))})
+    if reorder:
+        off["selections"].reverse()
+    return off
+
+
+def _restamp(off, ts):
+    for sel in off["selections"]:
+        for b in sel["books"]:
+            for ln in b["lines"]:
+                ln["updated"] = ts
+    return off
+
+
+class FakeOffers:
+    def __init__(self, offers):
+        self.offers, self.calls = offers, []
+
+    def __call__(self, sport, event_id, market_id):
+        self.calls.append((sport, event_id, market_id))
+        return copy.deepcopy(self.offers.get((sport, event_id, market_id), []))
+
+
+def _obs_capture(observations, now, offers, existing=None):
+    store = {"runs": [], "observations": observations}
+    fetch = FakeOffers(offers)
+    updates, report = cc.capture_observations(store, now, fetch_offers=fetch,
+                                              window_minutes=45)
+    return updates, report, fetch
+
+
+class TestObservationCloses(unittest.TestCase):
+    def test_moneyline_observation_gets_both_closes_and_realized_clvs(self):
+        obs = _colts_observation()
+        updates, report, _ = _obs_capture([obs], LIVE_NOW,
+                                          {("NFL", 22068, 1): [_colts_offer()]})
+        u = updates[obs["id"]]
+        close = u["close"]
+        self.assertEqual(close["side"], "Colts")
+        self.assertEqual(close["minutes_before_start"], 18.0)
+        # Same instant as the scan, so the exchange close IS the scan's benchmark:
+        # realized CLV against it equals the projected CLV the scan stored (+2.24%).
+        self.assertAlmostEqual(u["realized_clv_exchange"], obs["projected_clv"], places=6)
+        self.assertAlmostEqual(u["realized_clv_exchange"], 0.0224, delta=0.0005)
+        self.assertEqual(sorted(close["exchange"]["operators"], key=str), [60, 68, "polymarket"])
+        # Retail consensus +240 / -300, power de-vig: Colts fair 0.266916 (k 1.0793),
+        # against DraftKings +260 (0.277778) = -3.91%. Hand-checked.
+        self.assertEqual((close["retail_consensus"]["odds_side"],
+                          close["retail_consensus"]["odds_other"]), (240, -300))
+        self.assertAlmostEqual(close["retail_consensus"]["fair_p"], 0.266916, places=5)
+        self.assertAlmostEqual(u["realized_clv_retail"], -0.0391, places=4)
+        self.assertEqual([r[1] for r in report], ["captured"])
+
+    def test_spread_side_b_is_priced_at_its_own_signed_number(self):
+        obs = _spread_observation()
+        updates, _, _ = _obs_capture([obs], _utc(22, 50),
+                                     {("NBA", 27926, 129): [_okc_spread_offer()]})
+        u = updates["v3obs-okc"]
+        # Exchange: Novig 104/-106 and Kalshi 104/-108, power de-vigged, median OKC fair
+        # 0.513394; vs -105 (0.512195) = +0.234%. Retail -108/-112: OKC fair 0.504641,
+        # = -1.475%. Hand-checked.
+        self.assertAlmostEqual(u["close"]["exchange"]["fair_p"], 0.513394, places=5)
+        self.assertAlmostEqual(u["realized_clv_exchange"], 0.002341, places=5)
+        self.assertAlmostEqual(u["realized_clv_retail"], -0.014749, places=5)
+        self.assertEqual(u["close"]["retail_consensus"]["line"], -14.5)
+        self.assertEqual(u["close"]["retail_consensus"]["odds_side"], -112)
+
+    def test_feed_reordering_the_selections_never_swaps_the_side(self):
+        obs = _spread_observation()
+        a, _, _ = _obs_capture([obs], _utc(22, 50),
+                               {("NBA", 27926, 129): [_okc_spread_offer()]})
+        b, _, _ = _obs_capture([copy.deepcopy(obs)], _utc(22, 50),
+                               {("NBA", 27926, 129): [_okc_spread_offer(reorder=True)]})
+        self.assertAlmostEqual(a["v3obs-okc"]["realized_clv_exchange"],
+                               b["v3obs-okc"]["realized_clv_exchange"], places=9)
+        self.assertAlmostEqual(a["v3obs-okc"]["realized_clv_retail"],
+                               b["v3obs-okc"]["realized_clv_retail"], places=9)
+
+    def test_side_label_missing_from_the_market_is_unmeasured(self):
+        obs = dict(_spread_observation(), side="Spurs", participant="Spurs")
+        updates, report, _ = _obs_capture([obs], _utc(22, 50),
+                                          {("NBA", 27926, 129): [_okc_spread_offer()]})
+        self.assertEqual(updates, {})
+        self.assertEqual(report[0][1], "skip")
+
+    def test_prop_observation_is_matched_to_its_own_player(self):
+        def prop(player, cost_over, cost_under):
+            return {"participants": [{"id": player, "name": player}],
+                    "selections": [
+                        _sel("Over", {0: [_line(24.5, cost_over)],
+                                      60: [_line(24.5, 100)], 68: [_line(24.5, 102)]}),
+                        _sel("Under", {0: [_line(24.5, cost_under)],
+                                       60: [_line(24.5, -110)], 68: [_line(24.5, -112)]})]}
+        obs = {"id": "v3obs-p", "sport": "NBA", "event_id": 27926, "market_id": 156,
+               "kind": "prop", "participant": "Jalen Williams", "side": "Over",
+               "selection": "a", "line": 24.5, "book_id": 10, "odds": 110,
+               "start_utc": "2026-10-25T23:00:00Z", "close": None}
+        offers = {("NBA", 27926, 156): [prop("Chet Holmgren", -150, 120),
+                                        prop("Jalen Williams", -110, -110)]}
+        updates, _, _ = _obs_capture([obs], _utc(22, 50), offers)
+        rc = updates["v3obs-p"]["close"]["retail_consensus"]
+        self.assertEqual((rc["odds_side"], rc["odds_other"]), (-110, -110))
+        self.assertAlmostEqual(rc["fair_p"], 0.5, places=9)   # multiplicative, -110/-110
+
+    def test_no_benchmark_leaves_the_exchange_close_unmeasured(self):
+        off = _okc_spread_offer()
+        for sel in off["selections"]:
+            sel["books"] = [b for b in sel["books"] if b["id"] != 68]   # 1 operator left
+        updates, _, _ = _obs_capture([_spread_observation()], _utc(22, 50),
+                                     {("NBA", 27926, 129): [off]})
+        u = updates["v3obs-okc"]
+        self.assertIsNone(u["close"]["exchange"])
+        self.assertIsNone(u["realized_clv_exchange"])
+        self.assertIsNotNone(u["realized_clv_retail"])
+
+    def test_neither_close_available_writes_nothing(self):
+        off = _okc_spread_offer()
+        for sel in off["selections"]:
+            sel["books"] = [b for b in sel["books"] if b["id"] not in (0, 68)]
+        updates, report, _ = _obs_capture([_spread_observation()], _utc(22, 50),
+                                          {("NBA", 27926, 129): [off]})
+        self.assertEqual(updates, {})
+        self.assertEqual(report[0][1], "skip")
+
+    def test_outside_window_or_started_is_not_fetched(self):
+        for now in (_utc(20, 0), _utc(23, 1)):
+            with self.subTest(now=now):
+                updates, report, fetch = _obs_capture(
+                    [_spread_observation()], now, {("NBA", 27926, 129): [_okc_spread_offer()]})
+                self.assertEqual(updates, {})
+                self.assertEqual(fetch.calls, [])
+
+    def test_each_close_keeps_the_capture_closest_to_start(self):
+        obs = _spread_observation()
+        early = _restamp(_okc_spread_offer(), "2026-10-25 22:25:00")
+        first, _, _ = _obs_capture([obs], _utc(22, 30), {("NBA", 27926, 129): [early]})
+        cc.apply_observation_updates({"observations": [obs]}, first)
+        self.assertEqual(obs["close"]["exchange"]["minutes_before_start"], 30.0)
+        # Ten minutes later the exchanges have gone quiet: retail is replaced by the
+        # closer capture, but the T-30 exchange close is kept rather than erased.
+        off = _okc_spread_offer()
+        for sel in off["selections"]:
+            sel["books"] = [b for b in sel["books"] if b["id"] != 68]
+        later, _, _ = _obs_capture([obs], _utc(22, 50), {("NBA", 27926, 129): [off]})
+        cc.apply_observation_updates({"observations": [obs]}, later)
+        self.assertEqual(obs["close"]["exchange"]["minutes_before_start"], 30.0)
+        self.assertEqual(obs["close"]["retail_consensus"]["minutes_before_start"], 10.0)
+        self.assertIsNotNone(obs["realized_clv_exchange"])
+        # A capture further from the start than what is stored changes nothing.
+        stale, report, _ = _obs_capture([obs], _utc(22, 20),
+                                        {("NBA", 27926, 129): [_okc_spread_offer()]})
+        self.assertEqual(stale, {})
+        self.assertEqual(report[0][1], "keep")
+
+    def test_capture_never_touches_the_first_seen_price(self):
+        obs = _colts_observation()
+        before = {k: v for k, v in obs.items() if k != "close"}
+        updates, _, _ = _obs_capture([obs], LIVE_NOW, {("NFL", 22068, 1): [_colts_offer()]})
+        cc.apply_observation_updates({"observations": [obs]}, updates)
+        after = {k: v for k, v in obs.items()
+                 if k not in ("close", "realized_clv_exchange", "realized_clv_retail")}
+        self.assertEqual(after, before)
+
+    def test_saving_rereads_the_file_so_a_concurrent_scan_row_survives(self):
+        obs = _spread_observation()
+        updates, _, _ = _obs_capture([obs], _utc(22, 50),
+                                     {("NBA", 27926, 129): [_okc_spread_offer()]})
+        with tempfile.TemporaryDirectory() as d:
+            path = str(Path(d) / "v3-observations.json")
+            late = dict(_spread_observation(), id="v3obs-late")
+            v3.save_store(path, {"runs": [{"scan_date": "2026-10-25"}],
+                                 "observations": [_spread_observation(), late]})
+            n = cc.save_observation_closes(path, updates)
+            saved = v3.load_store(path)
+        self.assertEqual(n, 1)
+        self.assertEqual([o["id"] for o in saved["observations"]], ["v3obs-okc", "v3obs-late"])
+        self.assertIsNotNone(saved["observations"][0]["close"])
+        self.assertIsNone(saved["observations"][1]["close"])
+        self.assertEqual(saved["runs"], [{"scan_date": "2026-10-25"}])
+
+
 if __name__ == "__main__":
     unittest.main()
