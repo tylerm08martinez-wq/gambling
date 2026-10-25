@@ -174,8 +174,12 @@ fi
 if [ -f "$V3_OBS" ] && [ -n "$(git status --porcelain -- "$V3_OBS")" ]; then
   git add -- "$V3_OBS"
   git commit -m "chore: V3 observation scan for $TODAY" -- "$V3_OBS" 2>&1 | tee -a "$LOG" || true
+  # A rejected push (origin moved since the morning pull) gets one rebase + retry.
   if ! git push origin main 2>&1 | tee -a "$LOG"; then
-    notify_failure "⚠️ Daily Bet Picks: V3 observations for $TODAY committed locally but PUSH FAILED on $(hostname)."
+    if ! { git pull --rebase --autostash origin main 2>&1 | tee -a "$LOG" \
+           && git push origin main 2>&1 | tee -a "$LOG"; }; then
+      notify_failure "⚠️ Daily Bet Picks: V3 observations for $TODAY committed locally but PUSH FAILED (after a rebase retry) on $(hostname)."
+    fi
   fi
 fi
 # ---------------------------------------------------------------------------

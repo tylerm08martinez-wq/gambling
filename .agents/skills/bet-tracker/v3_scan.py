@@ -19,9 +19,14 @@ information only.
 
 Without --apply it prints the result and writes nothing. With --apply it appends a run
 row and every not-yet-seen observation to the output file. Re-running the same day
-never duplicates a row and never overwrites a first-seen price. Exit status 2 when the
-scan failed loudly (a sport with events returned zero offers on every market, which is
-what a wrong market id or an outage looks like). Residential IP only (ADR 0006).
+never duplicates a row and never overwrites a first-seen price.
+
+Run status and exit code: `ok` (0) only for a clean board; `degraded` (3) when any
+request failed but the scan finished; `failed` (2) when the scan stopped early (past
+--deadline-sec, default 300s, or after 5 consecutive failed requests), crashed, or a
+sport with events returned zero offers on every market (what a wrong market id or an
+outage looks like). Every outcome, a crash included, still writes its run row under
+--apply. Residential IP only (ADR 0006).
 """
 
 import argparse
@@ -29,6 +34,7 @@ import hashlib
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -133,91 +139,175 @@ def observation_id(scan_date, event_id, market_id, participant, line, side, book
     return "v3obs-" + hashlib.sha1(key.encode("utf-8")).hexdigest()[:16]
 
 
-def scan(scan_date, sports, now, get_json=None, log=None):
+DEFAULT_DEADLINE_SEC = 300       # the scan runs before V1/V2; it must never delay them
+MAX_CONSECUTIVE_FAILURES = 5     # this many failed requests in a row = the feed is down
+
+
+class _StopScan(Exception):
+    """Raised between fetches when the scan must stop (deadline or a dead feed)."""
+
+
+class _Fetcher:
+    """Wraps get_json: counts failed requests and enforces the stop conditions.
+
+    Checked before every request: the wall-clock deadline (`clock` is monotonic
+    seconds, injectable for tests) and the consecutive-failure limit. A request that
+    returns nothing is a failure; any successful response resets the streak."""
+
+    def __init__(self, get_json, deadline_sec, clock, max_consecutive):
+        self.get_json, self.clock = get_json, clock
+        self.deadline_sec, self.max_consecutive = deadline_sec, max_consecutive
+        self.started = clock()
+        self.requests = self.failures = self.streak = 0
+
+    def __call__(self, url):
+        elapsed = self.clock() - self.started
+        if self.deadline_sec is not None and elapsed > self.deadline_sec:
+            raise _StopScan(f"deadline of {self.deadline_sec:g}s exceeded after "
+                            f"{self.requests} requests; scan stopped early")
+        self.requests += 1
+        data = self.get_json(url)
+        if data:
+            self.streak = 0
+            return data
+        self.failures += 1
+        self.streak += 1
+        if self.streak >= self.max_consecutive:
+            raise _StopScan(f"{self.streak} consecutive failed requests "
+                            f"(last: {url}); scan stopped early")
+        return data
+
+
+def _has_benchmark(quotes, kind, now):
+    """True if any line in this market has an Exchange Benchmark, retail quote or not."""
+    lines = {None} if kind == "moneyline" else {
+        q.get("line") for q in quotes if q.get("book_id") in ve.BENCHMARK_BOOKS}
+    return any(ve.exchange_benchmark(quotes, line, kind, now) for line in lines)
+
+
+def _run_row(scan_date, scanned_at, sports, errors, failures=0, **counts):
+    status = "failed" if errors else ("degraded" if failures else "ok")
+    row = {"scan_date": scan_date, "scanned_at": scanned_at, "sports": list(sports)}
+    row.update(counts)
+    row.update(fetch_failures=failures, errors=errors, status=status)
+    return row
+
+
+def failed_run(scan_date, sports, now, error):
+    """The run row for a scan that crashed before it could count anything."""
+    return _run_row(scan_date, _iso_z(now), sports, [error], events_by_sport={},
+                    events_started=0, markets_scanned=0, markets_with_benchmark=0,
+                    markets_scored=0, candidates=0, offers_by_market={})
+
+
+def scan(scan_date, sports, now, get_json=None, log=None,
+         deadline_sec=DEFAULT_DEADLINE_SEC, clock=None,
+         max_consecutive_failures=MAX_CONSECUTIVE_FAILURES):
     """Scan the board for `scan_date` -> {"run": run_row, "observations": [...]}.
 
     `now` must be timezone-aware; events starting at or before it are skipped. `log`
-    receives one progress line per market (default: stderr)."""
+    receives one progress line per market (default: stderr).
+
+    Run status: `ok` only for a clean board; `degraded` when any request failed but
+    the scan finished; `failed` when it stopped early (past `deadline_sec`, or after
+    `max_consecutive_failures` failed requests in a row) or hit a zero-offer / no-event
+    condition. Observations collected before an early stop are kept: they are real
+    prices.
+
+    Counts: `markets_scanned` is every /offers market (one per player for props);
+    `markets_with_benchmark` those with an Exchange Benchmark at any line;
+    `markets_scored` those where a fresh retail price was priced against it."""
     ve._require_aware(now)
-    get_json = get_json or bp._live_get_json
+    fetch = _Fetcher(get_json or bp._live_get_json, deadline_sec,
+                     clock or time.monotonic, max_consecutive_failures)
     log = log or (lambda msg: print(msg, file=sys.stderr))
     scanned_at = _iso_z(now)
     observations, errors = [], []
     events_by_sport, offers_by_market = {}, {}
-    events_started = markets_scanned = markets_with_benchmark = fetch_failures = 0
-    for sport in sports:
-        events = bp.fetch_events(sport, scan_date, get_json=get_json)
-        events_by_sport[sport] = len(events)
-        upcoming = []
-        for event in events:
-            start = _parse_utc(event.get("scheduled"))
-            if start is None or start <= now:
-                events_started += 1
-            else:
-                upcoming.append((event, start))
-        sport_offers = 0
-        for market_id, kind, stat in MARKETS[sport]:
-            gate = ve.gate_threshold(kind)
-            market_offers = 0
-            for event, start in upcoming:
-                offers, ok = fetch_offer_pages(sport, event["id"], market_id, get_json)
-                fetch_failures += 0 if ok else 1
-                market_offers += len(offers)
-                for offer in offers:
-                    parsed = ve.quotes_from_offer(offer, kind)
-                    if not parsed["labels"]:
-                        continue
-                    markets_scanned += 1
-                    rows = ve.scan_market(parsed["quotes"], kind, now)
-                    markets_with_benchmark += 1 if rows else 0
-                    for row in rows:
-                        if row["clv"] < gate:
-                            continue
-                        side = parsed["labels"][0 if row["side"] == "a" else 1]
-                        participant, bet = _participant_and_bet(
-                            offer, kind, stat, side, row["line"], event)
-                        observations.append({
-                            "id": observation_id(scan_date, event["id"], market_id,
-                                                 participant, row["line"], side,
-                                                 row["book_id"]),
-                            "scan_date": scan_date, "scanned_at": scanned_at,
-                            "sport": sport, "event_id": event["id"],
-                            "event": f"{event.get('visitor')} @ {event.get('home')}",
-                            "start_utc": _iso_z(start), "market_id": market_id,
-                            "market": stat, "kind": kind, "participant": participant,
-                            "bet": bet, "line": row["line"], "side": side,
-                            "selection": row["side"], "book_id": row["book_id"],
-                            "book": _book_name(row["book_id"]), "odds": row["odds"],
-                            "p_best": round(row["p_best"], 6),
-                            "fair_p": round(row["fair_p"], 6),
-                            "projected_clv": round(row["clv"], 6), "gate": gate,
-                            "units_kelly": row["units"],
-                            "benchmark_operators": row["operators"],
-                            "quote_updated": row["updated"],
-                            "quote_age_min": round(row["quote_age_min"], 1),
-                            "benchmark_max_age_min": round(row["benchmark_max_age_min"], 1),
-                            "close": None,
-                        })
-            offers_by_market[f"{sport}:{market_id}"] = market_offers
-            sport_offers += market_offers
-            if upcoming:
-                log(f"  {sport} market {market_id} ({stat}): {market_offers} offers "
-                    f"across {len(upcoming)} events")
-        if upcoming and sport_offers == 0:
-            errors.append(f"{sport}: zero offers on every market across {len(upcoming)} "
-                          "not-started events (wrong market ids or a feed outage)")
-    if sports and not any(events_by_sport.values()):
-        errors.append(f"no events for any of {', '.join(sports)} on {scan_date} "
-                      "(events feed outage?)")
-    run = {
-        "scan_date": scan_date, "scanned_at": scanned_at, "sports": list(sports),
-        "events_by_sport": events_by_sport, "events_started": events_started,
-        "markets_scanned": markets_scanned, "markets_with_benchmark": markets_with_benchmark,
-        "candidates": len(observations), "offers_by_market": offers_by_market,
-        "fetch_failures": fetch_failures, "errors": errors,
-        "status": "failed" if errors else "ok",
-    }
+    counts = {"events_started": 0, "markets_scanned": 0, "markets_with_benchmark": 0,
+              "markets_scored": 0}
+    try:
+        for sport in sports:
+            _scan_sport(sport, scan_date, now, fetch, log, scanned_at, observations,
+                        errors, events_by_sport, offers_by_market, counts)
+        if sports and not any(events_by_sport.values()):
+            errors.append(f"no events for any of {', '.join(sports)} on {scan_date} "
+                          "(events feed outage?)")
+    except _StopScan as stop:
+        errors.append(str(stop))
+        log(f"  STOPPED: {stop}")
+    run = _run_row(scan_date, scanned_at, sports, errors, fetch.failures,
+                   events_by_sport=events_by_sport, candidates=len(observations),
+                   offers_by_market=offers_by_market, requests=fetch.requests, **counts)
     return {"run": run, "observations": observations}
+
+
+def _scan_sport(sport, scan_date, now, fetch, log, scanned_at, observations, errors,
+                events_by_sport, offers_by_market, counts):
+    events = bp.fetch_events(sport, scan_date, get_json=fetch)
+    events_by_sport[sport] = len(events)
+    upcoming = []
+    for event in events:
+        start = _parse_utc(event.get("scheduled"))
+        if start is None or start <= now:
+            counts["events_started"] += 1
+        else:
+            upcoming.append((event, start))
+    sport_offers = 0
+    for market_id, kind, stat in MARKETS[sport]:
+        gate = ve.gate_threshold(kind)
+        market_offers = 0
+        for event, start in upcoming:
+            offers, _ok = fetch_offer_pages(sport, event["id"], market_id, fetch)
+            market_offers += len(offers)
+            for offer in offers:
+                parsed = ve.quotes_from_offer(offer, kind)
+                if not parsed["labels"]:
+                    continue
+                counts["markets_scanned"] += 1
+                counts["markets_with_benchmark"] += _has_benchmark(parsed["quotes"], kind, now)
+                rows = ve.scan_market(parsed["quotes"], kind, now)
+                counts["markets_scored"] += 1 if rows else 0
+                for row in rows:
+                    if row["clv"] >= gate:
+                        observations.append(_observation(
+                            row, parsed["labels"], offer, kind, stat, gate, event, start,
+                            sport, market_id, scan_date, scanned_at))
+        offers_by_market[f"{sport}:{market_id}"] = market_offers
+        sport_offers += market_offers
+        if upcoming:
+            log(f"  {sport} market {market_id} ({stat}): {market_offers} offers "
+                f"across {len(upcoming)} events")
+    if upcoming and sport_offers == 0:
+        errors.append(f"{sport}: zero offers on every market across {len(upcoming)} "
+                      "not-started events (wrong market ids or a feed outage)")
+
+
+def _observation(row, labels, offer, kind, stat, gate, event, start, sport, market_id,
+                 scan_date, scanned_at):
+    side = labels[0 if row["side"] == "a" else 1]
+    participant, bet = _participant_and_bet(offer, kind, stat, side, row["line"], event)
+    return {
+        "id": observation_id(scan_date, event["id"], market_id, participant, row["line"],
+                             side, row["book_id"]),
+        "scan_date": scan_date, "scanned_at": scanned_at,
+        "sport": sport, "event_id": event["id"],
+        "event": f"{event.get('visitor')} @ {event.get('home')}",
+        "start_utc": _iso_z(start), "market_id": market_id,
+        "market": stat, "kind": kind, "participant": participant,
+        "bet": bet, "line": row["line"], "side": side,
+        "selection": row["side"], "book_id": row["book_id"],
+        "book": _book_name(row["book_id"]), "odds": row["odds"],
+        "p_best": round(row["p_best"], 6),
+        "fair_p": round(row["fair_p"], 6),
+        "projected_clv": round(row["clv"], 6), "gate": gate,
+        "units_kelly": row["units"],
+        "benchmark_operators": row["operators"],
+        "quote_updated": row["updated"],
+        "quote_age_min": round(row["quote_age_min"], 1),
+        "benchmark_max_age_min": round(row["benchmark_max_age_min"], 1),
+        "close": None,
+    }
 
 
 # ==================================================================================
@@ -266,12 +356,17 @@ def save_store(path, store):
 # ==================================================================================
 # CLI
 # ==================================================================================
-def main(argv=None, get_json=None, now=None):
+EXIT_CODES = {"ok": 0, "failed": 2, "degraded": 3}
+
+
+def main(argv=None, get_json=None, now=None, clock=None):
     ap = argparse.ArgumentParser(description="V3 Observation Scan (ADR 0011, #108)")
     ap.add_argument("--date", required=True, help="slate date, YYYY-MM-DD")
     ap.add_argument("--sports", default="NBA,NFL,MLB", help="comma list (default NBA,NFL,MLB)")
     ap.add_argument("--apply", action="store_true", help="write to --out (default: print only)")
     ap.add_argument("--out", default=OBSERVATIONS_FILE, help="observations file path")
+    ap.add_argument("--deadline-sec", type=float, default=DEFAULT_DEADLINE_SEC,
+                    help=f"stop the scan after this many seconds (default {DEFAULT_DEADLINE_SEC})")
     args = ap.parse_args(argv)
     try:
         datetime.strptime(args.date, "%Y-%m-%d")
@@ -284,7 +379,13 @@ def main(argv=None, get_json=None, now=None):
     now = now or datetime.now(timezone.utc)
     print(f"V3 Observation Scan {args.date} at {_iso_z(now)} ({', '.join(sports)})",
           file=sys.stderr)
-    result = scan(args.date, sports, now, get_json=get_json)
+    try:
+        result = scan(args.date, sports, now, get_json=get_json,
+                      deadline_sec=args.deadline_sec, clock=clock)
+    except Exception as exc:   # a crash still leaves a failed run row for the review
+        error = f"scan crashed: {type(exc).__name__}: {exc}"
+        print(f"ERROR: {error}", file=sys.stderr)
+        result = {"run": failed_run(args.date, sports, now, error), "observations": []}
     run = result["run"]
     if args.apply:
         store = merge(load_store(args.out), result)
@@ -294,10 +395,11 @@ def main(argv=None, get_json=None, now=None):
     for err in run["errors"]:
         print(f"ERROR: {err}", file=sys.stderr)
     print(f"status={run['status']} markets_scanned={run['markets_scanned']} "
-          f"with_benchmark={run['markets_with_benchmark']} candidates={run['candidates']}"
+          f"with_benchmark={run['markets_with_benchmark']} scored={run['markets_scored']} "
+          f"candidates={run['candidates']} fetch_failures={run['fetch_failures']}"
           + (f" new={run['new_observations']} -> {args.out}" if args.apply else " (dry run)"),
           file=sys.stderr)
-    return 0 if run["status"] == "ok" else 2
+    return EXIT_CODES.get(run["status"], 2)
 
 
 if __name__ == "__main__":
