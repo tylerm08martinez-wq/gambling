@@ -88,21 +88,30 @@ if ! python3 "$PROJECT_DIR/.agents/skills/bet-tracker/bettingpros.py" props MLB 
 fi
 
 # Shared lock with capture-closes.sh (every 15 min, including 09:00): it writes
-# closing_lines.json, which the pull below autostashes and the backfill commit stages.
-# Held for the pull + backfill + commit/push only, then released BEFORE the long claude
-# step so captures for 9:15-10:00 starts (NFL Sunday 10am kickoffs) are not skipped.
-# capture-closes waits for nothing (flock -n); this side waits up to 10 minutes, longer
-# than capture's own 300s timeout. No flock (stock macOS) = run unlocked, as before.
+# closing_lines.json, which the pulls below autostash and the backfill commit stages.
+# Held around this script's two git sections only — the pull + CLV backfill
+# commit/push, and the V3 observations commit + push + rebase retry — and released
+# BEFORE the long claude step, so captures for 9:15-10:00 starts (NFL Sunday 10am
+# kickoffs) are not skipped. capture-closes waits for nothing (flock -n); this side
+# waits up to 10 minutes, longer than capture's own 300s timeout. No flock (stock
+# macOS) = run unlocked, as before. The lock lives on fd 9 and also drops on exit.
 TRACKER_LOCK="$PROJECT_DIR/scripts/.tracker.lock"
-if command -v flock >/dev/null 2>&1; then
-  exec 9>"$TRACKER_LOCK"
-  if ! flock -w 600 9; then
-    echo "❌ scripts/.tracker.lock still held after 10 min — aborting before git pull" | tee -a "$LOG"
-    exit 1
+tracker_lock_take() {  # $1 = what is about to run, for the log
+  if command -v flock >/dev/null 2>&1; then
+    exec 9>"$TRACKER_LOCK"
+    if ! flock -w 600 9; then
+      echo "❌ scripts/.tracker.lock still held after 10 min — aborting before $1" | tee -a "$LOG"
+      exec 9>&-
+      return 1
+    fi
+  else
+    echo "⚠️  flock not found — $1 runs without scripts/.tracker.lock" | tee -a "$LOG"
   fi
-else
-  echo "⚠️  flock not found — pull/backfill run without scripts/.tracker.lock" | tee -a "$LOG"
-fi
+}
+tracker_lock_release() {
+  exec 9>&-
+}
+tracker_lock_take "git pull" || exit 1
 
 # --autostash is load-bearing, not defensive: capture-closes.sh deliberately
 # leaves closing_lines.json uncommitted (see its header), and the CLV backfill
@@ -134,8 +143,8 @@ if python3 "$PROJECT_DIR/.agents/skills/bet-tracker/tracker.py" \
   fi
 fi
 
-# Release the tracker lock (see above) before the long-running claude step.
-exec 9>&-
+# Release the tracker lock (see above); the V3 section below takes it again.
+tracker_lock_release
 
 # The routine prompt: execute the betting skills exactly as written. Mirrors the
 # retired cloud trigger's prompt. Requires the `claude` CLI + Slack MCP on this host.
@@ -197,8 +206,8 @@ fi
 # aborts the rebase and checks HEAD is back on main.
 # Returns 0 pushed; 1 push failed but HEAD is on main (alerted, picks continue);
 # 2 HEAD could not be restored to main (alerted; the caller must stop the run).
+# The caller holds scripts/.tracker.lock around the commit + this push/retry.
 v3_push_observations() {
-  # TODO(#112): take scripts/.tracker.lock around this retry once #112 lands
   if git push origin main 2>&1 | tee -a "$LOG"; then
     return 0
   fi
@@ -218,16 +227,23 @@ v3_push_observations() {
   return 1
 }
 if [ -f "$V3_OBS" ] && [ -n "$(git status --porcelain -- "$V3_OBS")" ]; then
+  # The retry pulls with --autostash, which would race a capture writing
+  # closing_lines.json, so the commit + push + retry hold the shared lock.
+  tracker_lock_take "the V3 observations commit/push" || exit 1
   git add -- "$V3_OBS"
   git commit -m "chore: V3 observation scan for $TODAY" -- "$V3_OBS" 2>&1 | tee -a "$LOG" || true
   v3_push_rc=0
   v3_push_observations || v3_push_rc=$?
+  tracker_lock_release
   if [ "$v3_push_rc" -eq 2 ]; then
     echo "❌ HEAD is not on main after the V3 push retry — stopping before claude -p." | tee -a "$LOG"
     exit 1
   fi
 fi
 # ---------------------------------------------------------------------------
+
+# Never hold scripts/.tracker.lock through the claude step (idempotent if already free).
+tracker_lock_release
 
 # Headless/unattended: no TTY to approve tool prompts, so skip permission prompts.
 # Safe here — this is your own machine running your own repo's skills, which have

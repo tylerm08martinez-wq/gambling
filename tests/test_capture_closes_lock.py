@@ -79,5 +79,68 @@ class TestSharedLockFile(unittest.TestCase):
         self.assertEqual(r.returncode, 0, f"{LOCK_REL} must be gitignored")
 
 
+
+class TestDailyRunLockSections(unittest.TestCase):
+    """run-daily-picks.sh holds scripts/.tracker.lock around BOTH of its git sections —
+    the morning pull + CLV backfill commit/push, and the V3 observations commit + push +
+    rebase retry (#114) — and has released it before the long `claude -p` step on every
+    path, so captures for 9:15-10:00 starts still run."""
+
+    def setUp(self):
+        self.lines = DAILY.read_text().splitlines()
+
+    def _at(self, needle, start=0):
+        for i in range(start, len(self.lines)):
+            if needle in self.lines[i] and not self.lines[i].lstrip().startswith("#"):
+                return i
+        self.fail(f"{needle!r} not found after line {start}")
+
+    def test_both_git_sections_sit_inside_a_take_release_pair(self):
+        take1 = self._at('tracker_lock_take "')
+        pull = self._at('git pull --rebase --autostash origin main 2>&1 | tee -a "$LOG"', take1)
+        backfill = self._at("backfill-clv", pull)
+        bf_push = self._at("git push origin main", backfill)
+        rel1 = self._at("tracker_lock_release", bf_push)
+        take2 = self._at('tracker_lock_take "', rel1)
+        v3_add = self._at('git add -- "$V3_OBS"', take2)
+        v3_commit = self._at('git commit -m "chore: V3 observation scan', v3_add)
+        v3_push = self._at("v3_push_observations ||", v3_commit)
+        rel2 = self._at("tracker_lock_release", v3_push)
+        stop = self._at("exit 1", rel2)            # the rc == 2 "HEAD off main" stop
+        claude = self._at('claude -p "$PROMPT"', stop)
+        self.assertLess(rel2, stop, "lock must be released before the rc==2 exit path")
+        # Nothing may take the lock again between the last release and claude -p.
+        between = self.lines[rel2 + 1:claude]
+        self.assertFalse([l for l in between if "tracker_lock_take" in l and not l.lstrip().startswith("#")])
+        self.assertIn("tracker_lock_release", "\n".join(between),
+                      "a final unconditional release must precede claude -p")
+
+    def test_the_v3_retry_todo_is_resolved(self):
+        self.assertNotIn("TODO(#112)", DAILY.read_text())
+
+    @unittest.skipUnless(shutil.which("flock") and shutil.which("bash"), "needs flock + bash")
+    def test_take_holds_the_lock_and_release_frees_it(self):
+        text = DAILY.read_text()
+        funcs = []
+        for name in ("tracker_lock_take", "tracker_lock_release"):
+            start = text.index(f"{name}() {{")
+            end = text.index("\n}\n", start) + 3
+            funcs.append(text[start:end])
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            script = "\n".join([
+                f'TRACKER_LOCK="{tmp}/.tracker.lock"', f'LOG="{tmp}/log"', *funcs,
+                'tracker_lock_take "test" || exit 3',
+                'flock -n "$TRACKER_LOCK" true && echo LEAKED || echo HELD',
+                "tracker_lock_release",
+                'flock -n "$TRACKER_LOCK" true && echo FREE || echo STUCK',
+            ])
+            r = subprocess.run(["bash", "-c", script], capture_output=True, text=True, timeout=30)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertEqual(r.stdout.split(), ["HELD", "FREE"])
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
 if __name__ == "__main__":
     unittest.main()
