@@ -264,6 +264,130 @@ def fetch_offer_ladder(event_id, market_id, *, sport="MLB", get_json=None):
     return out
 
 
+# |odds| at or above this is the feed's suspended-side placeholder (+99900), not a
+# price; same threshold as value_engine.PLACEHOLDER_ODDS.
+_PLACEHOLDER_ODDS = 10000
+
+
+def _selection_key(sel):
+    """A game-line selection's key: its team (`participant`, the abbreviation) for a
+    moneyline or spread, 'over' / 'under' for a total. None if it carries neither."""
+    side = (sel.get("selection") or "").strip().lower()
+    if side in ("over", "under"):
+        return side
+    team = (sel.get("participant") or "").strip()
+    return team or None
+
+
+def game_line_ladder(offer):
+    """Book-0 CONSENSUS ladder for one raw game-line /offers market (#109). Pure.
+
+    `fetch_offer_ladder` keeps only over/under labels, so it drops every team-labeled
+    selection a moneyline or spread is made of. This keys each selection by its team
+    (`participant`, e.g. 'OKC') or by 'over'/'under' for a total, and keeps every
+    priced consensus line AS THAT SELECTION READS IT: a spread's two sides carry
+    opposite signs ({'LAC': {14.5: -108}, 'OKC': {-14.5: -112}}). Lines flagged
+    `is_off` or inactive and placeholder prices are dropped (not prices).
+
+    Returns {"participants": [{id, name, city}], "sides": {key: {line: odds}}}, or
+    None unless the market has exactly two selections with two distinct keys.
+    """
+    sels = offer.get("selections") or []
+    if len(sels) != 2:
+        return None
+    keys = [_selection_key(s) for s in sels]
+    if None in keys or keys[0] == keys[1]:
+        return None
+    sides = {}
+    for key, sel in zip(keys, sels):
+        book0 = next((b for b in sel.get("books") or [] if b.get("id") == 0), None)
+        ladder = {}
+        for ln in (book0 or {}).get("lines") or []:
+            if ln.get("is_off") or ln.get("active") is False:
+                continue
+            if ln.get("line") is None or ln.get("cost") is None:
+                continue
+            try:
+                line, cost = float(ln["line"]), int(ln["cost"])
+            except (TypeError, ValueError):
+                continue
+            if abs(cost) >= _PLACEHOLDER_ODDS or abs(cost) < 100:
+                continue
+            if line in ladder and ladder[line] != cost:
+                ladder[line] = None          # two prices at one number: not a price
+                continue
+            ladder[line] = cost
+        ladder = {k: v for k, v in ladder.items() if v is not None}
+        if ladder:
+            sides[key] = ladder
+    participants = []
+    for p in offer.get("participants") or []:
+        team = p.get("team") or {}
+        participants.append({"id": p.get("id"), "name": p.get("name"),
+                             "city": team.get("city"),
+                             "abbreviation": team.get("abbreviation") or p.get("id")})
+    return {"participants": participants, "keys": keys, "sides": sides}
+
+
+def _fmt_american(o):
+    o = int(o)
+    return f"+{o}" if o > 0 else str(o)
+
+
+def two_way_game_line(ladder, kind, side_key, line):
+    """Consensus {side_key: odds, other_key: odds} at the bet's own number, or None.
+
+    `kind` is 'moneyline', 'spread' or 'total'. A spread side at L pairs with the other
+    team at -L (SAS +6.5 against OKC -6.5); a total's over at L pairs with the under at
+    L; a moneyline has no number (the feed's line value, 1 or 0, is ignored) and each
+    side must carry exactly one price. Anything else — an unknown side, a side or
+    number not priced on both sides — is None: never fabricated, never borrowed from a
+    neighbouring number.
+    """
+    if not ladder:
+        return None
+    keys = ladder.get("keys") or list((ladder.get("sides") or {}).keys())
+    if side_key not in keys or len(keys) != 2:
+        return None
+    other = keys[1] if keys[0] == side_key else keys[0]
+    sides = ladder.get("sides") or {}
+    mine, theirs = sides.get(side_key) or {}, sides.get(other) or {}
+    if kind == "moneyline":
+        a, b = set(mine.values()), set(theirs.values())
+        if len(a) != 1 or len(b) != 1:
+            return None
+        return {side_key: _fmt_american(a.pop()), other: _fmt_american(b.pop())}
+    if line is None:
+        return None
+    try:
+        line = float(line)
+    except (TypeError, ValueError):
+        return None
+    if kind == "spread":
+        want = -line
+    elif kind == "total":
+        if {side_key, other} != {"over", "under"}:
+            return None
+        want = line
+    else:
+        return None
+    if line not in mine or want not in theirs:
+        return None
+    return {side_key: _fmt_american(mine[line]), other: _fmt_american(theirs[want])}
+
+
+def fetch_game_line_ladders(event_id, market_id, *, sport, get_json=None):
+    """`game_line_ladder` for every /offers row of an event's game-line market (every
+    page). Unparseable rows are dropped; [] on failure — never fabricated."""
+    get_json = get_json or _live_get_json
+    out = []
+    for off in _fetch_offer_pages(sport, event_id, market_id, get_json):
+        lad = game_line_ladder(off)
+        if lad is not None:
+            out.append(lad)
+    return out
+
+
 def fetch_events(sport, date, *, get_json=None):
     """Return normalized events for `sport`/`date` (empty list on failure)."""
     get_json = get_json or _live_get_json
