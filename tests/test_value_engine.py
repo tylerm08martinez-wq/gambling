@@ -13,8 +13,10 @@ with the autoeval fixtures: both encode the same worked-by-hand de-vig/CLV math
 """
 
 import importlib.util
+import json
 import sys
 import unittest
+from datetime import datetime, timedelta
 from pathlib import Path
 
 _spec = importlib.util.spec_from_file_location(
@@ -347,6 +349,83 @@ class TestDevigInputValidation(unittest.TestCase):
             for bad in ((0.0, 0.5), (0.5, 1.0), (1.2, 0.3), (None, 0.5), (True, 0.5)):
                 with self.assertRaises(ValueError, msg=f"{fn.__name__}{bad}"):
                     fn(*bad)
+
+
+# --- Exchange Benchmark --------------------------------------------------------------
+NOW = datetime(2026, 10, 25, 2, 12, 0)   # naive UTC, like BettingPros `updated`
+
+
+def q(book_id, line, odds_a, odds_b, minutes_old=5):
+    """A quote as scan_market / exchange_benchmark consume it."""
+    updated = (NOW - timedelta(minutes=minutes_old)).strftime("%Y-%m-%d %H:%M:%S")
+    return {"book_id": book_id, "line": line, "odds_a": odds_a, "odds_b": odds_b,
+            "updated": updated}
+
+
+class TestExchangeBenchmarkConstants(unittest.TestCase):
+    def test_adr_0011_venues_and_limits(self):
+        self.assertEqual(ve.BENCHMARK_BOOKS, {60, 68, 73, 75, 38})
+        self.assertEqual(ve.RETAIL_BOOKS, {10, 12, 13, 14, 18, 19, 24, 33, 39, 45, 49})
+        self.assertEqual(ve.OPERATOR, {73: "polymarket", 75: "polymarket"})
+        self.assertEqual(ve.MAX_BENCHMARK_HOLD, 0.03)
+        self.assertEqual(ve.MAX_QUOTE_AGE_MIN, 60)
+        self.assertEqual(ve.MIN_OPERATORS, 2)
+        # Skins and exchanges are never candidates.
+        self.assertFalse(ve.RETAIL_BOOKS & ve.BENCHMARK_BOOKS)
+        self.assertFalse({15, 27} & ve.RETAIL_BOOKS)
+
+
+class TestExchangeBenchmark(unittest.TestCase):
+    def test_two_operators_give_the_median_devigged_price(self):
+        # Novig -105/-105 -> .5000; Kalshi +100/-110 -> power fair_a .4884 (hand-solved).
+        b = ve.exchange_benchmark([q(60, 7.5, -105, -105), q(68, 7.5, 100, -110)],
+                                  7.5, "total", NOW)
+        self.assertEqual(len(b["operators"]), 2)
+        self.assertEqual(len(b["quotes_used"]), 2)
+        fa60 = 0.5
+        fa68 = ve.power_devig(ve.american_to_prob(100), ve.american_to_prob(-110))[0]
+        self.assertAlmostEqual(fa68, 0.4884, places=3)
+        self.assertAlmostEqual(b["fair_a"], (fa60 + fa68) / 2, places=9)
+        self.assertAlmostEqual(b["fair_a"] + b["fair_b"], 1.0, places=9)
+
+    def test_polymarket_twins_are_one_operator_so_no_benchmark(self):
+        quotes = [q(73, 7.5, -105, -105), q(75, 7.5, -104, -106)]
+        self.assertIsNone(ve.exchange_benchmark(quotes, 7.5, "total", NOW))
+
+    def test_freshest_quote_per_operator_is_kept(self):
+        quotes = [q(73, 7.5, 120, -130, minutes_old=30), q(75, 7.5, -105, -105, minutes_old=2),
+                  q(60, 7.5, -105, -105)]
+        b = ve.exchange_benchmark(quotes, 7.5, "total", NOW)
+        self.assertEqual(len(b["operators"]), 2)
+        self.assertIn(75, [x["book_id"] for x in b["quotes_used"]])
+        self.assertNotIn(73, [x["book_id"] for x in b["quotes_used"]])
+        self.assertAlmostEqual(b["fair_a"], 0.5, places=9)
+
+    def test_stale_quote_is_excluded(self):
+        # 61 minutes old is out; exactly 60 is still in.
+        stale = [q(60, 7.5, -105, -105), q(68, 7.5, -105, -105, minutes_old=61)]
+        self.assertIsNone(ve.exchange_benchmark(stale, 7.5, "total", NOW))
+        edge = [q(60, 7.5, -105, -105), q(68, 7.5, -105, -105, minutes_old=60)]
+        self.assertIsNotNone(ve.exchange_benchmark(edge, 7.5, "total", NOW))
+
+    def test_wide_quote_is_excluded(self):
+        # +100/-115 holds 3.49% (> 3%); -105/-105 holds 2.44%.
+        wide = [q(60, 7.5, -105, -105), q(68, 7.5, 100, -115)]
+        self.assertIsNone(ve.exchange_benchmark(wide, 7.5, "total", NOW))
+
+    def test_only_quotes_at_exactly_the_line_count(self):
+        quotes = [q(60, 3.0, -105, -105), q(68, 2.5, -105, -105)]
+        self.assertIsNone(ve.exchange_benchmark(quotes, 3.0, "spread", NOW))
+        self.assertIsNone(ve.exchange_benchmark(quotes, 2.5, "spread", NOW))
+
+    def test_one_sided_and_retail_quotes_are_ignored(self):
+        quotes = [q(60, 7.5, -105, None), q(12, 7.5, -105, -105), q(10, 7.5, -105, -105),
+                  q(68, 7.5, -105, -105)]
+        self.assertIsNone(ve.exchange_benchmark(quotes, 7.5, "total", NOW))
+
+    def test_undated_quote_is_excluded_never_assumed_fresh(self):
+        quotes = [q(60, 7.5, -105, -105), dict(q(68, 7.5, -105, -105), updated=None)]
+        self.assertIsNone(ve.exchange_benchmark(quotes, 7.5, "total", NOW))
 
 
 if __name__ == "__main__":

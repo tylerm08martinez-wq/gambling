@@ -7,14 +7,22 @@ the four autoeval fixtures encode the hand-verified answer key these functions
 reproduce (experiments: skills/sports-betting-value/autoeval/fixtures.py).
 
 One question drives every market: is a price I can take right now better than the
-de-vigged Pinnacle (book_id 2) fair line? Beat it by ≥2% (game lines) / ≥3% (props)
-and it's a CLV-Positive +EV candidate; otherwise sit out. Steam is confirmation-only.
+fair line? Beat it by ≥2% (game lines) / ≥3% (props) and it's a CLV-Positive +EV
+candidate; otherwise sit out. Steam is confirmation-only.
 
-Pipeline per market: implied prob -> de-vig Pinnacle to fair_p -> projected CLV
-(fair_p / p_best - 1) -> gate by market -> fractional-Kelly units (hard cap 2u).
+The fair line was de-vigged Pinnacle (book_id 2, ADR 0007). Pinnacle has been absent
+from the BettingPros feed since about July, so ADR 0011 replaces it with the
+**Exchange Benchmark**: the median de-vigged price across low-hold exchange operators
+quoting the identical line (`exchange_benchmark`, `scan_market`). `evaluate_market`
+still accepts a `pinnacle` key for the existing boards and fixtures.
+
+Pipeline per market: implied prob -> de-vig the benchmark to fair_p -> projected CLV
+(fair_p / p_best - 1) -> gate by market kind -> fractional-Kelly units (hard cap 2u).
 """
 
 import re
+import statistics
+from datetime import datetime, timezone
 
 # --- thresholds (REFERENCE.md §3, §5) ---------------------------------------------
 GAME_LINE_GATE = 0.02   # ≥2% projected CLV to log a game line (ML / spread / total)
@@ -56,6 +64,21 @@ _KIND_BY_LABEL = {
     "player props": "prop",
 }
 _TRAILING_LINE_RE = re.compile(r"\s+[+-]?\d+(?:\.\d+)?$")
+
+# --- Exchange Benchmark (ADR 0011) -------------------------------------------------
+# Low-hold venues whose de-vigged prices form the fair line: Novig (60), Kalshi (68),
+# Polymarket (73) and Polymarket US (75), ProphetX (38).
+BENCHMARK_BOOKS = {60, 68, 73, 75, 38}
+# Polymarket and Polymarket US are one operator; every other book is its own operator.
+OPERATOR = {73: "polymarket", 75: "polymarket"}
+# Retail sportsbooks: the only candidates. FanDuel 10, DraftKings 12, Caesars 13,
+# Fanatics 14, BetRivers 18, BetMGM 19, bet365 24, theScore Bet 33, Fliff 39, Betr 45,
+# Hard Rock 49. Exchanges, DFS / pick'em venues and the skins SugarHouse (15) and
+# PartyCasino (27) are never candidates.
+RETAIL_BOOKS = {10, 12, 13, 14, 18, 19, 24, 33, 39, 45, 49}
+MAX_BENCHMARK_HOLD = 0.03   # a benchmark quote's two-way hold must be at most 3%
+MAX_QUOTE_AGE_MIN = 60      # ... and updated within 60 minutes of the scan
+MIN_OPERATORS = 2           # fewer distinct operators -> no benchmark, market skipped
 
 
 # ==================================================================================
@@ -353,6 +376,117 @@ def evaluate_board(board: dict) -> dict:
         action = "sit_out"                 # slate, nothing beat fair anywhere
 
     return {"action": action, "picks": picks, "rejected": rejected, "considered": considered}
+
+
+# ==================================================================================
+# Exchange Benchmark (ADR 0011) — the fair line now that Pinnacle is off the feed
+# ==================================================================================
+# A quote is one book's two-way price at one line:
+#   {"book_id": int, "line": number | None, "odds_a": american, "odds_b": american,
+#    "updated": "YYYY-MM-DD HH:MM:SS" (UTC, as BettingPros sends it) | datetime}
+# `odds_a` / `odds_b` are the market's two selections in a fixed order (see
+# `quotes_from_offer`). A spread quote's `line` is selection A's signed number, so
+# +2.5 and +3 are different lines. A moneyline has no number: its line is ignored.
+
+def operator_of(book_id):
+    """The operator a book belongs to (Polymarket + Polymarket US are one)."""
+    return OPERATOR.get(book_id, book_id)
+
+
+def quote_hold(quote):
+    """Two-way hold (overround) of a quote: p_a + p_b - 1. None if either side is
+    missing or unparseable."""
+    try:
+        return american_to_prob(quote["odds_a"]) + american_to_prob(quote["odds_b"]) - 1.0
+    except (KeyError, TypeError, OddsParseError):
+        return None
+
+
+def _two_sided(quote) -> bool:
+    return quote.get("odds_a") is not None and quote.get("odds_b") is not None
+
+
+def _same_line(a, b, kind) -> bool:
+    if kind == "moneyline":
+        return True
+    try:
+        return abs(float(a) - float(b)) < 1e-9
+    except (TypeError, ValueError):
+        return False
+
+
+def _as_utc_naive(ts):
+    """'2026-10-25 02:09:30' / ISO string / datetime -> naive UTC datetime, else None.
+
+    BettingPros `updated` strings are UTC without an offset. An aware datetime is
+    converted to UTC; a naive one is taken as UTC already."""
+    if isinstance(ts, datetime):
+        dt = ts
+    elif isinstance(ts, str) and ts.strip():
+        try:
+            dt = datetime.fromisoformat(ts.strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    else:
+        return None
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
+
+
+def _age_minutes(quote, now):
+    updated = _as_utc_naive(quote.get("updated"))
+    now = _as_utc_naive(now)
+    if updated is None or now is None:
+        return None
+    return (now - updated).total_seconds() / 60.0
+
+
+def benchmark_eligible(quote, line, kind, now) -> bool:
+    """Does this quote count toward the Exchange Benchmark at `line`?
+
+    Benchmark book, both sides quoted, identical line, hold ≤ 3%, updated no more
+    than 60 minutes before `now`. A quote with no parseable `updated` is excluded,
+    never assumed fresh."""
+    if quote.get("book_id") not in BENCHMARK_BOOKS or not _two_sided(quote):
+        return False
+    if not _same_line(quote.get("line"), line, kind):
+        return False
+    hold = quote_hold(quote)
+    if hold is None or hold > MAX_BENCHMARK_HOLD + 1e-12:
+        return False
+    age = _age_minutes(quote, now)
+    return age is not None and age <= MAX_QUOTE_AGE_MIN + 1e-9
+
+
+def exchange_benchmark(quotes, line, kind, now):
+    """The Exchange Benchmark fair price at `line`, or None when there isn't one.
+
+    Keeps benchmark quotes eligible at exactly `line` (`benchmark_eligible`), keeps the
+    freshest per operator, and needs at least MIN_OPERATORS operators. The fair price
+    per side is the median of the per-operator de-vigged prices (power for game kinds,
+    multiplicative for props). Returns {fair_a, fair_b, operators, quotes_used}.
+    """
+    kind = market_kind(kind)
+    freshest = {}
+    for quote in quotes:
+        if not benchmark_eligible(quote, line, kind, now):
+            continue
+        op = operator_of(quote["book_id"])
+        held = freshest.get(op)
+        if held is None or _age_minutes(quote, now) < _age_minutes(held, now):
+            freshest[op] = quote
+    if len(freshest) < MIN_OPERATORS:
+        return None
+    operators = sorted(freshest, key=str)
+    used = [freshest[op] for op in operators]
+    fairs = [fair_two_way(u["odds_a"], u["odds_b"], kind) for u in used]
+    return {
+        "fair_a": statistics.median(f[0] for f in fairs),
+        "fair_b": statistics.median(f[1] for f in fairs),
+        "operators": operators,
+        "quotes_used": used,
+    }
 
 
 # ==================================================================================
