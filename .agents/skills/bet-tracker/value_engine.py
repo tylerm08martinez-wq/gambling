@@ -33,6 +33,51 @@ MAX_UNITS = 2
 STEAM_MIN_BOOKS = 3   # 3+ books off the opening line, same direction = steam
 MEGA_STEAM_BOOKS = 4  # 4+ = mega steam
 
+# --- market kind (ADR 0011) --------------------------------------------------------
+# The kind decides the de-vig method and the gate, so it is passed explicitly and looked
+# up in an explicit table. It is never inferred by searching the label: the old
+# `"prop" in label` test gave "points" and "PRA" the 2% game-line gate.
+MARKET_KINDS = {"moneyline", "spread", "total", "prop"}
+GAME_KINDS = frozenset({"moneyline", "spread", "total"})
+
+# Every label an existing caller passes today, normalised (lower-case, single spaces,
+# a trailing line number such as "total 210.5" / "spread -3.5" dropped):
+#   clv_fetch / close_capture -> "prop"; clv_backfill -> the pick's bet_type
+#   (tracker.classify_bet: prop/total/spread/rl/ml) or its "moneyline" default;
+#   V3 SKILL boards -> "moneyline" / "player_prop" / "total 210.5"; the old
+#   devig_method power list -> "run line" / "puck line" / "pl".
+_KIND_BY_LABEL = {
+    "moneyline": "moneyline", "money line": "moneyline", "ml": "moneyline",
+    "spread": "spread", "rl": "spread", "run line": "spread", "runline": "spread",
+    "pl": "spread", "puck line": "spread", "puckline": "spread",
+    "alt spread": "spread", "alt run line": "spread", "alt puck line": "spread",
+    "total": "total", "totals": "total", "game total": "total", "alt total": "total",
+    "prop": "prop", "props": "prop", "player_prop": "prop", "player prop": "prop",
+    "player props": "prop",
+}
+_TRAILING_LINE_RE = re.compile(r"\s+[+-]?\d+(?:\.\d+)?$")
+
+
+# ==================================================================================
+# market kind
+# ==================================================================================
+def market_kind(label) -> str:
+    """Map a market label to one of MARKET_KINDS through an explicit table.
+
+    Accepts the kinds themselves and every label existing callers pass. Raises
+    ValueError on anything else, including a bare stat name ("points", "PRA"): the
+    kind must be stated, never guessed from the label's wording.
+    """
+    if not isinstance(label, str):
+        raise ValueError(f"market kind must be a label string, got {label!r}")
+    norm = " ".join(label.strip().lower().split())
+    norm = _TRAILING_LINE_RE.sub("", norm)
+    try:
+        return _KIND_BY_LABEL[norm]
+    except KeyError:
+        raise ValueError(
+            f"unknown market kind {label!r}; pass one of {sorted(MARKET_KINDS)}") from None
+
 
 # ==================================================================================
 # implied probability

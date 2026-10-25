@@ -251,5 +251,36 @@ class TestSteamClassifier(unittest.TestCase):
         # (the engine ignores steam entirely when picking — see test_steam_without_clv_is_no_bet)
 
 
+# ==================================================================================
+# ADR 0011 — explicit market kind, kind-based de-vig and gate, Exchange Benchmark (#106)
+# ==================================================================================
+class TestMarketKind(unittest.TestCase):
+    def test_every_label_existing_callers_pass_maps_to_a_kind(self):
+        # Labels in use today: clv_fetch / close_capture pass "prop"; clv_backfill passes
+        # the pick's bet_type (tracker.classify_bet tokens) or the "moneyline" default;
+        # the V3 SKILL boards pass "moneyline" / "player_prop" / "total 210.5".
+        expected = {
+            "moneyline": "moneyline", "ml": "moneyline",
+            "spread": "spread", "rl": "spread", "pl": "spread", "spread -3.5": "spread",
+            "run line": "spread", "puck line": "spread",
+            "total": "total", "total 210.5": "total",
+            "prop": "prop", "player_prop": "prop", "Player Prop": "prop",
+        }
+        for label, kind in expected.items():
+            self.assertEqual(ve.market_kind(label), kind, msg=label)
+
+    def test_kinds_map_to_themselves(self):
+        self.assertEqual(ve.MARKET_KINDS, {"moneyline", "spread", "total", "prop"})
+        for kind in ve.MARKET_KINDS:
+            self.assertEqual(ve.market_kind(kind), kind)
+
+    def test_unknown_label_raises_instead_of_guessing(self):
+        # The old gate searched the label for "prop", so "points" / "PRA" got the 2%
+        # game-line gate. A stat name is not a market kind: it must be passed explicitly.
+        for label in ("points", "PRA", "", None, "propane", "first half", "total bases"):
+            with self.assertRaises(ValueError, msg=repr(label)):
+                ve.market_kind(label)
+
+
 if __name__ == "__main__":
     unittest.main()
