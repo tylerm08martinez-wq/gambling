@@ -22,9 +22,10 @@ a 55% strategy from breakeven on results alone needs ~2,300 bets. CLV answers th
 question in a fraction of that — but only if it is actually measured. Coverage is the
 binding constraint on learning anything from this project.
 
-SCOPE: MLB player props (the Primary Edge, and what the offer-ladder endpoint prices
-two-way). Game lines and totals need a different market id and stay out until there is
-a reason to add them. Residential IP only — BettingPros 403s datacenter (ADR 0006).
+SCOPE: MLB, NBA and NFL player props (the Primary Edge, and what the offer-ladder
+endpoint prices two-way; NBA/NFL added in #107). Game lines and totals need a different
+market id and stay out until #109. Residential IP only — BettingPros 403s datacenter
+(ADR 0006).
 """
 
 import json
@@ -74,12 +75,14 @@ def minutes_until(pick, now, *, tz=AZ):
     return (start - now).total_seconds() / 60.0
 
 
-def due_for_capture(pick, now, *, window_minutes, tz=AZ):
+def due_for_capture(pick, now, *, window_minutes, tz=AZ, start=None):
     """True if this pick's game starts within the window and hasn't started yet.
 
     Strictly pre-game: once first pitch passes, the price is no longer a closing line.
+    `start` overrides the pick's game_time (a pick timed by its event's scheduled start).
     """
-    mins = minutes_until(pick, now, tz=tz)
+    mins = minutes_until(pick, now, tz=tz) if start is None \
+        else (start - now).total_seconds() / 60.0
     return mins is not None and 0 < mins <= window_minutes
 
 
@@ -111,11 +114,16 @@ def should_replace(existing, minutes_before):
 
 def capture(picks, now, *, resolve_event, fetch_ladders, extract_prop, normalize_name,
             two_way_at_line, market_for_spec, stat_map=None, classify_bet=None,
-            window_minutes=45, snapshots=None, tz=AZ):
+            window_minutes=45, snapshots=None, tz=AZ, event_start=None):
     """Snapshot the two-way close for every pick inside its capture window.
 
     Pure w.r.t. I/O — all network access arrives through the injected seams, mirroring
     clv_fetch.build_closes so this is testable without a residential IP or live market.
+
+    `event_start(date, event_id) -> aware datetime | None` is optional. When given, a
+    pick with no parseable game_time is located first (player -> event) and timed by
+    that event's scheduled start instead of being skipped. Without it (the MLB wiring),
+    a pick with no game_time is skipped exactly as before.
 
     Returns (snapshots, report) where report rows are (pick_id, status, detail).
     """
@@ -123,39 +131,68 @@ def capture(picks, now, *, resolve_event, fetch_ladders, extract_prop, normalize
     report = []
     ladder_cache = {}
 
+    def _locate(p):
+        """(spec, market_id, event_id), or a skip reason string."""
+        spec = extract_prop(p.get("bet", ""), p.get("line_num"), stat_map) if stat_map \
+            else extract_prop(p.get("bet", ""), p.get("line_num"))
+        if not spec:
+            return "could not parse player/stat/side/threshold"
+        market_id = market_for_spec(spec)
+        if market_id is None:
+            return "stat has no BettingPros market id"
+        event_id = resolve_event(p.get("date"), spec["player"])
+        if event_id is None:
+            return "player not found in the day's events"
+        return spec, market_id, event_id
+
+    today = now.astimezone(tz).date().isoformat()
+
     for p in picks:
         pid = p.get("id")
         if p.get("result") is not None:
             continue                                  # already settled; nothing to close
-        mins = minutes_until(p, now, tz=tz)
-        if mins is None:
+        start = parse_start(p, tz=tz)
+        located = None
+        start_source = "game_time"
+        if start is None and event_start is not None:
+            # No game_time: find the event first, then time the pick by its start.
+            if (p.get("date") or "") < today:
+                report.append((pid, "skip", "no game_time and the pick's date has passed"))
+                continue
+            if classify_bet is not None and classify_bet(p) != "prop":
+                report.append((pid, "skip", f"{classify_bet(p)} — only props are priced two-way"))
+                continue
+            located = _locate(p)
+            if isinstance(located, str):
+                report.append((pid, "skip", located))
+                continue
+            start = event_start(p.get("date"), located[2])
+            if start is None:
+                report.append((pid, "skip", "no game_time and the event has no scheduled start"))
+                continue
+            start_source = "event_scheduled"
+        if start is None:
             report.append((pid, "skip", "no parseable game_time"))
             continue
-        if not due_for_capture(p, now, window_minutes=window_minutes, tz=tz):
+        mins = (start - now).total_seconds() / 60.0
+        if not due_for_capture(p, now, window_minutes=window_minutes, tz=tz, start=start):
             report.append((pid, "skip",
                            f"outside window ({mins:.0f}m to start)" if mins > 0
                            else f"already started ({-mins:.0f}m ago)"))
             continue
-        if classify_bet is not None and classify_bet(p) != "prop":
+        if located is None and classify_bet is not None and classify_bet(p) != "prop":
             report.append((pid, "skip", f"{classify_bet(p)} — only props are priced two-way"))
             continue
         if not should_replace(snaps.get(pid), mins):
             report.append((pid, "keep", "existing snapshot is closer to first pitch"))
             continue
 
-        spec = extract_prop(p.get("bet", ""), p.get("line_num"), stat_map) if stat_map \
-            else extract_prop(p.get("bet", ""), p.get("line_num"))
-        if not spec:
-            report.append((pid, "skip", "could not parse player/stat/side/threshold"))
-            continue
-        market_id = market_for_spec(spec)
-        if market_id is None:
-            report.append((pid, "skip", "stat has no BettingPros market id"))
-            continue
-        event_id = resolve_event(p.get("date"), spec["player"])
-        if event_id is None:
-            report.append((pid, "skip", "player not found in the day's events"))
-            continue
+        if located is None:
+            located = _locate(p)
+            if isinstance(located, str):
+                report.append((pid, "skip", located))
+                continue
+        spec, market_id, event_id = located
 
         ck = (event_id, market_id)
         if ck not in ladder_cache:
@@ -183,57 +220,77 @@ def capture(picks, now, *, resolve_event, fetch_ladders, extract_prop, normalize
             "vintage": "close" if mins <= CLOSE_GRADE_MINUTES else "pre-close",
             "source": "bettingpros_consensus",
         }
+        if start_source != "game_time":
+            # Provenance for the start itself: timed by the BettingPros event, not by a
+            # game_time logged with the pick.
+            snaps[pid]["start_source"] = start_source
         report.append((pid, "captured",
                        f"T-{mins:.0f}m {close} ({snaps[pid]['vintage']})"))
 
     return snaps, report
 
 
+def make_event_start(sport, *, bp):
+    """`event_start(date, event_id) -> aware UTC datetime | None` from the day's /events.
+
+    BettingPros `scheduled` is UTC ("2026-10-25 17:00:00"). One /events call per date.
+    An event missing from the list, or with no parseable `scheduled`, gives None.
+    """
+    by_date = {}
+
+    def _parse(ts):
+        ts = (ts or "").strip()
+        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%SZ"):
+            try:
+                return datetime.strptime(ts, fmt).replace(tzinfo=timezone.utc)
+            except ValueError:
+                continue
+        return None
+
+    def event_start(date, event_id):
+        if date not in by_date:
+            by_date[date] = {ev.get("id"): _parse(ev.get("scheduled"))
+                             for ev in bp.fetch_events(sport, date)}
+        return by_date[date].get(event_id)
+
+    return event_start
+
+
+def _sport_of(pick):
+    """Uppercase sport; a blank sport is MLB, as in tracker._stat_map_for_sport."""
+    return (pick.get("sport") or "").upper() or "MLB"
+
+
 def capture_live(picks, now=None, *, tracker=None, bp=None, clv_fetch=None,
                  window_minutes=45, snapshots=None):
-    """Live wiring: same seams clv_fetch.build_closes_live uses, aimed at open picks."""
+    """Live wiring: the same per-sport seams clv_fetch.build_closes_live uses, aimed at
+    open picks. Runs `capture` once per sport in clv_fetch.CLOSE_SPORTS. MLB keeps its
+    original wiring (no event-start fallback); NBA and NFL also time a pick with no
+    game_time by its event's scheduled UTC start."""
     import importlib
     tracker = tracker or importlib.import_module("tracker")
     bp = bp or importlib.import_module("bettingpros")
     cf = clv_fetch or importlib.import_module("clv_fetch")
     now = now or datetime.now(AZ)
 
-    event_index, props_done = {}, set()
-
-    def _index_from_events(date):
-        idx = {}
-        for ev in bp.fetch_events("MLB", date):
-            for who in ("home", "visitor"):
-                pit = (ev.get("pitchers") or {}).get(who) or {}
-                nm = tracker._normalize_name(pit.get("name") or "")
-                if nm and ev.get("id") is not None:
-                    idx.setdefault(nm, ev["id"])
-        return idx
-
-    def resolve_event(date, player_norm):
-        if date not in event_index:
-            event_index[date] = _index_from_events(date)
-        if player_norm in event_index[date]:
-            return event_index[date][player_norm]
-        if date not in props_done:
-            props_done.add(date)
-            for pr in bp.fetch_props("MLB", date):
-                nm = tracker._normalize_name((pr.get("player") or {}).get("name") or "")
-                ev = pr.get("event_id")
-                if nm and ev is not None:
-                    event_index[date].setdefault(nm, ev)
-        return event_index[date].get(player_norm)
-
-    return capture(
-        picks, now,
-        resolve_event=resolve_event,
-        fetch_ladders=lambda ev, mk: bp.fetch_offer_ladder(ev, mk),
-        extract_prop=tracker.extract_prop,
-        normalize_name=tracker._normalize_name,
-        two_way_at_line=cf.two_way_at_line,
-        market_for_spec=cf.market_for_spec,
-        stat_map=tracker.PROP_STAT_MAP,
-        classify_bet=tracker.classify_bet,
-        window_minutes=window_minutes,
-        snapshots=snapshots if snapshots is not None else load_snapshots(),
-    )
+    snaps = snapshots if snapshots is not None else load_snapshots()
+    report = []
+    for sport in cf.CLOSE_SPORTS:
+        mine = [p for p in picks if _sport_of(p) == sport]
+        if not mine:
+            continue
+        snaps, rows = capture(
+            mine, now,
+            normalize_name=tracker._normalize_name,
+            two_way_at_line=cf.two_way_at_line,
+            classify_bet=tracker.classify_bet,
+            window_minutes=window_minutes,
+            snapshots=snaps,
+            event_start=None if sport == "MLB" else make_event_start(sport, bp=bp),
+            **cf.sport_seams(sport, tracker=tracker, bp=bp),
+        )
+        report.extend(rows)
+    for p in picks:
+        if p.get("result") is None and _sport_of(p) not in cf.CLOSE_SPORTS:
+            report.append((p.get("id"), "skip", f"sport {_sport_of(p)} has no close capture"))
+    return snaps, report

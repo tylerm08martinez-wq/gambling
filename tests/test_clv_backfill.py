@@ -105,5 +105,22 @@ class TestBackfillBatch(unittest.TestCase):
         self.assertIsNone(picks[2]["clv"])                # no close -> stays null
 
 
+class TestCapturedNbaSnapshotBackfill(unittest.TestCase):
+    """#107: a close captured for an NBA prop is backfilled like an MLB one."""
+
+    def test_captured_nba_prop_close_becomes_measured_devig_clv(self):
+        snap = {"close": {"under": "-107", "over": "-119"}, "side": "under", "market": "prop",
+                "captured_at": "2026-10-25T15:50:00-07:00", "minutes_before_start": 10.0,
+                "vintage": "close", "source": "bettingpros_consensus"}
+        p = _pick(id="nba1", bet="Rui Hachimura Under 16.5 Points (LAL @ OKC)",
+                  line="-110 @ FanDuel", bet_type="prop")
+        self.assertTrue(cb.backfill_pick(p, snap))
+        # Worked by hand: under 107/207 = .51691, over 119/219 = .54338, sum 1.06029,
+        # fair under .48752; entry -110 = .52381 -> .48752/.52381 - 1 = -6.93%.
+        self.assertAlmostEqual(p["clv_devig"], -6.93, delta=0.02)
+        self.assertAlmostEqual(p["clv_pct_pts"], -0.69, delta=0.02)
+        self.assertEqual(p["closing_line"], "-107")
+
+
 if __name__ == "__main__":
     unittest.main()

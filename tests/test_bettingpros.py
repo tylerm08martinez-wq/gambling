@@ -143,5 +143,81 @@ class TestResolveApiKey(unittest.TestCase):
             )
 
 
+def _ladder_offer(name, over, under, team="DEN"):
+    """One raw /offers row: a player with consensus (book 0) over/under ladders."""
+    def sel(label, ladder):
+        return {"label": label, "books": [
+            {"id": 0, "lines": [{"line": l, "cost": c} for l, c in ladder.items()]},
+            {"id": 12, "lines": [{"line": 99.5, "cost": -110, "main": True}]},
+        ]}
+    return {"participants": [{"name": name, "player": {"team": team}}],
+            "selections": [sel("Over", over), sel("Under", under)]}
+
+
+class TestOffersSportAndPagination(unittest.TestCase):
+    """NBA and NFL closes need sport=NBA/NFL, and /offers pages at 10 players, so a
+    player on page 2 silently had no close at all."""
+
+    def _paged(self, pages, seen):
+        def get(url):
+            import re as _re
+            seen.append(url)
+            m = _re.search(r"[?&]page=(\d+)", url)
+            return pages.get(int(m.group(1)) if m else 1)
+        return get
+
+    def test_ladder_defaults_to_mlb(self):
+        seen = []
+        bettingpros.fetch_offer_ladder(1, 285, get_json=self._paged({1: {"offers": []}}, seen))
+        self.assertIn("sport=MLB", seen[0])
+
+    def test_ladder_uses_requested_sport(self):
+        seen = []
+        bettingpros.fetch_offer_ladder(27926, 156, sport="NBA",
+                                       get_json=self._paged({1: {"offers": []}}, seen))
+        self.assertIn("sport=NBA", seen[0])
+        self.assertNotIn("sport=MLB", seen[0])
+
+    def test_ladder_follows_pagination_to_every_page(self):
+        pages = {
+            1: {"offers": [_ladder_offer("Rui Hachimura", {16.5: -119}, {16.5: -107})],
+                "_pagination": {"page": 1, "total_pages": 2}},
+            2: {"offers": [_ladder_offer("Austin Reaves", {22.5: -110}, {22.5: -112})],
+                "_pagination": {"page": 2, "total_pages": 2}},
+        }
+        seen = []
+        out = bettingpros.fetch_offer_ladder(27926, 156, sport="NBA",
+                                             get_json=self._paged(pages, seen))
+        self.assertEqual([r["player"] for r in out], ["Rui Hachimura", "Austin Reaves"])
+        self.assertEqual(out[1]["sides"], {"over": {22.5: -110}, "under": {22.5: -112}})
+        self.assertEqual(len(seen), 2)
+        self.assertIn("page=2", seen[1])
+
+    def test_ladder_keeps_earlier_pages_when_a_later_page_fails(self):
+        pages = {1: {"offers": [_ladder_offer("Rui Hachimura", {16.5: -119}, {16.5: -107})],
+                     "_pagination": {"page": 1, "total_pages": 3}}}
+        out = bettingpros.fetch_offer_ladder(27926, 156, sport="NBA",
+                                             get_json=self._paged(pages, []))
+        self.assertEqual([r["player"] for r in out], ["Rui Hachimura"])
+
+    def test_ladder_empty_when_first_page_fails(self):
+        self.assertEqual(bettingpros.fetch_offer_ladder(1, 2, sport="NFL",
+                                                        get_json=_fetcher(None)), [])
+
+    def test_offers_uses_sport_and_follows_pagination(self):
+        raw = _load("bp_offers.json")["offers"]
+        pages = {1: {"offers": raw, "_pagination": {"page": 1, "total_pages": 2}},
+                 2: {"offers": raw, "_pagination": {"page": 2, "total_pages": 2}}}
+        seen = []
+        out = bettingpros.fetch_offers(21915, 103, sport="NFL", get_json=self._paged(pages, seen))
+        self.assertEqual(len(out), len(raw) * 2)
+        self.assertTrue(all("sport=NFL" in u for u in seen))
+
+    def test_offers_defaults_to_mlb(self):
+        seen = []
+        bettingpros.fetch_offers(1, 2, get_json=self._paged({1: {"offers": []}}, seen))
+        self.assertIn("sport=MLB", seen[0])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -9,6 +9,13 @@
 # HOME PC ONLY: BettingPros 403s datacenter IPs (ADR 0006), same constraint as the
 # morning picks run.
 #
+# SCHEDULE (crontab on the home PC, inside the "# >>> spacewalk jobs" block, which sets
+# SHELL and PATH; added #107). Every 15 minutes; the 08:00-21:59 AZ window below
+# makes the off-hours passes no-ops:
+#   */15 * * * * /bin/bash /Users/tylermartinez/Projects/gambling/scripts/capture-closes.sh >> /Users/tylermartinez/.local/state/spacewalk/capture-closes.log 2>&1
+#
+# Covers MLB, NBA and NFL player props (#107).
+#
 # Writes .agents/skills/bet-tracker/closing_lines.json locally and does NOT commit —
 # at a 15-minute cadence that would be commit spam. The morning run picks the file up
 # and commits it alongside the CLV backfill, which is also the only consumer (backfill
@@ -21,12 +28,28 @@ cd "$PROJECT_DIR" || exit 1
 
 LOG="$PROJECT_DIR/scripts/.capture-closes.log"
 
-# Only run during plausible game hours (AZ). Outside them every pass is a guaranteed
-# no-op that still costs a BettingPros round trip. 'MST7' not 'America/Phoenix' —
-# git-bash ships no zoneinfo DB and named zones silently fall back to UTC.
+# Only run during plausible game hours (AZ): 08:00 through 21:59, since `-gt 21` still
+# lets hour 21 run. Outside them every pass is a guaranteed no-op that still costs a
+# BettingPros round trip. 'MST7' not 'America/Phoenix' — git-bash ships no zoneinfo DB
+# and named zones silently fall back to UTC.
 HOUR=$(TZ='MST7' date +%H)
 if [ "$HOUR" -lt 8 ] || [ "$HOUR" -gt 21 ]; then
   exit 0
+fi
+
+# Shared lock with run-daily-picks.sh, which at 09:00 (the same minute as a */15 pass)
+# pulls with --autostash, backfills CLV and commits closing_lines.json. Writing that
+# file mid-pull/commit would race it. Skip this pass rather than wait: the next one is
+# 15 minutes away and the 45-minute window still covers the same games. A skip is not
+# a failure, so it neither writes nor clears the .CAPTURE-FAILED sentinel. The lock is
+# held until this script exits. No flock (stock macOS) = run unlocked, as before.
+LOCK="$PROJECT_DIR/scripts/.tracker.lock"
+if command -v flock >/dev/null 2>&1; then
+  exec 9>"$LOCK"
+  if ! flock -n 9; then
+    echo "=== $(TZ='MST7' date '+%Y-%m-%d %H:%M') capture-closes skipped: scripts/.tracker.lock held (daily run pulling/committing) ===" >> "$LOG"
+    exit 0
+  fi
 fi
 
 out=$(timeout 300 python3 "$PROJECT_DIR/.agents/skills/bet-tracker/tracker.py" \

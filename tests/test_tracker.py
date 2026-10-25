@@ -1520,5 +1520,83 @@ class TestWholeWordTeamMatching(unittest.TestCase):
         self.assertEqual(r["margin"], -5)
 
 
+# ── #107: NFL player-prop stat map (classification + close capture only) ─────────
+
+class TestNflPropStatMap(unittest.TestCase):
+    """NFL props had no stat map, so _stat_map_for_sport('NFL') was {} and no NFL prop
+    could be parsed for a close. The map is for classification and CLV; there is still
+    no NFL Player Prop Source, so auto-resolve must keep leaving NFL props open."""
+
+    def _spec(self, bet, line_num):
+        return tracker.extract_prop(bet, line_num, tracker._stat_map_for_sport("NFL"))
+
+    def test_passing_yards_in_logged_phrasing(self):
+        self.assertEqual(
+            self._spec("Aaron Rodgers (PIT) Under 216.5 passing yards vs ATL", 216.5),
+            {"player": "aaron rodgers", "stat_group": "passing", "stat_key": "passingYards",
+             "side": "under", "threshold": 216.5})
+
+    def test_rushing_and_receiving_yards(self):
+        s = self._spec("Jonathan Taylor (IND) Under 108.5 rushing yards vs KC", 108.5)
+        self.assertEqual((s["player"], s["stat_group"], s["stat_key"]),
+                         ("jonathan taylor", "rushing", "rushingYards"))
+        s = self._spec("Hunter Henry Over 31.5 receiving yards (NE @ CHI)", 31.5)
+        self.assertEqual((s["player"], s["stat_group"], s["stat_key"], s["side"]),
+                         ("hunter henry", "receiving", "receivingYards", "over"))
+
+    def test_receptions_pass_attempts_and_completions(self):
+        cases = {
+            "Travis Kelce (KC) Over 5.5 receptions vs DEN": ("receiving", "receptions"),
+            "Patrick Mahomes (KC) Under 32.5 pass attempts vs DEN": ("passing", "passingAttempts"),
+            "Patrick Mahomes (KC) Under 32.5 passing attempts vs DEN": ("passing", "passingAttempts"),
+            "Jordan Love Over 21.5 completions (DAL @ GB)": ("passing", "completions"),
+            "Jordan Love Over 21.5 pass completions (DAL @ GB)": ("passing", "completions"),
+            "Kenneth Walker III (KC) Over 15.5 rushing attempts at MIA": ("rushing", "rushingAttempts"),
+        }
+        for bet, key in cases.items():
+            with self.subTest(bet=bet):
+                s = self._spec(bet, None)   # threshold from the bet text (#113)
+                self.assertIsNotNone(s)
+                self.assertEqual((s["stat_group"], s["stat_key"]), key)
+
+    def test_rushing_plus_receiving_is_a_summed_combo_not_one_component(self):
+        # Without the combo entry, "receiving yards" would win and a rush+rec prop would
+        # be matched against the receiving-yards market.
+        for bet, ln in (("Kyle Monangai (CHI) Over 50.5 rushing + receiving yards vs PHI", 50.5),
+                        ("Jahmyr Gibbs Over 129.5 rushing and receiving yards (DET @ ARI)", 129.5)):
+            with self.subTest(bet=bet):
+                s = self._spec(bet, ln)
+                self.assertEqual(s["stat_key"], ("rushingYards", "receivingYards"))
+
+    def test_nfl_prop_without_bet_type_classifies_as_prop(self):
+        p = {"sport": "NFL", "bet": "Drake Maye (NE) Over 220.5 passing yards vs PIT"}
+        self.assertEqual(tracker.classify_bet(p), "prop")
+
+    def test_nfl_game_lines_are_not_props(self):
+        for bet in ("Chiefs -3.5 Spread", "Broncos ML -150", "Chiefs @ Raiders Under 44.5"):
+            with self.subTest(bet=bet):
+                self.assertNotEqual(tracker.classify_bet({"sport": "NFL", "bet": bet}), "prop")
+
+    def test_nfl_has_no_player_prop_source_so_auto_resolve_leaves_it_open(self):
+        self.assertNotIn("NFL", tracker.PROP_SOURCES)
+        p = {"id": "nfl1", "sport": "NFL", "date": "2026-10-18", "result": None,
+             "bet": "Justin Herbert Under 196.5 passing yards (LAC @ KC)",
+             "line": "-110", "units": 1, "line_num": 196.5, "bet_type": "prop"}
+        with patch.object(tracker, "load_picks", return_value=[p]), \
+             patch.object(tracker, "save_picks"), \
+             contextlib.redirect_stdout(io.StringIO()):
+            try:
+                tracker.cmd_auto_resolve(None)
+            except SystemExit:
+                pass
+        self.assertIsNone(p["result"])
+
+    def test_mlb_and_nba_maps_unchanged(self):
+        self.assertIs(tracker._stat_map_for_sport("MLB"), tracker.PROP_STAT_MAP)
+        self.assertIs(tracker._stat_map_for_sport(""), tracker.PROP_STAT_MAP)
+        self.assertIs(tracker._stat_map_for_sport("NBA"), tracker.NBA_PROP_STAT_MAP)
+        self.assertEqual(tracker._stat_map_for_sport("NHL"), {})
+
+
 if __name__ == "__main__":
     unittest.main()

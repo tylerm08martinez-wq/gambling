@@ -452,8 +452,14 @@ class TestRunner(unittest.TestCase):
 
     def test_head_off_main_after_the_retry_stops_the_run_before_the_agent(self):
         block = self._scan_block()
-        self.assertIn("# TODO(#112): take scripts/.tracker.lock around this retry once #112 lands",
-                      self.SCRIPT)
+        # #112 resolved the TODO: the commit + push + retry hold scripts/.tracker.lock,
+        # released before the rc==2 stop (see tests/test_capture_closes_lock.py).
+        self.assertNotIn("TODO(#112)", self.SCRIPT)
+        take = block.index('tracker_lock_take "the V3 observations commit/push"')
+        call = block.index("v3_push_observations || v3_push_rc=$?")
+        release = block.index("tracker_lock_release", call)
+        self.assertLess(take, call)
+        self.assertLess(release, block.index('if [ "$v3_push_rc" -eq 2 ]'))
         fn = self._push_function()
         self.assertIn("git rebase --abort 2>/dev/null || true", fn)
         self.assertIn("git symbolic-ref -q --short HEAD", fn)

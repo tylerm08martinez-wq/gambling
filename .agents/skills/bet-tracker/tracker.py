@@ -840,6 +840,48 @@ NBA_PROP_STAT_MAP = {
     "pra": ("scoring", ("points", "rebounds", "assists")),
 }
 
+# NFL stat keyword → (stat group, statKey), issue #107. Group/key names follow ESPN's NFL
+# boxscore categories (passing / rushing / receiving), but NOTHING resolves NFL props
+# yet: there is no NFL Player Prop Source, so this map is registered only for
+# classification and close capture (see UNRESOLVED_PROP_STAT_MAPS), and auto-resolve
+# still leaves every NFL prop open for manual grading.
+#
+# Keywords are deliberately multi-word ("passing yards", never bare "yards" or "rush"):
+# matching is whole-word, and a bare "rush" would fire inside a name like Cooper Rush.
+#
+# COMBO: rushing + receiving yards is a summed tuple, like NBA PRA. It is mapped so the
+# longest match wins — without it, "rushing + receiving yards" and "rushing and receiving
+# yards" both contain the single-stat keyword "receiving yards", and the "and" phrasing
+# would silently match the receiving-yards market.
+NFL_PROP_STAT_MAP = {
+    "passing yards": ("passing", "passingYards"),
+    "passing yds": ("passing", "passingYards"),
+    "pass yards": ("passing", "passingYards"),
+    "pass yds": ("passing", "passingYards"),
+    "passing attempts": ("passing", "passingAttempts"),
+    "pass attempts": ("passing", "passingAttempts"),
+    "passing completions": ("passing", "completions"),
+    "pass completions": ("passing", "completions"),
+    "completions": ("passing", "completions"),
+    "rushing yards": ("rushing", "rushingYards"),
+    "rushing yds": ("rushing", "rushingYards"),
+    "rush yards": ("rushing", "rushingYards"),
+    "rush yds": ("rushing", "rushingYards"),
+    "rushing attempts": ("rushing", "rushingAttempts"),
+    "rush attempts": ("rushing", "rushingAttempts"),
+    "carries": ("rushing", "rushingAttempts"),
+    "receiving yards": ("receiving", "receivingYards"),
+    "receiving yds": ("receiving", "receivingYards"),
+    "rec yards": ("receiving", "receivingYards"),
+    "rec yds": ("receiving", "receivingYards"),
+    "receptions": ("receiving", "receptions"),
+    "rushing + receiving yards": ("scrimmage", ("rushingYards", "receivingYards")),
+    "rushing+receiving yards": ("scrimmage", ("rushingYards", "receivingYards")),
+    "rushing and receiving yards": ("scrimmage", ("rushingYards", "receivingYards")),
+    "rush + rec yards": ("scrimmage", ("rushingYards", "receivingYards")),
+    "rush+rec yards": ("scrimmage", ("rushingYards", "receivingYards")),
+}
+
 
 # ── Player Prop Source seam (GLOSSARY.md: "Player Prop Source") ───────────────────
 # A per-sport adapter that supplies everything needed to settle a Player Prop from a
@@ -1417,6 +1459,15 @@ PROP_SOURCES = {
 }
 
 
+# Stat maps for sports whose props can be classified and closed (CLV) but NOT yet
+# auto-resolved, because no Player Prop Source exists for them. A prop in one of these
+# sports classifies as "prop", and cmd_auto_resolve then leaves it open ("no Player Prop
+# Source") — it can never fall through to a game-line path. Issue #107.
+UNRESOLVED_PROP_STAT_MAPS = {
+    "NFL": NFL_PROP_STAT_MAP,
+}
+
+
 def _stat_map_for_sport(sport: str, sources: Optional[dict] = None) -> dict:
     """Stat-keyword map for a sport.
 
@@ -1425,13 +1476,19 @@ def _stat_map_for_sport(sport: str, sources: Optional[dict] = None) -> dict:
     unregistered sport now yields no stat keywords, so classify_bet cannot classify
     its bet as a prop. It routes to the game-line path, where non-MLB/NBA is skipped
     and left open — never mis-resolved against the MLB stat map.
+
+    With the global registry (sources=None), a sport with no Player Prop Source falls
+    back to UNRESOLVED_PROP_STAT_MAPS (NFL). An injected `sources` registry is honoured
+    as given, with no fallback.
     """
     reg = PROP_SOURCES if sources is None else sources
     key = (sport or "").upper()
     if key == "":
         key = "MLB"
     src = reg.get(key)
-    return src.stat_map if src is not None else {}
+    if src is not None:
+        return src.stat_map
+    return UNRESOLVED_PROP_STAT_MAPS.get(key, {}) if sources is None else {}
 
 
 # ── Commands ──────────────────────────────────────────────────────────────────
@@ -2017,8 +2074,8 @@ def cmd_resolve(args):
 
 
 def cmd_backfill_clv(args):
-    """Backfill realized CLV on settled MLB player props from their BettingPros consensus
-    close (residential IP only — BettingPros 403s datacenter, ADR 0006). Matching lives in
+    """Backfill realized CLV on settled MLB, NBA and NFL player props from their
+    BettingPros consensus close (residential IP only — BettingPros 403s datacenter, ADR 0006). Matching lives in
     clv_fetch (fetch + two-way ladder match); the de-vig + write lives in clv_backfill. A
     pick with no matchable close stays Unmeasured (null clv) — never fabricated."""
     # Running tracker.py as a script already puts its dir on sys.path[0]; clv_fetch also
@@ -2290,7 +2347,7 @@ def main():
                        help="Game start time in Arizona time, e.g. '5:10 PM' or '1:05 PM'")
 
     bf_p = sub.add_parser("backfill-clv",
-                          help="Backfill realized CLV on settled MLB props from BettingPros consensus close (residential IP)")
+                          help="Backfill realized CLV on settled MLB/NBA/NFL props from BettingPros consensus close (residential IP)")
     bf_p.add_argument("--apply", action="store_true", help="write picks.json back (default: dry-run)")
     bf_p.add_argument("--force", action="store_true", help="overwrite an existing closing_line/clv")
     bf_p.add_argument("--date", default="", help="only backfill picks on this date (YYYY-MM-DD); "
