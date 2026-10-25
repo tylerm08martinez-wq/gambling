@@ -253,23 +253,23 @@
    "benchmark_max_age_min": 2.9,
    "close": {
     "retail_consensus": {
-     "captured_at": "2026-10-25T19:30:01.421945+00:00",
-     "minutes_before_start": 35.0,
-     "vintage": "pre-close",
+     "captured_at": "2026-10-25T19:45:02.005841+00:00",
+     "minutes_before_start": 20.0,
+     "vintage": "close",
      "line": 2.5,
-     "odds_side": -154,
-     "odds_other": 118,
-     "fair_p": 0.5692871193108593,
-     "quote_updated": "2026-10-25 19:21:57",
+     "odds_side": -152,
+     "odds_other": 115,
+     "fair_p": 0.5646164478230822,
+     "quote_updated": "2026-10-25 19:38:47",
      "source": "bettingpros_consensus"
     },
     "exchange": {
-     "captured_at": "2026-10-25T19:30:01.421945+00:00",
-     "minutes_before_start": 35.0,
-     "vintage": "pre-close",
+     "captured_at": "2026-10-25T19:45:02.005841+00:00",
+     "minutes_before_start": 20.0,
+     "vintage": "close",
      "line": 2.5,
-     "fair_p": 0.5641089046746854,
-     "fair_other": 0.43589109532531456,
+     "fair_p": 0.5616710100255009,
+     "fair_other": 0.43832898997449904,
      "operators": [
       60,
       68
@@ -277,25 +277,25 @@
      "quotes_used": [
       {
        "book_id": 60,
-       "odds_side": -135,
-       "odds_other": 125,
-       "updated": "2026-10-25 19:22:35"
+       "odds_side": -133,
+       "odds_other": 122,
+       "updated": "2026-10-25 19:40:39"
       },
       {
        "book_id": 68,
        "odds_side": -133,
        "odds_other": 127,
-       "updated": "2026-10-25 19:13:46"
+       "updated": "2026-10-25 19:37:33"
       }
      ],
      "source": "exchange_benchmark"
     },
     "side": "Under",
-    "captured_at": "2026-10-25T19:30:01.421945+00:00",
-    "minutes_before_start": 35.0
+    "captured_at": "2026-10-25T19:45:02.005841+00:00",
+    "minutes_before_start": 20.0
    },
-   "realized_clv_exchange_frac": 0.076935,
-   "realized_clv_retail_frac": 0.086821
+   "realized_clv_exchange_frac": 0.072281,
+   "realized_clv_retail_frac": 0.077904
   },
   {
    "id": "v3obs-24b35af0b1f104d8",
@@ -330,23 +330,23 @@
    "benchmark_max_age_min": 2.9,
    "close": {
     "retail_consensus": {
-     "captured_at": "2026-10-25T19:30:01.421945+00:00",
-     "minutes_before_start": 35.0,
-     "vintage": "pre-close",
+     "captured_at": "2026-10-25T19:45:02.005841+00:00",
+     "minutes_before_start": 20.0,
+     "vintage": "close",
      "line": 2.5,
-     "odds_side": -154,
-     "odds_other": 118,
-     "fair_p": 0.5692871193108593,
-     "quote_updated": "2026-10-25 19:21:57",
+     "odds_side": -152,
+     "odds_other": 115,
+     "fair_p": 0.5646164478230822,
+     "quote_updated": "2026-10-25 19:38:47",
      "source": "bettingpros_consensus"
     },
     "exchange": {
-     "captured_at": "2026-10-25T19:30:01.421945+00:00",
-     "minutes_before_start": 35.0,
-     "vintage": "pre-close",
+     "captured_at": "2026-10-25T19:45:02.005841+00:00",
+     "minutes_before_start": 20.0,
+     "vintage": "close",
      "line": 2.5,
-     "fair_p": 0.5641089046746854,
-     "fair_other": 0.43589109532531456,
+     "fair_p": 0.5616710100255009,
+     "fair_other": 0.43832898997449904,
      "operators": [
       60,
       68
@@ -354,25 +354,25 @@
      "quotes_used": [
       {
        "book_id": 60,
-       "odds_side": -135,
-       "odds_other": 125,
-       "updated": "2026-10-25 19:22:35"
+       "odds_side": -133,
+       "odds_other": 122,
+       "updated": "2026-10-25 19:40:39"
       },
       {
        "book_id": 68,
        "odds_side": -133,
        "odds_other": 127,
-       "updated": "2026-10-25 19:13:46"
+       "updated": "2026-10-25 19:37:33"
       }
      ],
      "source": "exchange_benchmark"
     },
     "side": "Under",
-    "captured_at": "2026-10-25T19:30:01.421945+00:00",
-    "minutes_before_start": 35.0
+    "captured_at": "2026-10-25T19:45:02.005841+00:00",
+    "minutes_before_start": 20.0
    },
-   "realized_clv_exchange_frac": 0.067778,
-   "realized_clv_retail_frac": 0.077579
+   "realized_clv_exchange_frac": 0.063163,
+   "realized_clv_retail_frac": 0.068738
   }
  ]
 }
