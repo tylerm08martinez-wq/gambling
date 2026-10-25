@@ -42,12 +42,14 @@ def realized_clv(pinnacle_close: dict, side: str, entry_line, market: str = "mon
     if not pinnacle_close or len(pinnacle_close) != 2 or side not in pinnacle_close:
         return None
     s0, s1 = list(pinnacle_close.keys())
-    # Unparseable odds (free-text `line`/`closing_line` values predating validation)
-    # leave the pick Unmeasured rather than aborting the caller's whole run.
+    # Unparseable odds (free-text `line`/`closing_line` values predating validation),
+    # a market label value_engine.market_kind doesn't know (ADR 0011: the kind is never
+    # guessed) or a non-probability close leave the pick Unmeasured rather than
+    # aborting the caller's whole run. OddsParseError is a ValueError subclass.
     try:
         fair0, fair1 = ve.fair_two_way(pinnacle_close[s0], pinnacle_close[s1], market)
         entry_prob = ve.american_to_prob(_entry_odds(entry_line))
-    except ve.OddsParseError:
+    except ValueError:
         return None
     fair = {s0: fair0, s1: fair1}
     return ve.projected_clv(fair[side], entry_prob) * 100.0

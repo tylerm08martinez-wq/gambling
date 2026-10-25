@@ -34,9 +34,10 @@ def _pick(**kw):
 
 class TestRealizedClv(unittest.TestCase):
     def test_devigged_realized_clv_matches_projected_definition(self):
-        # Pinnacle close ARI -120 / SF +110 -> fair SF .4661; entry SF +120 (.4545) -> +2.55%
+        # Close ARI -120 / SF +110, moneyline -> power de-vig (ADR 0011) fair SF .4650;
+        # entry SF +120 (.4545) -> +2.30%. (Multiplicative, before ADR 0011, gave .4661 / +2.55%.)
         clv = cb.realized_clv({"ARI": "-120", "SF": "+110"}, "SF", "+120", "moneyline")
-        self.assertAlmostEqual(clv, 2.55, delta=0.05)
+        self.assertAlmostEqual(clv, 2.30, delta=0.05)
 
     def test_negative_when_entry_worse_than_close(self):
         clv = cb.realized_clv({"LAD": "-150", "COL": "+135"}, "LAD", "-160", "moneyline")
@@ -46,12 +47,23 @@ class TestRealizedClv(unittest.TestCase):
         # real picks store line as '+120 @ FanDuel' / '-105 (DK)' — must parse the odds out
         for entry in ("+120 @ FanDuel", "120 @ FanDuel", "+120 (DK)"):
             clv = cb.realized_clv({"ARI": "-120", "SF": "+110"}, "SF", entry, "moneyline")
-            self.assertAlmostEqual(clv, 2.55, delta=0.05, msg=f"entry={entry!r}")
+            self.assertAlmostEqual(clv, 2.30, delta=0.05, msg=f"entry={entry!r}")
 
     def test_none_when_side_missing_or_not_two_way(self):
         self.assertIsNone(cb.realized_clv({"ARI": "-120", "SF": "+110"}, "NYY", "+120", "moneyline"))
         self.assertIsNone(cb.realized_clv({"ARI": "-120"}, "ARI", "-120", "moneyline"))
         self.assertIsNone(cb.realized_clv(None, "SF", "+120", "moneyline"))
+
+    def test_unknown_market_kind_leaves_the_pick_unmeasured(self):
+        # value_engine.market_kind raises on a label it doesn't know (ADR 0011). The
+        # backfill must leave that pick null, not abort the run or guess a method.
+        self.assertIsNone(cb.realized_clv({"over": "-110", "under": "-110"}, "over", "+100", "points"))
+        # backfill_pick still records the one-sided percentage-point CLV, but no de-vig.
+        p = _pick()
+        cb.backfill_pick(p, {"close": {"ARI": "-120", "SF": "+110"}, "side": "SF",
+                             "market": "first half"})
+        self.assertIsNone(p.get("clv_devig"))
+        self.assertIsNotNone(p.get("clv_pct_pts"))
 
 
 class TestBackfillPick(unittest.TestCase):
@@ -62,7 +74,7 @@ class TestBackfillPick(unittest.TestCase):
         p = _pick()
         self.assertTrue(cb.backfill_pick(p, self._close()))
         self.assertEqual(p["closing_line"], "+110")      # Pinnacle's close on the bet side
-        self.assertAlmostEqual(p["clv"], 2.55, delta=0.05)
+        self.assertAlmostEqual(p["clv"], 2.30, delta=0.05)
 
     def test_idempotent_no_op_when_already_measured(self):
         p = _pick(closing_line="+108", clv=1.2)

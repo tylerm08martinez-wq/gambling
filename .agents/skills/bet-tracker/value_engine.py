@@ -7,14 +7,30 @@ the four autoeval fixtures encode the hand-verified answer key these functions
 reproduce (experiments: skills/sports-betting-value/autoeval/fixtures.py).
 
 One question drives every market: is a price I can take right now better than the
-de-vigged Pinnacle (book_id 2) fair line? Beat it by ≥2% (game lines) / ≥3% (props)
-and it's a CLV-Positive +EV candidate; otherwise sit out. Steam is confirmation-only.
+fair line? Beat it by ≥2% (game lines) / ≥3% (props) and it's a CLV-Positive +EV
+candidate; otherwise sit out. Steam is confirmation-only.
 
-Pipeline per market: implied prob -> de-vig Pinnacle to fair_p -> projected CLV
-(fair_p / p_best - 1) -> gate by market -> fractional-Kelly units (hard cap 2u).
+The fair line was de-vigged Pinnacle (book_id 2, ADR 0007). Pinnacle has been absent
+from the BettingPros feed since about July, so ADR 0011 replaces it with the
+**Exchange Benchmark**: the median de-vigged price across low-hold exchange operators
+quoting the identical line (`exchange_benchmark`, `scan_market`): Novig, Kalshi,
+Polymarket (one operator with Polymarket US) and ProphetX, each quote two-way, hold
+-0.5% to 3%, updated within 60 minutes, at least 2 operators. Retail sportsbooks are
+the only candidates, compared only at the same number. `evaluate_market` still
+accepts a `pinnacle` key for the existing boards and fixtures.
+
+The market kind (moneyline / spread / total / prop, `market_kind`) is explicit and
+picks both the de-vig and the gate: **power de-vig for every game line** (moneyline,
+spread, total; ADR 0011 moved moneylines off multiplicative, which inflated
+longshots) and multiplicative for player props; a 2% gate for game lines, 3% for props.
+
+Pipeline per market: implied prob -> de-vig the benchmark to fair_p -> projected CLV
+(fair_p / p_best - 1) -> gate by market kind -> fractional-Kelly units (hard cap 2u).
 """
 
 import re
+import statistics
+from datetime import datetime, timezone
 
 # --- thresholds (REFERENCE.md §3, §5) ---------------------------------------------
 GAME_LINE_GATE = 0.02   # ≥2% projected CLV to log a game line (ML / spread / total)
@@ -32,6 +48,70 @@ MAX_UNITS = 2
 # --- steam (REFERENCE.md §6) -------------------------------------------------------
 STEAM_MIN_BOOKS = 3   # 3+ books off the opening line, same direction = steam
 MEGA_STEAM_BOOKS = 4  # 4+ = mega steam
+
+# --- market kind (ADR 0011) --------------------------------------------------------
+# The kind decides the de-vig method and the gate, so it is passed explicitly and looked
+# up in an explicit table. It is never inferred by searching the label: the old
+# `"prop" in label` test gave "points" and "PRA" the 2% game-line gate.
+MARKET_KINDS = {"moneyline", "spread", "total", "prop"}
+GAME_KINDS = frozenset({"moneyline", "spread", "total"})
+
+# Every label an existing caller passes today, normalised (lower-case, single spaces,
+# a trailing line number such as "total 210.5" / "spread -3.5" dropped):
+#   clv_fetch / close_capture -> "prop"; clv_backfill -> the pick's bet_type
+#   (tracker.classify_bet: prop/total/spread/rl/ml) or its "moneyline" default;
+#   V3 SKILL boards -> "moneyline" / "player_prop" / "total 210.5"; the old
+#   devig_method power list -> "run line" / "puck line" / "pl".
+_KIND_BY_LABEL = {
+    "moneyline": "moneyline", "money line": "moneyline", "ml": "moneyline",
+    "spread": "spread", "rl": "spread", "run line": "spread", "runline": "spread",
+    "pl": "spread", "puck line": "spread", "puckline": "spread",
+    "alt spread": "spread", "alt run line": "spread", "alt puck line": "spread",
+    "total": "total", "totals": "total", "game total": "total", "alt total": "total",
+    "prop": "prop", "props": "prop", "player_prop": "prop", "player prop": "prop",
+    "player props": "prop",
+}
+_TRAILING_LINE_RE = re.compile(r"\s+[+-]?\d+(?:\.\d+)?$")
+
+# --- Exchange Benchmark (ADR 0011) -------------------------------------------------
+# Low-hold venues whose de-vigged prices form the fair line: Novig (60), Kalshi (68),
+# Polymarket (73) and Polymarket US (75), ProphetX (38).
+BENCHMARK_BOOKS = {60, 68, 73, 75, 38}
+# Polymarket and Polymarket US are one operator; every other book is its own operator.
+OPERATOR = {73: "polymarket", 75: "polymarket"}
+# Retail sportsbooks: the only candidates. FanDuel 10, DraftKings 12, Caesars 13,
+# Fanatics 14, BetRivers 18, BetMGM 19, bet365 24, theScore Bet 33, Fliff 39, Betr 45,
+# Hard Rock 49. Exchanges, DFS / pick'em venues and the skins SugarHouse (15) and
+# PartyCasino (27) are never candidates.
+RETAIL_BOOKS = {10, 12, 13, 14, 18, 19, 24, 33, 39, 45, 49}
+MAX_BENCHMARK_HOLD = 0.03   # a benchmark quote's two-way hold must be at most 3%
+MIN_BENCHMARK_HOLD = -0.005  # ... and at least -0.5%: a deeper underround isn't a real price
+MAX_QUOTE_AGE_MIN = 60      # ... and updated within 60 minutes of the scan
+MIN_OPERATORS = 2           # fewer distinct operators -> no benchmark, market skipped
+MAX_RETAIL_QUOTE_AGE_MIN = 24 * 60  # a retail candidate updated over 24h ago is a dead rung
+MAX_FUTURE_SKEW_MIN = 5     # a quote stamped more than 5 min after the scan is rejected
+PLACEHOLDER_ODDS = 10000    # |odds| at or above this is the feed's suspended-side placeholder
+
+
+# ==================================================================================
+# market kind
+# ==================================================================================
+def market_kind(label) -> str:
+    """Map a market label to one of MARKET_KINDS through an explicit table.
+
+    Accepts the kinds themselves and every label existing callers pass. Raises
+    ValueError on anything else, including a bare stat name ("points", "PRA"): the
+    kind must be stated, never guessed from the label's wording.
+    """
+    if not isinstance(label, str):
+        raise ValueError(f"market kind must be a label string, got {label!r}")
+    norm = " ".join(label.strip().lower().split())
+    norm = _TRAILING_LINE_RE.sub("", norm)
+    try:
+        return _KIND_BY_LABEL[norm]
+    except KeyError:
+        raise ValueError(
+            f"unknown market kind {label!r}; pass one of {sorted(MARKET_KINDS)}") from None
 
 
 # ==================================================================================
@@ -58,25 +138,48 @@ def prob_to_decimal(p: float) -> float:
 # ==================================================================================
 # de-vig — strip the overround to a fair probability
 # ==================================================================================
+def _require_probabilities(p_a, p_b) -> None:
+    """Both inputs must be implied probabilities strictly inside (0, 1).
+
+    Passing American odds by mistake used to reach `p ** k` with a negative base and
+    die as a complex-number TypeError deep inside power_devig (or, multiplicatively,
+    return nonsense silently). Fail at the boundary with a clear ValueError instead.
+    """
+    for p in (p_a, p_b):
+        if isinstance(p, bool) or not isinstance(p, (int, float)) or not 0.0 < p < 1.0:
+            raise ValueError(
+                f"de-vig needs implied probabilities in (0, 1), got {p_a!r}, {p_b!r} "
+                "(convert American odds with american_to_prob first)")
+
+
 def multiplicative_devig(p_a: float, p_b: float):
-    """Default for two-way ML / props: fair_i = p_i / (p_a + p_b). Returns (fair_a, fair_b)."""
+    """Two-way props: fair_i = p_i / (p_a + p_b). Returns (fair_a, fair_b).
+
+    Raises ValueError unless both inputs are probabilities in (0, 1)."""
+    _require_probabilities(p_a, p_b)
     s = p_a + p_b
     return p_a / s, p_b / s
 
 
 def power_devig(p_a: float, p_b: float, iterations: int = 80):
-    """Spreads / totals / heavy favorites: solve k s.t. p_a^k + p_b^k = 1, fair_i = p_i^k.
+    """Every game line (ML / spread / total): solve k s.t. p_a^k + p_b^k = 1, fair_i = p_i^k.
 
     Bisection on k ∈ [0.5, 1.5] (REFERENCE.md §2). Spreads the vig correctly where the
     multiplicative method under-corrects the longshot. Returns (fair_a, fair_b) which
-    sum to 1 by construction.
+    sum to 1 by construction. Raises ValueError unless both inputs are probabilities
+    in (0, 1).
     """
+    _require_probabilities(p_a, p_b)
     lo, hi = 0.5, 1.5
     # Expand the upper bound so the root is always bracketed. Wide/lopsided markets
     # (large overround) push k above the nominal 1.5; a clamped k would silently return
     # fair probs that don't sum to 1. Keep doubling hi until f(hi) < 1 brackets the root.
-    while p_a ** hi + p_b ** hi > 1.0 and hi < 64.0:
+    while p_a ** hi + p_b ** hi > 1.0 and hi < 1e6:
         lo, hi = hi, hi * 2.0
+    # Likewise lower the bottom bound for an underround pair (p_a + p_b < 1, k < 1):
+    # without this, (0.001, 0.6) returned fair probs summing to 0.806.
+    while p_a ** lo + p_b ** lo < 1.0 and lo > 1e-6:
+        lo, hi = lo / 2.0, lo
     for _ in range(iterations):
         k = (lo + hi) / 2.0
         if p_a ** k + p_b ** k > 1.0:
@@ -88,24 +191,20 @@ def power_devig(p_a: float, p_b: float, iterations: int = 80):
 
 
 def devig_method(market: str) -> str:
-    """'power' for spreads/totals, 'multiplicative' for moneylines/props (REFERENCE.md §2).
+    """'power' for every game line (moneyline, spread, total), 'multiplicative' for props.
 
-    Accepts tracker's `bet_type` vocabulary as well as prose market names. tracker
-    emits the short tokens 'rl' and 'spread'; 'rl' matched none of the prefixes and
-    silently fell through to multiplicative, which is the wrong method for a handicap
-    market. That was latent while `bet_type` was almost always absent (the "moneyline"
-    default applied) and became reachable the moment cmd_log started persisting it.
+    ADR 0011. `market` is a kind or any label `market_kind` knows (tracker's `bet_type`
+    tokens such as 'rl', or the SKILL's 'total 210.5'); an unknown label raises
+    ValueError. Moneylines were multiplicative before ADR 0011, which inflates the
+    longshot: on a heavy favourite it can turn a negative CLV positive.
     """
-    kind = (market or "").strip().lower()
-    if kind in ("rl", "spread", "total", "pl"):          # tracker bet_type tokens
-        return "power"
-    if kind.startswith(("spread", "total", "run line", "puck line", "alt ")):
-        return "power"
-    return "multiplicative"
+    return "power" if market_kind(market) in GAME_KINDS else "multiplicative"
 
 
 def fair_two_way(odds_a, odds_b, market: str):
-    """De-vig a two-way market's American prices -> (fair_a, fair_b), method by market."""
+    """De-vig a two-way market's American prices -> (fair_a, fair_b), method by kind.
+
+    `market` is a kind or a label `market_kind` maps; unknown labels raise ValueError."""
     p_a, p_b = american_to_prob(odds_a), american_to_prob(odds_b)
     if devig_method(market) == "power":
         return power_devig(p_a, p_b)
@@ -129,7 +228,10 @@ def ev_per_dollar(fair_p: float, p_best: float) -> float:
 
 
 def gate_threshold(market: str) -> float:
-    """Minimum projected CLV to log: 3% for player props, 2% for game lines."""
+    """Minimum projected CLV to log: 3% for player props, 2% for the three game kinds.
+
+    `market` is a kind or a label `market_kind` maps; anything else raises ValueError
+    (it used to fall through to the 2% game-line gate)."""
     return PLAYER_PROP_GATE if _is_prop(market) else GAME_LINE_GATE
 
 
@@ -293,10 +395,298 @@ def evaluate_board(board: dict) -> dict:
 
 
 # ==================================================================================
+# Exchange Benchmark (ADR 0011) — the fair line now that Pinnacle is off the feed
+# ==================================================================================
+# A quote is one book's two-way price at one line:
+#   {"book_id": int, "line": number | None, "odds_a": american, "odds_b": american,
+#    "updated": "YYYY-MM-DD HH:MM:SS" (UTC, as BettingPros sends it) | datetime}
+# `odds_a` / `odds_b` are the market's two selections in a fixed order (see
+# `quotes_from_offer`). A spread quote's `line` is selection A's signed number, so
+# +2.5 and +3 are different lines. A moneyline has no number: its line is ignored.
+
+def operator_of(book_id):
+    """The operator a book belongs to (Polymarket + Polymarket US are one)."""
+    return OPERATOR.get(book_id, book_id)
+
+
+def quote_hold(quote):
+    """Two-way hold (overround) of a quote: p_a + p_b - 1. None if either side is
+    missing or unparseable."""
+    try:
+        return american_to_prob(quote["odds_a"]) + american_to_prob(quote["odds_b"]) - 1.0
+    except (KeyError, TypeError, OddsParseError):
+        return None
+
+
+def _two_sided(quote) -> bool:
+    return quote.get("odds_a") is not None and quote.get("odds_b") is not None
+
+
+def _same_line(a, b, kind) -> bool:
+    if kind == "moneyline":
+        return True
+    try:
+        return abs(float(a) - float(b)) < 1e-9
+    except (TypeError, ValueError):
+        return False
+
+
+def is_placeholder_odds(odds) -> bool:
+    """True for the feed's suspended-side placeholders (+99900 / -99900 and the like).
+
+    BettingPros marks a side it isn't really offering with an absurd price. Paired with
+    a live side, +99900/-120 "holds" about -45% and sailed through an upper-bound-only
+    hold filter, producing a +90% "edge". Any |odds| ≥ PLACEHOLDER_ODDS is not a price."""
+    try:
+        return abs(_parse_odds(odds)) >= PLACEHOLDER_ODDS
+    except OddsParseError:
+        return False
+
+
+def _require_aware(now) -> datetime:
+    """The scan clock must be a timezone-aware datetime (naive raises ValueError)."""
+    if not isinstance(now, datetime) or now.tzinfo is None or now.utcoffset() is None:
+        raise ValueError(f"`now` must be a timezone-aware datetime, got {now!r}")
+    return now
+
+
+def _as_utc(ts):
+    """'2026-10-25 02:09:30' / ISO string / datetime -> aware UTC datetime, else None.
+
+    BettingPros `updated` strings are UTC without an offset, so a naive value is read
+    as UTC; an aware one is converted."""
+    if isinstance(ts, datetime):
+        dt = ts
+    elif isinstance(ts, str) and ts.strip():
+        try:
+            dt = datetime.fromisoformat(ts.strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    else:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _age_minutes(quote, now):
+    """Minutes from the quote's `updated` to `now` (negative = stamped after `now`)."""
+    now = _require_aware(now)
+    updated = _as_utc(quote.get("updated"))
+    if updated is None:
+        return None
+    return (now - updated).total_seconds() / 60.0
+
+
+def _age_ok(age, max_age_min) -> bool:
+    return age is not None and -MAX_FUTURE_SKEW_MIN - 1e-9 <= age <= max_age_min + 1e-9
+
+
+def benchmark_eligible(quote, line, kind, now) -> bool:
+    """Does this quote count toward the Exchange Benchmark at `line`?
+
+    Benchmark book, both sides quoted with real prices (no placeholder), identical
+    line, hold between -0.5% and 3%, updated no more than 60 minutes before `now` and
+    no more than 5 minutes after it. A quote with no parseable `updated` is excluded,
+    never assumed fresh. `now` must be timezone-aware."""
+    _require_aware(now)
+    if quote.get("book_id") not in BENCHMARK_BOOKS or not _two_sided(quote):
+        return False
+    if is_placeholder_odds(quote["odds_a"]) or is_placeholder_odds(quote["odds_b"]):
+        return False
+    if not _same_line(quote.get("line"), line, kind):
+        return False
+    hold = quote_hold(quote)
+    if hold is None or not (MIN_BENCHMARK_HOLD - 1e-12 <= hold <= MAX_BENCHMARK_HOLD + 1e-12):
+        return False
+    return _age_ok(_age_minutes(quote, now), MAX_QUOTE_AGE_MIN)
+
+
+def exchange_benchmark(quotes, line, kind, now):
+    """The Exchange Benchmark fair price at `line`, or None when there isn't one.
+
+    Keeps benchmark quotes eligible at exactly `line` (`benchmark_eligible`), keeps the
+    freshest per operator, and needs at least MIN_OPERATORS operators. The fair price
+    per side is the median of the per-operator de-vigged prices (power for game kinds,
+    multiplicative for props). Returns {fair_a, fair_b, operators, quotes_used}.
+    `now` must be a timezone-aware datetime.
+    """
+    kind = market_kind(kind)
+    _require_aware(now)
+    freshest = {}
+    for quote in quotes:
+        if not benchmark_eligible(quote, line, kind, now):
+            continue
+        op = operator_of(quote["book_id"])
+        held = freshest.get(op)
+        if held is None or _age_minutes(quote, now) < _age_minutes(held, now):
+            freshest[op] = quote
+    if len(freshest) < MIN_OPERATORS:
+        return None
+    operators = sorted(freshest, key=str)
+    used = [freshest[op] for op in operators]
+    fairs = [fair_two_way(u["odds_a"], u["odds_b"], kind) for u in used]
+    return {
+        "fair_a": statistics.median(f[0] for f in fairs),
+        "fair_b": statistics.median(f[1] for f in fairs),
+        "operators": operators,
+        "quotes_used": used,
+    }
+
+
+def _usable_lines(book):
+    """A book's priced, live lines from a raw /offers selection (drops is_off/inactive)."""
+    out = []
+    for ln in book.get("lines") or []:
+        if ln.get("cost") is None or ln.get("is_off") or ln.get("active") is False:
+            continue
+        try:
+            cost = _parse_odds(ln["cost"])
+        except OddsParseError:
+            continue
+        out.append((ln.get("line"), cost, ln.get("updated"), bool(ln.get("main"))))
+    return out
+
+
+def _older(ts_a, ts_b):
+    """The staler of two `updated` stamps (a pair is only as fresh as its older side)."""
+    da, db = _as_utc(ts_a), _as_utc(ts_b)
+    if da is None or db is None:
+        return None
+    return ts_a if da <= db else ts_b
+
+
+def quotes_from_offer(offer, kind):
+    """Turn one raw BettingPros /offers market into two-way quotes. Pure; no I/O.
+
+    `offer` is one element of the feed's `offers` list, with exactly two selections
+    (A then B, in feed order). Each book's selection-A line is paired with its
+    selection-B line at the same number (total, prop), or at the negated number
+    (spread: A -6.5 with B +6.5, quoted at A's line). A moneyline has no number, so
+    each book's main price on each side is paired. Lines flagged `is_off` or inactive
+    are dropped; a side a book doesn't price leaves no quote. Returns
+    {"labels": (label_a, label_b), "quotes": [quote, ...]}.
+    """
+    kind = market_kind(kind)
+    sels = offer.get("selections") or []
+    if len(sels) != 2:
+        return {"labels": None, "quotes": []}
+    labels = tuple((s.get("label") or s.get("selection") or "").strip() for s in sels)
+    books_b = {b.get("id"): _usable_lines(b) for b in sels[1].get("books") or []}
+    quotes = []
+    for book in sels[0].get("books") or []:
+        bid = book.get("id")
+        lines_a, lines_b = _usable_lines(book), books_b.get(bid) or []
+        if not lines_a or not lines_b:
+            continue
+        if kind == "moneyline":
+            la = next((x for x in lines_a if x[3]), lines_a[0])
+            lb = next((x for x in lines_b if x[3]), lines_b[0])
+            quotes.append({"book_id": bid, "line": la[0], "odds_a": la[1], "odds_b": lb[1],
+                           "updated": _older(la[2], lb[2])})
+            continue
+        for line_a, cost_a, upd_a, _ in lines_a:
+            try:
+                want = -float(line_a) if kind == "spread" else float(line_a)
+            except (TypeError, ValueError):
+                continue
+            match = [x for x in lines_b if x[0] is not None and abs(float(x[0]) - want) < 1e-9]
+            if not match:
+                continue
+            line_b, cost_b, upd_b, _ = match[0]
+            quotes.append({"book_id": bid, "line": float(line_a), "odds_a": cost_a,
+                           "odds_b": cost_b, "updated": _older(upd_a, upd_b)})
+    return {"labels": labels, "quotes": quotes}
+
+
+def _line_key(line, kind):
+    if kind == "moneyline":
+        return None
+    try:
+        return round(float(line), 6)
+    except (TypeError, ValueError):
+        return ("unparseable", line)
+
+
+def scan_market(quotes, kind, now):
+    """Score every retail price in one market against the Exchange Benchmark.
+
+    Groups quotes by line. For each retail quote (RETAIL_BOOKS only — a benchmark or
+    any other book is never a candidate) and each side it prices, computes projected
+    CLV against the benchmark at that same line and returns one row per side:
+    `log` (clears the kind's gate with ≥1u), `reject` (positive but below the gate or
+    the 1u stake floor) or `no_bet` (at or worse than fair). A line with no
+    benchmark yields no rows: a price is never compared with a different number.
+
+    A retail quote must be updated within MAX_RETAIL_QUOTE_AGE_MIN (24h) of `now` and
+    no more than 5 minutes after it (dead rungs linger on the feed for days); a
+    placeholder side (|odds| ≥ 10000) gives no row. Each row carries `quote_age_min`
+    and `benchmark_max_age_min` so the freshness rules can be tightened from data. A
+    spread row reports its own side's number (side B is the negation of the quote's
+    line). Rows are sorted by CLV, best first. `now` must be timezone-aware.
+    """
+    kind = market_kind(kind)
+    _require_aware(now)
+    gate = gate_threshold(kind)
+    benchmarks = {}
+    rows = []
+    for quote in quotes:
+        if quote.get("book_id") not in RETAIL_BOOKS:
+            continue
+        key = _line_key(quote.get("line"), kind)
+        if isinstance(key, tuple):
+            continue
+        quote_age = _age_minutes(quote, now)
+        if not _age_ok(quote_age, MAX_RETAIL_QUOTE_AGE_MIN):
+            continue
+        if key not in benchmarks:
+            benchmarks[key] = exchange_benchmark(quotes, quote.get("line"), kind, now)
+        bench = benchmarks[key]
+        if bench is None:
+            continue
+        bench_age = max(_age_minutes(u, now) for u in bench["quotes_used"])
+        for side, odds_key, fair_key in (("a", "odds_a", "fair_a"), ("b", "odds_b", "fair_b")):
+            odds = quote.get(odds_key)
+            if odds is None or is_placeholder_odds(odds):
+                continue
+            line = quote.get("line")
+            if kind == "spread" and side == "b" and line is not None:
+                line = -float(line)
+            try:
+                p_best = american_to_prob(odds)
+            except OddsParseError:
+                continue
+            fair_p = bench[fair_key]
+            clv = projected_clv(fair_p, p_best)
+            units = units_from_clv(fair_p, p_best, clv, kind) if clv > 0 else 0
+            if clv <= 0:
+                action, reason = "no_bet", "at or worse than the Exchange Benchmark fair price"
+            elif clv >= gate and units >= 1:
+                action, reason = "log", None
+            elif clv < gate:
+                action = "reject"
+                reason = (f"+{clv*100:.1f}% CLV is below the {gate*100:.0f}% "
+                          f"{'player-prop' if kind == 'prop' else 'game-line'} gate")
+            else:
+                action, reason = "reject", "stake below the 1u minimum (½-Kelly < 0.5% bankroll)"
+            rows.append({
+                "book_id": quote["book_id"], "line": line, "side": side,
+                "odds": odds, "p_best": p_best, "fair_p": fair_p, "clv": clv,
+                "gate": gate, "units": units, "action": action, "reason": reason,
+                "edge_type": "clv_value" if clv > 0 else None, "kind": kind,
+                "operators": bench["operators"], "updated": quote.get("updated"),
+                "quote_age_min": quote_age, "benchmark_max_age_min": bench_age,
+            })
+    rows.sort(key=lambda r: r["clv"], reverse=True)
+    return rows
+
+
+# ==================================================================================
 # helpers
 # ==================================================================================
 def _is_prop(market: str) -> bool:
-    return "prop" in (market or "").strip().lower()
+    """Kind lookup, not a substring search (raises ValueError on an unknown label)."""
+    return market_kind(market) == "prop"
 
 
 class OddsParseError(ValueError):
