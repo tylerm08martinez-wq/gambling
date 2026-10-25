@@ -118,6 +118,13 @@ class TestDailyRunLockSections(unittest.TestCase):
     def test_the_v3_retry_todo_is_resolved(self):
         self.assertNotIn("TODO(#112)", DAILY.read_text())
 
+    def test_failing_to_lock_the_v3_push_never_stops_the_picks_run(self):
+        # The V3 observations commit is optional; only the pull/backfill lock may abort.
+        v3_takes = [l for l in self.lines if 'tracker_lock_take' in l and 'V3' in l]
+        self.assertEqual(len(v3_takes), 1)
+        self.assertNotIn("exit", v3_takes[0])
+        self.assertTrue(v3_takes[0].strip().startswith("if tracker_lock_take"))
+
     @unittest.skipUnless(shutil.which("flock") and shutil.which("bash"), "needs flock + bash")
     def test_take_holds_the_lock_and_release_frees_it(self):
         text = DAILY.read_text()

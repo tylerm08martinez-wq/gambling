@@ -229,15 +229,20 @@ v3_push_observations() {
 if [ -f "$V3_OBS" ] && [ -n "$(git status --porcelain -- "$V3_OBS")" ]; then
   # The retry pulls with --autostash, which would race a capture writing
   # closing_lines.json, so the commit + push + retry hold the shared lock.
-  tracker_lock_take "the V3 observations commit/push" || exit 1
-  git add -- "$V3_OBS"
-  git commit -m "chore: V3 observation scan for $TODAY" -- "$V3_OBS" 2>&1 | tee -a "$LOG" || true
-  v3_push_rc=0
-  v3_push_observations || v3_push_rc=$?
-  tracker_lock_release
-  if [ "$v3_push_rc" -eq 2 ]; then
-    echo "❌ HEAD is not on main after the V3 push retry — stopping before claude -p." | tee -a "$LOG"
-    exit 1
+  # A V3-only problem must never stop the picks run: if the lock can't be had,
+  # skip the observations commit (alert) and carry on to the picks step.
+  if tracker_lock_take "the V3 observations commit/push"; then
+    git add -- "$V3_OBS"
+    git commit -m "chore: V3 observation scan for $TODAY" -- "$V3_OBS" 2>&1 | tee -a "$LOG" || true
+    v3_push_rc=0
+    v3_push_observations || v3_push_rc=$?
+    tracker_lock_release
+    if [ "$v3_push_rc" -eq 2 ]; then
+      echo "❌ HEAD is not on main after the V3 push retry — stopping before claude -p." | tee -a "$LOG"
+      exit 1
+    fi
+  else
+    notify_failure "⚠️ Daily Bet Picks: could not take scripts/.tracker.lock for the V3 observations commit on $(hostname); observations left uncommitted, picks continue."
   fi
 fi
 # ---------------------------------------------------------------------------
