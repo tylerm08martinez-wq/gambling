@@ -133,24 +133,20 @@ def power_devig(p_a: float, p_b: float, iterations: int = 80):
 
 
 def devig_method(market: str) -> str:
-    """'power' for spreads/totals, 'multiplicative' for moneylines/props (REFERENCE.md §2).
+    """'power' for every game line (moneyline, spread, total), 'multiplicative' for props.
 
-    Accepts tracker's `bet_type` vocabulary as well as prose market names. tracker
-    emits the short tokens 'rl' and 'spread'; 'rl' matched none of the prefixes and
-    silently fell through to multiplicative, which is the wrong method for a handicap
-    market. That was latent while `bet_type` was almost always absent (the "moneyline"
-    default applied) and became reachable the moment cmd_log started persisting it.
+    ADR 0011. `market` is a kind or any label `market_kind` knows (tracker's `bet_type`
+    tokens such as 'rl', or the SKILL's 'total 210.5'); an unknown label raises
+    ValueError. Moneylines were multiplicative before ADR 0011, which inflates the
+    longshot: on a heavy favourite it can turn a negative CLV positive.
     """
-    kind = (market or "").strip().lower()
-    if kind in ("rl", "spread", "total", "pl"):          # tracker bet_type tokens
-        return "power"
-    if kind.startswith(("spread", "total", "run line", "puck line", "alt ")):
-        return "power"
-    return "multiplicative"
+    return "power" if market_kind(market) in GAME_KINDS else "multiplicative"
 
 
 def fair_two_way(odds_a, odds_b, market: str):
-    """De-vig a two-way market's American prices -> (fair_a, fair_b), method by market."""
+    """De-vig a two-way market's American prices -> (fair_a, fair_b), method by kind.
+
+    `market` is a kind or a label `market_kind` maps; unknown labels raise ValueError."""
     p_a, p_b = american_to_prob(odds_a), american_to_prob(odds_b)
     if devig_method(market) == "power":
         return power_devig(p_a, p_b)

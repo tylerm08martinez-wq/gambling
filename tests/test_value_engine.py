@@ -161,10 +161,11 @@ class TestDevig(unittest.TestCase):
         self.assertGreater(fa, fb)  # the -900 favorite stays the favorite
 
     def test_fair_prob_routes_method_by_market(self):
-        # game lines that are spreads/totals use the power method; ML/props multiplicative
+        # ADR 0011: power for every game line (moneyline, spread, total); props stay
+        # multiplicative. (Moneylines were multiplicative before ADR 0011.)
         self.assertEqual(ve.devig_method("total 210.5"), "power")
         self.assertEqual(ve.devig_method("spread -3.5"), "power")
-        self.assertEqual(ve.devig_method("moneyline"), "multiplicative")
+        self.assertEqual(ve.devig_method("moneyline"), "power")
         self.assertEqual(ve.devig_method("player_prop"), "multiplicative")
 
 
@@ -280,6 +281,42 @@ class TestMarketKind(unittest.TestCase):
         for label in ("points", "PRA", "", None, "propane", "first half", "total bases"):
             with self.assertRaises(ValueError, msg=repr(label)):
                 ve.market_kind(label)
+
+
+class TestDevigByKind(unittest.TestCase):
+    def test_power_for_every_game_kind_multiplicative_for_props(self):
+        for kind in ("moneyline", "spread", "total"):
+            self.assertEqual(ve.devig_method(kind), "power", msg=kind)
+        self.assertEqual(ve.devig_method("prop"), "multiplicative")
+
+    def test_unknown_kind_raises(self):
+        with self.assertRaises(ValueError):
+            ve.devig_method("points")
+        with self.assertRaises(ValueError):
+            ve.fair_two_way(-110, -110, "PRA")
+
+    def test_moneyline_fair_price_is_power_devig(self):
+        # ARI -120 / SF +110. Power: k solves .5455^k + .4762^k = 1 -> fair SF .4650
+        # (multiplicative gave .4661, inflating the dog). Hand-checked by bisection.
+        fa, fb = ve.fair_two_way("-120", "+110", "moneyline")
+        self.assertAlmostEqual(fa, 0.5350, places=4)
+        self.assertAlmostEqual(fb, 0.4650, places=4)
+
+    def test_prop_fair_price_is_unchanged_multiplicative(self):
+        # REFERENCE.md §2: Over -115 / Under -105 -> fair .5108 / .4892
+        fa, fb = ve.fair_two_way(-115, -105, "prop")
+        self.assertAlmostEqual(fa, 0.5108, places=4)
+        self.assertAlmostEqual(fb, 0.4892, places=4)
+
+    def test_heavy_favourite_longshot_not_inflated(self):
+        # Benchmark around -1200/+800 (here -1200/+900, 2.3% hold) vs retail +809.
+        # Power puts the dog at ~.083 (< +809's .1099), so CLV is clearly negative;
+        # multiplicative's ~.098 is the inflated longshot ADR 0011 removed.
+        fav, dog = ve.fair_two_way(-1200, 900, "moneyline")
+        self.assertAlmostEqual(dog, 0.0829, places=3)
+        _, mult_dog = ve.multiplicative_devig(ve.american_to_prob(-1200), ve.american_to_prob(900))
+        self.assertLess(dog, mult_dog)
+        self.assertLess(ve.projected_clv(dog, ve.american_to_prob(809)), -0.2)
 
 
 if __name__ == "__main__":
