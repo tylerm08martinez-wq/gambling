@@ -1000,8 +1000,10 @@ def _normalize_name(s: str) -> str:
     return re.sub(r'[^a-z\s]', '', s.lower()).strip()
 
 
-# A side word followed by its threshold: "Over 11.5", "UNDER 7", "Under 8.5".
-_SIDE_THRESHOLD_RE = re.compile(r'\b(over|under)\s*(\d+(?:\.\d+)?)', re.IGNORECASE)
+# A side word followed by its threshold: "Over 11.5", "UNDER 7", "Under 8.5". The
+# lookahead refuses a vulgar-fraction form ("Under 8½"), which would otherwise parse as
+# 8.0, a different bet; such text has no threshold and the pick stays open.
+_SIDE_THRESHOLD_RE = re.compile(r'\b(over|under)\s*(\d+(?:\.\d+)?)(?!\.?[\d½¼¾])', re.IGNORECASE)
 _NPLUS_RE = re.compile(r'(\d+(?:\.\d+)?)\+')
 
 
@@ -1023,7 +1025,11 @@ def parse_bet_threshold(bet: str) -> Optional[dict]:
     open rather than choosing one.
     """
     bet = bet or ""
-    nplus = {float(m.group(1)) for m in _NPLUS_RE.finditer(bet)}
+    # An "N+" inside a parenthetical is commentary ("(steam at 3+ books)"), not the line.
+    parens = [m.span() for m in re.finditer(r'\([^)]*\)', bet)]
+    nplus_hits = [m for m in _NPLUS_RE.finditer(bet)
+                  if not any(a <= m.start() < b for a, b in parens)]
+    nplus = {float(m.group(1)) for m in nplus_hits}
     pairs = [(m.group(1).lower(), float(m.group(2)), m.start())
              for m in _SIDE_THRESHOLD_RE.finditer(bet)]
     if nplus and pairs:
@@ -1033,7 +1039,7 @@ def parse_bet_threshold(bet: str) -> Optional[dict]:
             return None
         n = nplus.pop()
         return {"side": "over", "threshold": n - 0.5,
-                "start": _NPLUS_RE.search(bet).start(), "accepts": (n, n - 0.5)}
+                "start": nplus_hits[0].start(), "accepts": (n, n - 0.5)}
     if len({(side, value) for side, value, _ in pairs}) != 1:
         return None
     side, value, start = pairs[0]
@@ -1826,7 +1832,7 @@ def cmd_auto_resolve(_args, sources=None):
                 parsed = parse_bet_threshold(bet)
                 if parsed is not None and not line_num_agrees(parsed, line_num):
                     # #113: line_num holds odds or a margin, not the threshold.
-                    reason = (f"line_num {line_num:g} disagrees with the bet text's "
+                    reason = (f"line_num {line_num!r} disagrees with the bet text's "
                               f"{parsed['threshold']:g} — left open, run migrate-line-num")
                 elif _is_combined_stat(bet):
                     reason = "combined-stat (sum of components) — resolve manually"

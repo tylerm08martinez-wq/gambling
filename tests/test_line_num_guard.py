@@ -374,5 +374,34 @@ class TestMigrateLineNum(unittest.TestCase):
         self.assertIn("changed rows: 0", out)
 
 
+
+class TestReviewFollowUps(unittest.TestCase):
+    """PR #115 review: three parse/format edge cases."""
+
+    def test_vulgar_fraction_threshold_is_refused_not_truncated(self):
+        # "Under 8½" used to parse as 8.0 — a different bet (8 can push, 8.5 cannot).
+        for bet in ("Twins @ Cubs Under 8½ (game total)", "Twins @ Cubs Under 18½",
+                    "Corbin Burnes Over 6¼ strikeouts", "Corbin Burnes Over 6.5¾ strikeouts"):
+            self.assertIsNone(tracker.parse_bet_threshold(bet), bet)
+        self.assertIsNone(tracker.extract_prop("Corbin Burnes Under 5½ strikeouts", None))
+
+    def test_string_line_num_does_not_crash_the_nightly_run(self):
+        # The skip message formatted line_num with :g, which raises on a str and would
+        # abort cmd_auto_resolve for every pick after it.
+        p = _open_pick(line_num="-108")
+        save, out = _auto_resolve([p], _ace_box(6))
+        self.assertIsNone(p["result"])
+        save.assert_not_called()
+        self.assertIn("line_num '-108'", out)
+
+    def test_parenthetical_n_plus_does_not_block_parsing(self):
+        spec = tracker.parse_bet_threshold("Corbin Burnes Under 5.5 strikeouts (steam at 3+ books)")
+        self.assertEqual((spec["side"], spec["threshold"]), ("under", 5.5))
+        spec = tracker.parse_bet_threshold("Mookie Betts 2+ hits (steam at 3+ books)")
+        self.assertEqual((spec["side"], spec["threshold"], spec["start"]), ("over", 1.5, 13))
+        spec = tracker.extract_prop("Corbin Burnes Under 5.5 strikeouts (steam at 3+ books)", 5.5)
+        self.assertEqual((spec["player"], spec["threshold"]), ("corbin burnes", 5.5))
+
+
 if __name__ == "__main__":
     unittest.main()
