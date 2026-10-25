@@ -22,10 +22,12 @@ a 55% strategy from breakeven on results alone needs ~2,300 bets. CLV answers th
 question in a fraction of that — but only if it is actually measured. Coverage is the
 binding constraint on learning anything from this project.
 
-SCOPE: MLB, NBA and NFL player props (the Primary Edge, and what the offer-ladder
-endpoint prices two-way; NBA/NFL added in #107). Game lines and totals need a different
-market id and stay out until #109. Residential IP only — BettingPros 403s datacenter
-(ADR 0006).
+SCOPE: MLB, NBA and NFL player props (the Primary Edge; NBA/NFL added in #107), and
+since #109 MLB, NBA and NFL game lines (moneyline, spread / run line, game total) plus
+every V3 observation in v3-observations.json (ADR 0011). Game-line picks are matched by
+game, team and exact line (`capture_game_lines`); observations get a retail-consensus
+close and an Exchange Benchmark close (`capture_observations`). Residential IP only —
+BettingPros 403s datacenter (ADR 0006).
 """
 
 import json
@@ -87,7 +89,16 @@ def due_for_capture(pick, now, *, window_minutes, tz=AZ, start=None):
     return mins is not None and 0 < mins <= window_minutes
 
 
-def load_snapshots(path=SNAPSHOT_FILE):
+# The V3 Observation Scan's output (v3_scan.OBSERVATIONS_FILE); capture fills in each
+# observation's `close` (#109).
+OBSERVATIONS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 "v3-observations.json")
+
+
+def load_snapshots(path=None):
+    # The path is resolved at call time, not bound as a default argument, so pointing
+    # SNAPSHOT_FILE at a temp copy really redirects every read and write.
+    path = path or SNAPSHOT_FILE
     try:
         with open(path, encoding="utf-8") as f:
             return json.load(f)
@@ -95,7 +106,8 @@ def load_snapshots(path=SNAPSHOT_FILE):
         return {}
 
 
-def save_snapshots(snaps, path=SNAPSHOT_FILE):
+def save_snapshots(snaps, path=None):
+    path = path or SNAPSHOT_FILE
     with open(path, "w", encoding="utf-8") as f:
         json.dump(snaps, f, indent=2, sort_keys=True)
         f.write("\n")
@@ -687,22 +699,38 @@ def make_event_start(sport, *, bp):
     """
     by_date = {}
 
-    def _parse(ts):
-        ts = (ts or "").strip()
-        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%SZ"):
-            try:
-                return datetime.strptime(ts, fmt).replace(tzinfo=timezone.utc)
-            except ValueError:
-                continue
-        return None
-
     def event_start(date, event_id):
         if date not in by_date:
-            by_date[date] = {ev.get("id"): _parse(ev.get("scheduled"))
+            by_date[date] = {ev.get("id"): _parse_scheduled(ev.get("scheduled"))
                              for ev in bp.fetch_events(sport, date)}
         return by_date[date].get(event_id)
 
     return event_start
+
+
+def _parse_scheduled(ts):
+    """BettingPros `scheduled` (UTC, no offset) -> aware UTC datetime, else None."""
+    ts = (ts or "").strip()
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%SZ"):
+        try:
+            return datetime.strptime(ts, fmt).replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+    return None
+
+
+def make_events_for(sport, *, bp):
+    """`events_for(date) -> [{"id", "start"}]` for capture_game_lines, from the day's
+    /events (scheduled UTC start). An event with no parseable start is dropped: it can
+    never be shown to be pre-game."""
+    def events_for(date):
+        out = []
+        for ev in bp.fetch_events(sport, date):
+            start = _parse_scheduled(ev.get("scheduled"))
+            if ev.get("id") is not None and start is not None:
+                out.append({"id": ev["id"], "start": start})
+        return out
+    return events_for
 
 
 def _sport_of(pick):
@@ -728,6 +756,24 @@ def capture_live(picks, now=None, *, tracker=None, bp=None, clv_fetch=None,
         mine = [p for p in picks if _sport_of(p) == sport]
         if not mine:
             continue
+        # Game lines (#109) go to their own matcher; every other pick takes the
+        # original prop path exactly as before.
+        games = [p for p in mine if tracker.classify_bet(p) in GAME_LINE_KIND]
+        if games:
+            snaps, rows = capture_game_lines(
+                games, now,
+                events_for=make_events_for(sport, bp=bp),
+                fetch_ladders=lambda ev, mk, _s=sport: bp.fetch_game_line_ladders(
+                    ev, mk, sport=_s),
+                market_for_kind=cf.GAME_LINE_MARKET.get(sport, {}).get,
+                classify_bet=tracker.classify_bet,
+                window_minutes=window_minutes,
+                snapshots=snaps,
+            )
+            report.extend(rows)
+            mine = [p for p in mine if tracker.classify_bet(p) not in GAME_LINE_KIND]
+            if not mine:
+                continue
         snaps, rows = capture(
             mine, now,
             normalize_name=tracker._normalize_name,
@@ -743,3 +789,20 @@ def capture_live(picks, now=None, *, tracker=None, bp=None, clv_fetch=None,
         if p.get("result") is None and _sport_of(p) not in cf.CLOSE_SPORTS:
             report.append((p.get("id"), "skip", f"sport {_sport_of(p)} has no close capture"))
     return snaps, report
+
+
+def capture_observations_live(now=None, *, bp=None, window_minutes=45, path=None):
+    """Live wiring for `capture_observations` over the observations file at `path`
+    (default OBSERVATIONS_FILE). Reads only; the caller saves with
+    `save_observation_closes`. No file yet = nothing to capture."""
+    import importlib
+    bp = bp or importlib.import_module("bettingpros")
+    path = path or OBSERVATIONS_FILE
+    if not os.path.exists(path):
+        return {}, []
+    import v3_scan
+    store = v3_scan.load_store(path)
+    now = now or datetime.now(timezone.utc)
+    return capture_observations(
+        store, now, window_minutes=window_minutes,
+        fetch_offers=lambda sport, ev, mk: bp.fetch_raw_offers(ev, mk, sport=sport))

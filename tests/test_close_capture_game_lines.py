@@ -638,5 +638,124 @@ class TestObservationCloses(unittest.TestCase):
         self.assertEqual(saved["runs"], [{"scan_date": "2026-10-25"}])
 
 
+# ── live wiring ──────────────────────────────────────────────────────────────────
+
+cf = _load("clv_fetch")
+
+
+class FakeLiveBP:
+    """The bettingpros surface capture_live / capture_observations_live use."""
+
+    def __init__(self):
+        self.calls = []
+        self.offers = {("NBA", 27926, 129): [spread_offer()],
+                       ("NBA", 27926, 127): [moneyline_offer()]}
+
+    def fetch_events(self, sport, date):
+        self.calls.append(("events", sport, date))
+        return [{"id": 27926, "scheduled": "2026-10-25 23:00:00"}] if sport == "NBA" else []
+
+    def fetch_props(self, sport, date=None):
+        self.calls.append(("props", sport, date))
+        return []
+
+    def fetch_offer_ladder(self, event_id, market_id, *, sport="MLB"):
+        self.calls.append(("ladder", sport, event_id, market_id))
+        return []
+
+    def fetch_game_line_ladders(self, event_id, market_id, *, sport):
+        self.calls.append(("game_ladders", sport, event_id, market_id))
+        return [bp.game_line_ladder(o) for o in self.offers.get((sport, event_id, market_id), [])]
+
+    def fetch_raw_offers(self, event_id, market_id, *, sport):
+        self.calls.append(("raw_offers", sport, event_id, market_id))
+        return copy.deepcopy(self.offers.get((sport, event_id, market_id), []))
+
+
+class TestLiveWiring(unittest.TestCase):
+    def test_game_line_market_ids_agree_with_the_observation_scan(self):
+        for sport, rows in v3.MARKETS.items():
+            scan_ids = {kind: mid for mid, kind, _ in rows if kind != "prop"}
+            self.assertEqual(cf.GAME_LINE_MARKET[sport], scan_ids, sport)
+
+    def test_nba_spread_pick_is_captured_through_capture_live(self):
+        fake = FakeLiveBP()
+        snaps, report = cc.capture_live([_gl("g1", "Clippers +14.5 vs Thunder", 14.5)],
+                                        _at(15, 50), tracker=tracker, bp=fake, clv_fetch=cf,
+                                        window_minutes=45, snapshots={})
+        self.assertEqual(snaps["g1"]["close"], {"LAC": "-108", "OKC": "-112"})
+        self.assertIn(("game_ladders", "NBA", 27926, 129), fake.calls)
+        self.assertFalse([c for c in fake.calls if c[0] == "ladder"])   # no prop ladder
+
+    def test_observations_live_reads_and_writes_only_the_given_file(self):
+        fake = FakeLiveBP()
+        with tempfile.TemporaryDirectory() as d:
+            path = str(Path(d) / "v3-observations.json")
+            v3.save_store(path, {"runs": [], "observations": [
+                dict(_spread_observation(), start_utc="2026-10-25T23:00:00Z")]})
+            fake.offers[("NBA", 27926, 129)] = [_okc_spread_offer()]
+            updates, report = cc.capture_observations_live(_utc(22, 50), bp=fake,
+                                                           window_minutes=45, path=path)
+            self.assertEqual(list(updates), ["v3obs-okc"])
+            self.assertIn(("raw_offers", "NBA", 27926, 129), fake.calls)
+            self.assertIsNone(v3.load_store(path)["observations"][0]["close"])  # not saved
+
+    def test_missing_observations_file_is_a_quiet_no_op(self):
+        fake = FakeLiveBP()
+        with tempfile.TemporaryDirectory() as d:
+            updates, report = cc.capture_observations_live(
+                _utc(22, 50), bp=fake, window_minutes=45, path=str(Path(d) / "none.json"))
+        self.assertEqual((updates, report), ({}, []))
+        self.assertEqual(fake.calls, [])
+
+
+class TestCaptureClosesCommand(unittest.TestCase):
+    """tracker.py capture-closes writes both files only under --apply."""
+
+    def _run(self, apply):
+        import argparse
+        import contextlib
+        import io
+        d = tempfile.mkdtemp()
+        snap_path = str(Path(d) / "closing_lines.json")
+        obs_path = str(Path(d) / "v3-observations.json")
+        picks_path = Path(d) / "picks.json"
+        picks_path.write_text("[]")
+        v3.save_store(obs_path, {"runs": [], "observations": [_spread_observation()]})
+        saved = dict(PICKS_FILE=tracker.PICKS_FILE, SNAP=cc.SNAPSHOT_FILE,
+                     OBS=cc.OBSERVATIONS_FILE, live=cc.capture_live,
+                     obs_live=cc.capture_observations_live)
+        sys.modules["close_capture"] = cc
+        tracker.PICKS_FILE = picks_path
+        cc.SNAPSHOT_FILE, cc.OBSERVATIONS_FILE = snap_path, obs_path
+        cc.capture_live = lambda picks, **k: ({"g1": {"close": {}}}, [("g1", "captured", "T-5m")])
+        upd = {"v3obs-okc": {"close": {"side": "Thunder"}, "realized_clv_exchange": 0.01,
+                             "realized_clv_retail": -0.01}}
+        cc.capture_observations_live = lambda **k: (upd, [("v3obs-okc", "captured", "T-5m")])
+        out = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(out):
+                tracker.cmd_capture_closes(argparse.Namespace(window_minutes=45, apply=apply,
+                                                              verbose=False))
+        finally:
+            tracker.PICKS_FILE = saved["PICKS_FILE"]
+            cc.SNAPSHOT_FILE, cc.OBSERVATIONS_FILE = saved["SNAP"], saved["OBS"]
+            cc.capture_live, cc.capture_observations_live = saved["live"], saved["obs_live"]
+        return out.getvalue(), snap_path, obs_path
+
+    def test_apply_writes_snapshots_and_observation_closes(self):
+        out, snap_path, obs_path = self._run(apply=True)
+        self.assertEqual(json.loads(Path(snap_path).read_text()), {"g1": {"close": {}}})
+        obs = v3.load_store(obs_path)["observations"][0]
+        self.assertEqual(obs["close"], {"side": "Thunder"})
+        self.assertEqual(out.count("📸"), 2)
+
+    def test_dry_run_writes_neither(self):
+        out, snap_path, obs_path = self._run(apply=False)
+        self.assertFalse(Path(snap_path).exists())
+        self.assertIsNone(v3.load_store(obs_path)["observations"][0]["close"])
+        self.assertIn("dry-run", out)
+
+
 if __name__ == "__main__":
     unittest.main()

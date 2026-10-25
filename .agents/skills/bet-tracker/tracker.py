@@ -2040,6 +2040,18 @@ def cmd_capture_closes(args):
 
     picks = load_picks()
     snaps, report = close_capture.capture_live(picks, window_minutes=args.window_minutes)
+    picks_captured = any(r[1] == "captured" for r in report)
+    # V3 observations (#109): their closes live on the observation rows, not in
+    # closing_lines.json. A failure here must not cost the picks' captures, so it is
+    # reported and turned into a nonzero exit (the .CAPTURE-FAILED alarm) at the end.
+    obs_failed = None
+    try:
+        obs_updates, obs_report = close_capture.capture_observations_live(
+            window_minutes=args.window_minutes)
+    except Exception as e:                       # noqa: BLE001 - corrupt file / feed
+        obs_failed, obs_updates, obs_report = e, {}, []
+        print(f"  ⚠️  v3 observations: capture failed: {e}", file=sys.stderr)
+    report = list(report) + list(obs_report)
 
     captured = [r for r in report if r[1] == "captured"]
     errors = [r for r in report if r[1] == "error"]
@@ -2055,10 +2067,16 @@ def cmd_capture_closes(args):
     if not captured:
         print(f"ℹ️  No picks inside the {args.window_minutes}m capture window.")
     if args.apply and captured:
-        close_capture.save_snapshots(snaps)
-        print(f"\n✅ Captured {len(captured)} close(s) → {close_capture.SNAPSHOT_FILE}")
+        if picks_captured:
+            close_capture.save_snapshots(snaps)
+        if obs_updates:
+            close_capture.save_observation_closes(close_capture.OBSERVATIONS_FILE, obs_updates)
+        print(f"\n✅ Captured {len(captured)} close(s) → {close_capture.SNAPSHOT_FILE}"
+              + (f" + {close_capture.OBSERVATIONS_FILE}" if obs_updates else ""))
     elif captured:
         print(f"\n[dry-run] would capture {len(captured)}. Re-run with --apply to write.")
+    if obs_failed is not None:
+        sys.exit(1)
 
 
 def cmd_migrate_clv_schema(args):

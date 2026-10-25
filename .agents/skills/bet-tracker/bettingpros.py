@@ -376,6 +376,12 @@ def two_way_game_line(ladder, kind, side_key, line):
     return {side_key: _fmt_american(mine[line]), other: _fmt_american(theirs[want])}
 
 
+def fetch_raw_offers(event_id, market_id, *, sport, get_json=None):
+    """Every raw /offers row for an event+market (all pages), unparsed: the input
+    value_engine.quotes_from_offer reads. [] on failure, never fabricated."""
+    return _fetch_offer_pages(sport, event_id, market_id, get_json or _live_get_json)
+
+
 def fetch_game_line_ladders(event_id, market_id, *, sport, get_json=None):
     """`game_line_ladder` for every /offers row of an event's game-line market (every
     page). Unparseable rows are dropped; [] on failure — never fabricated."""
