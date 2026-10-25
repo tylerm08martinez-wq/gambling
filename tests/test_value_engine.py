@@ -16,7 +16,7 @@ import importlib.util
 import json
 import sys
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 _spec = importlib.util.spec_from_file_location(
@@ -352,7 +352,7 @@ class TestDevigInputValidation(unittest.TestCase):
 
 
 # --- Exchange Benchmark --------------------------------------------------------------
-NOW = datetime(2026, 10, 25, 2, 12, 0)   # naive UTC, like BettingPros `updated`
+NOW = datetime(2026, 10, 25, 2, 12, 0, tzinfo=timezone.utc)   # scans run on an aware clock
 
 
 def q(book_id, line, odds_a, odds_b, minutes_old=5):
@@ -499,7 +499,7 @@ class TestScanMarket(unittest.TestCase):
 
 # --- real-data cases: the live board pulled 2026-10-24 (tests/fixtures) ---------------
 _LIVE = json.loads((Path(__file__).parent / "fixtures" / "exchange_benchmark_offers.json").read_text())
-LIVE_NOW = datetime(2026, 10, 25, 2, 12, 0)   # when poll1 was pulled (UTC)
+LIVE_NOW = datetime(2026, 10, 25, 2, 12, 0, tzinfo=timezone.utc)   # when poll1 was pulled
 
 
 class TestQuotesFromOffer(unittest.TestCase):
@@ -574,6 +574,108 @@ class TestLiveBoardCases(unittest.TestCase):
         rows = ve.scan_market(quotes, "prop", LIVE_NOW)
         self.assertFalse([r for r in rows if r["book_id"] == 19])
         self.assertEqual(rows, [])   # no line on this ladder has two operators
+
+
+# --- review fixes on PR #111 -----------------------------------------------------------
+class TestPlaceholderAndUnderroundQuotes(unittest.TestCase):
+    def test_feed_placeholder_odds_are_recognised(self):
+        # Novig's Gainwell Under 14.5 on the live board is -99900: a suspended side.
+        quotes = ve.quotes_from_offer(_LIVE["gainwell_receiving_yards"], "prop")["quotes"]
+        novig = next(x for x in quotes if x["book_id"] == 60 and x["line"] == 14.5)
+        self.assertEqual(novig["odds_b"], -99900)
+        self.assertTrue(ve.is_placeholder_odds(-99900))
+        self.assertTrue(ve.is_placeholder_odds(99900))
+        self.assertTrue(ve.is_placeholder_odds(10000))
+        self.assertFalse(ve.is_placeholder_odds(9999))
+        self.assertFalse(ve.is_placeholder_odds(-1200))
+        self.assertFalse(ve.benchmark_eligible(novig, 14.5, "prop", LIVE_NOW))
+
+    def test_placeholder_benchmark_quote_cannot_make_a_benchmark(self):
+        # +99900/-120 "holds" -45% and used to pass the hold filter, producing a +90% log.
+        for placeholder in (q(60, 7.5, 99900, -120), q(60, 7.5, 99900, -99900)):
+            quotes = [placeholder, q(68, 7.5, -105, -105), q(12, 7.5, 150, -200)]
+            self.assertIsNone(ve.exchange_benchmark(quotes, 7.5, "total", NOW))
+            self.assertEqual(ve.scan_market(quotes, "total", NOW), [])
+
+    def test_underround_beyond_half_a_point_is_excluded(self):
+        # +110/+110 sums to .952 (hold -4.8%): not a real two-way price.
+        self.assertIsNone(ve.exchange_benchmark(
+            [q(60, 7.5, 110, 110), q(68, 7.5, -105, -105)], 7.5, "total", NOW))
+        # +101/+100 sums to .9975 (hold -0.25%): within the tolerance, counts.
+        self.assertIsNotNone(ve.exchange_benchmark(
+            [q(60, 7.5, 101, 100), q(68, 7.5, -105, -105)], 7.5, "total", NOW))
+
+    def test_retail_placeholder_side_gives_no_row(self):
+        quotes = [q(60, 7.5, -105, -105), q(68, 7.5, -105, -105), q(12, 7.5, 110, -99900)]
+        rows = ve.scan_market(quotes, "total", NOW)
+        self.assertEqual([(r["book_id"], r["side"]) for r in rows], [(12, "a")])
+
+
+class TestClockAndQuoteAge(unittest.TestCase):
+    BENCH = [q(60, 7.5, -105, -105), q(68, 7.5, -105, -105)]
+
+    def test_naive_now_is_rejected(self):
+        naive = datetime(2026, 10, 25, 2, 12, 0)
+        with self.assertRaises(ValueError):
+            ve.exchange_benchmark(self.BENCH, 7.5, "total", naive)
+        with self.assertRaises(ValueError):
+            ve.scan_market(self.BENCH, "total", naive)
+
+    def test_aware_now_in_another_zone_is_the_same_instant(self):
+        az = timezone(timedelta(hours=-7))
+        self.assertIsNotNone(ve.exchange_benchmark(self.BENCH, 7.5, "total", NOW.astimezone(az)))
+
+    def test_future_stamped_benchmark_quote_is_excluded(self):
+        # 4 hours after `now` was accepted before; up to 5 minutes of clock skew is fine.
+        self.assertIsNone(ve.exchange_benchmark(
+            [q(60, 7.5, -105, -105), q(68, 7.5, -105, -105, minutes_old=-240)], 7.5, "total", NOW))
+        self.assertIsNone(ve.exchange_benchmark(
+            [q(60, 7.5, -105, -105), q(68, 7.5, -105, -105, minutes_old=-6)], 7.5, "total", NOW))
+        self.assertIsNotNone(ve.exchange_benchmark(
+            [q(60, 7.5, -105, -105), q(68, 7.5, -105, -105, minutes_old=-4)], 7.5, "total", NOW))
+
+    def test_retail_quote_older_than_a_day_or_future_stamped_gives_no_row(self):
+        self.assertEqual(ve.MAX_RETAIL_QUOTE_AGE_MIN, 24 * 60)
+        for age in (24 * 60 + 1, -240):
+            rows = ve.scan_market(self.BENCH + [q(12, 7.5, 110, -130, minutes_old=age)], "total", NOW)
+            self.assertEqual(rows, [], msg=age)
+        rows = ve.scan_market(self.BENCH + [q(12, 7.5, 110, -130, minutes_old=23 * 60)], "total", NOW)
+        self.assertEqual(len(rows), 2)
+
+    def test_rows_carry_quote_and_benchmark_ages(self):
+        bench = [q(60, 7.5, -105, -105, minutes_old=10), q(68, 7.5, -105, -105, minutes_old=45)]
+        rows = ve.scan_market(bench + [q(12, 7.5, 110, -130, minutes_old=90)], "total", NOW)
+        for r in rows:
+            self.assertAlmostEqual(r["quote_age_min"], 90.0)
+            self.assertAlmostEqual(r["benchmark_max_age_min"], 45.0)
+
+
+class TestSpreadSideLine(unittest.TestCase):
+    def test_side_b_reports_its_own_number(self):
+        # Quote line is side A's: Raiders +3.5 means Chiefs -3.5.
+        quotes = [q(60, 3.5, -105, -105), q(68, 3.5, -105, -105), q(12, 3.5, 110, -130)]
+        rows = {r["side"]: r for r in ve.scan_market(quotes, "spread", NOW)}
+        self.assertEqual(rows["a"]["line"], 3.5)
+        self.assertEqual(rows["b"]["line"], -3.5)
+        # Totals and props keep the shared number on both sides.
+        rows = {r["side"]: r for r in ve.scan_market(
+            [q(60, 7.5, -105, -105), q(68, 7.5, -105, -105), q(12, 7.5, 110, -130)], "total", NOW)}
+        self.assertEqual((rows["a"]["line"], rows["b"]["line"]), (7.5, 7.5))
+
+
+class TestPowerDevigBracket(unittest.TestCase):
+    def test_underround_input_still_sums_to_one(self):
+        fa, fb = ve.power_devig(0.001, 0.6)
+        self.assertAlmostEqual(fa + fb, 1.0, places=9)
+        self.assertGreater(fb, 0.6)   # an underround market is scaled UP, k < 1
+
+    def test_sum_to_one_property_over_a_grid(self):
+        grid = [0.001, 0.01, 0.05, 0.1, 0.25, 0.4, 0.5, 0.6, 0.75, 0.9, 0.95, 0.99, 0.999]
+        for p_a in grid:
+            for p_b in grid:
+                fa, fb = ve.power_devig(p_a, p_b)
+                self.assertAlmostEqual(fa + fb, 1.0, places=9, msg=(p_a, p_b))
+                self.assertEqual(fa > fb, p_a > p_b, msg=(p_a, p_b))
 
 
 if __name__ == "__main__":

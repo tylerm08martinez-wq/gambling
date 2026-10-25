@@ -54,6 +54,17 @@ class TestRealizedClv(unittest.TestCase):
         self.assertIsNone(cb.realized_clv({"ARI": "-120"}, "ARI", "-120", "moneyline"))
         self.assertIsNone(cb.realized_clv(None, "SF", "+120", "moneyline"))
 
+    def test_unknown_market_kind_leaves_the_pick_unmeasured(self):
+        # value_engine.market_kind raises on a label it doesn't know (ADR 0011). The
+        # backfill must leave that pick null, not abort the run or guess a method.
+        self.assertIsNone(cb.realized_clv({"over": "-110", "under": "-110"}, "over", "+100", "points"))
+        # backfill_pick still records the one-sided percentage-point CLV, but no de-vig.
+        p = _pick()
+        cb.backfill_pick(p, {"close": {"ARI": "-120", "SF": "+110"}, "side": "SF",
+                             "market": "first half"})
+        self.assertIsNone(p.get("clv_devig"))
+        self.assertIsNotNone(p.get("clv_pct_pts"))
+
 
 class TestBackfillPick(unittest.TestCase):
     def _close(self):
