@@ -1555,17 +1555,17 @@ class TestNflPropStatMap(unittest.TestCase):
         }
         for bet, key in cases.items():
             with self.subTest(bet=bet):
-                s = self._spec(bet, 1.0)
+                s = self._spec(bet, None)   # threshold from the bet text (#113)
                 self.assertIsNotNone(s)
                 self.assertEqual((s["stat_group"], s["stat_key"]), key)
 
     def test_rushing_plus_receiving_is_a_summed_combo_not_one_component(self):
         # Without the combo entry, "receiving yards" would win and a rush+rec prop would
         # be matched against the receiving-yards market.
-        for bet in ("Kyle Monangai (CHI) Over 50.5 rushing + receiving yards vs PHI",
-                    "Jahmyr Gibbs Over 129.5 rushing and receiving yards (DET @ ARI)"):
+        for bet, ln in (("Kyle Monangai (CHI) Over 50.5 rushing + receiving yards vs PHI", 50.5),
+                        ("Jahmyr Gibbs Over 129.5 rushing and receiving yards (DET @ ARI)", 129.5)):
             with self.subTest(bet=bet):
-                s = self._spec(bet, 50.5)
+                s = self._spec(bet, ln)
                 self.assertEqual(s["stat_key"], ("rushingYards", "receivingYards"))
 
     def test_nfl_prop_without_bet_type_classifies_as_prop(self):

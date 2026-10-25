@@ -133,7 +133,7 @@ class TestBuildCloses(unittest.TestCase):
 
 class TestMarketForSpecBySport(unittest.TestCase):
     def _m(self, sport, bet):
-        spec = tracker.extract_prop(bet, 1.5, tracker._stat_map_for_sport(sport))
+        spec = tracker.extract_prop(bet, None, tracker._stat_map_for_sport(sport))
         self.assertIsNotNone(spec, bet)
         return cf.market_for_spec(spec, sport=sport)
 
@@ -224,9 +224,12 @@ class TestStrictExtractProp(unittest.TestCase):
         self.assertEqual((s["side"], s["threshold"]), ("over", 24.5))
 
     def test_n_plus_elsewhere_in_the_text_does_not_skip_the_line_check(self):
-        # Review of #112: extract_prop reads "3+" first and returns OVER 2.5 for an
-        # Under 224.5 bet. A stray N+ must never bypass the Over/Under line check.
-        self.assertIsNone(self._s("Bo Nix (3+ games) Under 224.5 passing yards", 224.5, "NFL"))
+        # Review of #112: extract_prop used to read "3+" first and return OVER 2.5 for an
+        # Under 224.5 bet. Since #113 it takes the side from the text, so the bet may now
+        # measure — but only ever as Under 224.5, never Over 2.5.
+        s = self._s("Bo Nix (3+ games) Under 224.5 passing yards", 224.5, "NFL")
+        if s is not None:
+            self.assertEqual((s["side"], s["threshold"]), ("under", 224.5))
 
     def test_missing_or_empty_stat_map_returns_none_instead_of_raising(self):
         # build_closes / capture call extract_prop(bet, line_num) with 2 args when the

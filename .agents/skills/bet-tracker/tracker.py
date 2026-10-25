@@ -1042,10 +1042,71 @@ def _normalize_name(s: str) -> str:
     return re.sub(r'[^a-z\s]', '', s.lower()).strip()
 
 
+# A side word followed by its threshold: "Over 11.5", "UNDER 7", "Under 8.5". The
+# lookahead refuses a vulgar-fraction form ("Under 8½"), which would otherwise parse as
+# 8.0, a different bet; such text has no threshold and the pick stays open.
+_SIDE_THRESHOLD_RE = re.compile(r'\b(over|under)\s*(\d+(?:\.\d+)?)(?!\.?[\d½¼¾])', re.IGNORECASE)
+_NPLUS_RE = re.compile(r'(\d+(?:\.\d+)?)\+')
+
+
+def parse_bet_threshold(bet: str) -> Optional[dict]:
+    """Side and threshold as the BET TEXT states them, or None if absent or ambiguous.
+
+    Returns {side, threshold, start, accepts}: `start` is where the side/threshold
+    token begins (the player segment is everything before it) and `accepts` is the set
+    of `line_num` values that agree with this text.
+
+    The bet text is the source of truth for the threshold, not `line_num`. The nightly
+    resolver wrote odds and game margins into `line_num` on props and totals (issue
+    #113: Ace Bailey "Over 11.5 Points" carries line_num -108), and grading against
+    that value makes every Over a WIN and every Under a LOSS.
+
+    "N+" means at least N, i.e. Over N-0.5, and accepts a line_num of N or N-0.5.
+    Ambiguous means two different side/threshold pairs ("Under 5.5 ... (moved from
+    Under 6.5)") or both an N+ and an Over/Under form; the caller then leaves the pick
+    open rather than choosing one.
+    """
+    bet = bet or ""
+    # An "N+" inside a parenthetical is commentary ("(steam at 3+ books)"), not the line.
+    parens = [m.span() for m in re.finditer(r'\([^)]*\)', bet)]
+    nplus_hits = [m for m in _NPLUS_RE.finditer(bet)
+                  if not any(a <= m.start() < b for a, b in parens)]
+    nplus = {float(m.group(1)) for m in nplus_hits}
+    pairs = [(m.group(1).lower(), float(m.group(2)), m.start())
+             for m in _SIDE_THRESHOLD_RE.finditer(bet)]
+    if nplus and pairs:
+        return None
+    if nplus:
+        if len(nplus) != 1:
+            return None
+        n = nplus.pop()
+        return {"side": "over", "threshold": n - 0.5,
+                "start": nplus_hits[0].start(), "accepts": (n, n - 0.5)}
+    if len({(side, value) for side, value, _ in pairs}) != 1:
+        return None
+    side, value, start = pairs[0]
+    return {"side": side, "threshold": value, "start": start, "accepts": (value,)}
+
+
+def line_num_agrees(parsed: dict, line_num) -> bool:
+    """True when `line_num` is absent or equals a threshold the bet text allows."""
+    if line_num is None:
+        return True
+    try:
+        ln = float(line_num)
+    except (TypeError, ValueError):
+        return False
+    return any(abs(ln - a) < 1e-9 for a in parsed["accepts"])
+
+
 def extract_prop(bet: str, line_num, stat_map: dict = PROP_STAT_MAP) -> Optional[dict]:
     """
     Parse a player prop. Returns {player, stat_group, stat_key, side, threshold}
     or None if any component can't be resolved (caller then skips — never guesses).
+
+    The side and threshold come from the bet text (parse_bet_threshold). `line_num` is
+    only a cross-check: when present it must equal the text's threshold, otherwise this
+    returns None and the pick stays OPEN (issue #113). When absent, the text is used.
 
     `stat_map` is the sport's stat-keyword → (group, key) map, supplied by the pick's
     Player Prop Source (the resolver passes src.stat_map). Defaults to the MLB map for
@@ -1053,23 +1114,12 @@ def extract_prop(bet: str, line_num, stat_map: dict = PROP_STAT_MAP) -> Optional
     Return shape is unchanged so downstream callers are untouched.
     """
     low = bet.lower()
-    # Side + threshold. "N+" means at least N → Over (N-0.5). Else Over/Under + line_num.
-    nplus = re.search(r'(\d+(?:\.\d+)?)\+', bet)
-    if nplus:
-        side, threshold = "over", float(nplus.group(1)) - 0.5
-        player_cut = bet[:nplus.start()]
-    elif re.search(r'\bover\b', low):
-        side = "over"
-        player_cut = re.split(r'\bover\b', bet, flags=re.IGNORECASE)[0]
-        threshold = float(line_num) if line_num is not None else None
-    elif re.search(r'\bunder\b', low):
-        side = "under"
-        player_cut = re.split(r'\bunder\b', bet, flags=re.IGNORECASE)[0]
-        threshold = float(line_num) if line_num is not None else None
-    else:
+    # Side + threshold from the TEXT. "N+" means at least N → Over (N-0.5).
+    parsed = parse_bet_threshold(bet)
+    if parsed is None or not line_num_agrees(parsed, line_num):
         return None
-    if threshold is None:
-        return None
+    side, threshold = parsed["side"], parsed["threshold"]
+    player_cut = bet[:parsed["start"]]
     # Stat: first mapped keyword present (check multiword keys before single).
     stat_group = stat_key = None
     matched_kw = None
@@ -1836,9 +1886,15 @@ def cmd_auto_resolve(_args, sources=None):
                 # extract_prop refuses an un-summable combo (a "+" stat the map only
                 # resolves to a single component); give that a clear reason vs. a plain
                 # parse failure. A proper combo (NBA PRA → tuple) returns a spec and resolves.
-                reason = ("combined-stat (sum of components) — resolve manually"
-                          if _is_combined_stat(bet)
-                          else "could not parse player/stat/side/threshold — resolve manually")
+                parsed = parse_bet_threshold(bet)
+                if parsed is not None and not line_num_agrees(parsed, line_num):
+                    # #113: line_num holds odds or a margin, not the threshold.
+                    reason = (f"line_num {line_num!r} disagrees with the bet text's "
+                              f"{parsed['threshold']:g} — left open, run migrate-line-num")
+                elif _is_combined_stat(bet):
+                    reason = "combined-stat (sum of components) — resolve manually"
+                else:
+                    reason = "could not parse player/stat/side/threshold — resolve manually"
                 skipped.append((p["id"], f"prop: {reason}"))
                 continue
             game = src.find_game(date, bet)
@@ -1888,9 +1944,18 @@ def cmd_auto_resolve(_args, sources=None):
             if line_num is None:
                 skipped.append((p["id"], "total missing line_num — resolve manually"))
                 continue
+            # Side and threshold come from the bet text; line_num must agree (#113).
+            # Real settled totals carry odds in line_num (-130 on "Under 8.5"), and the
+            # side used to come from `^over`, which read "Angels @ Rangers Over 8" as
+            # an Under.
+            parsed = parse_bet_threshold(bet)
+            if parsed is None or not line_num_agrees(parsed, line_num):
+                skipped.append((p["id"], f"total: line_num {line_num} disagrees with the bet "
+                                         f"text (or text ambiguous) — resolve manually"))
+                continue
             total = result_data["total_runs"]
-            side = "over" if re.match(r'^\s*over\b', bet.lower()) else "under"
-            outcome = prop_outcome(total, side, float(line_num))
+            side = parsed["side"]
+            outcome = prop_outcome(total, side, parsed["threshold"])
             p["result"] = outcome
             p["units_won_lost"] = calc_units_won_lost(p["line"], p["units"], outcome)
             p["final_score"] = result_data["final_score"]
@@ -1952,6 +2017,26 @@ def cmd_resolve(args):
         print(f"❌ Pick not found: {args.id}", file=sys.stderr)
         sys.exit(1)
 
+    # Issue #113: the nightly resolver passed --game-margin and --line-num on EVERY
+    # resolve, writing a game margin onto props/totals and odds into line_num. Both are
+    # validated before anything is mutated, so a refusal leaves the pick untouched.
+    kind = classify_bet(pick)
+    if kind in ("prop", "total"):
+        if args.game_margin is not None:
+            print(f"❌ --game-margin applies only to moneyline/spread/run-line bets; "
+                  f"{args.id} is a {kind}. Pass --prop-result/--prop-margin instead.",
+                  file=sys.stderr)
+            sys.exit(1)
+        if args.line_num is not None:
+            parsed = parse_bet_threshold(pick.get("bet", ""))
+            if parsed is None or not line_num_agrees(parsed, args.line_num):
+                want = ("no unambiguous threshold in the bet text" if parsed is None
+                        else f"the bet text says {parsed['threshold']:g}")
+                print(f"❌ --line-num {args.line_num:g} disagrees with {args.id} ({want}). "
+                      f"line_num is the bet's threshold, never odds or a margin; "
+                      f"omit it rather than guess.", file=sys.stderr)
+                sys.exit(1)
+
     pick["result"] = args.outcome
     pick["units_won_lost"] = calc_units_won_lost(pick["line"], pick["units"], args.outcome)
     if args.closing_line:
@@ -1980,7 +2065,8 @@ def cmd_resolve(args):
     if args.prop_result:
         pick["prop_result"] = args.prop_result
     if args.prop_margin is not None:
-        pick["prop_margin"] = args.prop_margin
+        pm = args.prop_margin
+        pick["prop_margin"] = int(pm) if float(pm).is_integer() else round(pm, 1)
 
     save_picks(picks)
     sign = "+" if pick["units_won_lost"] >= 0 else ""
@@ -2144,6 +2230,84 @@ def cmd_migrate_clv_schema(args):
         print("[dry-run] re-run with --apply to write picks.json.")
 
 
+# Issue #113: rows whose `final_score` TEXT is wrong although the result is right
+# (re-checked against ESPN box scores). The result and units are not touched.
+FINAL_SCORE_CORRECTIONS = {
+    "20261023-nba-v1-jayson-prop": "BOS 107, NY 103",
+    "20260919-nfl-v1-jonath-prop": "KC 33, IND 30 OT",
+}
+
+
+def _money_columns(picks: list) -> list:
+    return [(p.get("id"), p.get("result"), p.get("units"), p.get("units_won_lost"), p.get("line"))
+            for p in picks]
+
+
+def cmd_migrate_line_num(args):
+    """One-shot repair of the game-line fields the nightly resolver wrote onto props and
+    totals (issue #113). Dry-run by default; --apply writes.
+
+      - `game_margin` is removed from every prop and total (classify_bet), any date.
+      - `line_num` is restored from the bet text where the text states exactly one
+        Over/Under threshold. Every other disagreeing row (no threshold, two different
+        thresholds, or an "N+" bet, whose line_num convention is N or N-0.5) is listed
+        and left alone.
+      - the `final_score` strings in FINAL_SCORE_CORRECTIONS are fixed.
+
+    It never changes `result`, `units`, `units_won_lost` or `line`: those columns are
+    compared before and after, and any difference aborts without writing.
+    """
+    picks = load_picks()
+    money_before = _money_columns(picks)
+    changes = []      # (id, field, old, new)
+    left_alone = []   # (id, line_num, why)
+    for p in picks:
+        pid = p.get("id")
+        fixed_score = FINAL_SCORE_CORRECTIONS.get(pid)
+        if fixed_score is not None and p.get("final_score") != fixed_score:
+            changes.append((pid, "final_score", p.get("final_score"), fixed_score))
+            p["final_score"] = fixed_score
+        if classify_bet(p) not in ("prop", "total"):
+            continue
+        if p.get("game_margin") is not None:
+            changes.append((pid, "game_margin", p["game_margin"], None))
+            del p["game_margin"]
+        ln = p.get("line_num")
+        if ln is None:
+            continue
+        parsed = parse_bet_threshold(p.get("bet", ""))
+        if parsed is not None and line_num_agrees(parsed, ln):
+            continue
+        if parsed is None:
+            left_alone.append((pid, ln, "bet text has no single unambiguous threshold"))
+        elif len(parsed["accepts"]) != 1:
+            left_alone.append((pid, ln, "N+ bet: line_num could mean N or N-0.5"))
+        else:
+            changes.append((pid, "line_num", ln, parsed["threshold"]))
+            p["line_num"] = parsed["threshold"]
+
+    if _money_columns(picks) != money_before:   # cannot happen; refuse rather than trust it
+        print("❌ result/units columns changed during migration — aborting, nothing written.",
+              file=sys.stderr)
+        sys.exit(1)
+
+    for field in ("game_margin", "line_num", "final_score"):
+        rows = [c for c in changes if c[1] == field]
+        print(f"\n{field}: {len(rows)} row(s)")
+        for pid, _, old, new in rows:
+            print(f"  {pid:40} {old!r} → {new!r}")
+    print(f"\nleft alone (line_num disagrees, not restorable): {len(left_alone)} row(s)")
+    for pid, ln, why in left_alone:
+        print(f"  {pid:40} line_num={ln!r}  ({why})")
+    print(f"\n  changed rows: {len({c[0] for c in changes})}   field edits: {len(changes)}   "
+          f"result/units changed: 0")
+    if args.apply:
+        save_picks(picks)
+        print("✅ picks.json written.")
+    else:
+        print("[dry-run] re-run with --apply to write picks.json.")
+
+
 # ── CLI wiring ────────────────────────────────────────────────────────────────
 
 def main():
@@ -2165,6 +2329,11 @@ def main():
     mig_p = sub.add_parser("migrate-clv-schema",
                            help="One-shot: split legacy `clv` into clv_devig + clv_pct_pts")
     mig_p.add_argument("--apply", action="store_true", help="Write picks.json (default: dry-run)")
+
+    mln_p = sub.add_parser("migrate-line-num",
+                           help="One-shot (#113): clear game_margin on props/totals, restore "
+                                "line_num from the bet text, fix two final_score strings")
+    mln_p.add_argument("--apply", action="store_true", help="Write picks.json (default: dry-run)")
 
     log_p = sub.add_parser("log", help="Log a new pick")
     log_p.add_argument("--model", required=True, choices=[m["id"] for m in MODELS])
@@ -2209,12 +2378,15 @@ def main():
                        help="American odds at close, e.g. '-110' or '+105'. Used to compute CLV.")
     res_p.add_argument("--final-score", default="", help="e.g. 'ARI 6, TOR 3'")
     res_p.add_argument("--game-margin", type=int, default=None,
-                       help="Actual game margin (positive = our team won by X)")
+                       help="Moneyline/spread/run line ONLY: actual game margin (positive = "
+                            "our team won by X). Refused on props and totals.")
     res_p.add_argument("--line-num", type=float, default=None,
-                       help="Spread/RL number for cover check display")
+                       help="Spread/RL: the handicap, SIGNED as the bet reads (0 for ML). "
+                            "Prop/total: the bet's threshold, and it must match the bet "
+                            "text. Never odds or a margin.")
     res_p.add_argument("--prop-result", default="", help="e.g. '3/9 from three'")
-    res_p.add_argument("--prop-margin", type=int, default=None,
-                       help="actual - threshold (negative = short)")
+    res_p.add_argument("--prop-margin", type=float, default=None,
+                       help="actual - threshold, e.g. -5.5 (negative = short)")
 
     args = parser.parse_args()
 
@@ -2228,6 +2400,8 @@ def main():
         cmd_capture_closes(args)
     elif args.command == "migrate-clv-schema":
         cmd_migrate_clv_schema(args)
+    elif args.command == "migrate-line-num":
+        cmd_migrate_line_num(args)
     elif args.command == "migrate-actual-bets":
         cmd_migrate_actual_bets(args)
     elif args.command == "log":
