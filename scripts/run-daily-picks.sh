@@ -147,10 +147,19 @@ exec 9>&-
 #   2. a runnable copy exists on THIS host — either graduated into ~/.claude/skills
 #      or forked to .agents/skills/sports-betting-value/ (the path referenced below).
 # Until then V3 logs nothing live, so a mis-computed pick can't pollute the CLV ledger.
+V3_SKILL="$PROJECT_DIR/.agents/skills/sports-betting-value/SKILL.md"
 if [ "${V3_VALUE_ENABLED:-0}" = "1" ]; then
-  V3_STEP='3. Then read .agents/skills/sports-betting-value/SKILL.md in full and execute it the same way (run AFTER V1 and V2 so it respects the shared daily cap: 7 total, 3 per model). It logs with --model v3-value and --primary-edge-type clv_value.
+  # Fail loud on a missing skill file instead of handing the agent a path that doesn't
+  # exist (#108): alert, skip only the V3 step, and let V1/V2 run.
+  if [ -f "$V3_SKILL" ]; then
+    V3_STEP='3. Then read .agents/skills/sports-betting-value/SKILL.md in full and execute it the same way (run AFTER V1 and V2 so it respects the shared daily cap: 7 total, 3 per model). It logs with --model v3-value and --primary-edge-type clv_value.
 '
-  echo "ℹ️  V3-Value ENABLED for this run." | tee -a "$LOG"
+    echo "ℹ️  V3-Value ENABLED for this run." | tee -a "$LOG"
+  else
+    V3_STEP=''
+    echo "❌ V3_VALUE_ENABLED=1 but $V3_SKILL does not exist — V3 step SKIPPED." | tee -a "$LOG"
+    notify_failure "🚨 Daily Bet Picks: V3_VALUE_ENABLED=1 on $(hostname) but .agents/skills/sports-betting-value/SKILL.md is missing. V3 was skipped; V1/V2 continue."
+  fi
 else
   V3_STEP=''
   echo "ℹ️  V3-Value gated OFF (export V3_VALUE_ENABLED=1 after the autoeval pass + a host copy exists)." | tee -a "$LOG"
@@ -166,6 +175,59 @@ PROMPT_TAIL='Finally, verify all pushes landed on origin/main; retry any missing
 Do NOT fabricate games/lines/odds. Do NOT lower the bar to fill the card. Do NOT edit picks.json by hand. Do NOT commit anything but tracker-managed files.'
 
 PROMPT="${PROMPT_HEAD}${V3_STEP}${PROMPT_TAIL}"
+
+# --- V3 Observation Scan (ADR 0011, #108) -----------------------------------
+# Deterministic, no model call, independent of V3_VALUE_ENABLED. Writes candidates to
+# v3-observations.json, never picks.json. It runs as an `if` condition so a failure
+# (exit 2 = zero offers on every market / no events; anything else = a crash) can't
+# abort the picks run under `set -e`: it alerts and V1/V2 carry on. The file is
+# committed even after a failed scan, because the failed run row is what the
+# week-end review (#110) counts. Only that one path is committed.
+V3_OBS=".agents/skills/bet-tracker/v3-observations.json"
+echo "ℹ️  V3 Observation Scan for $TODAY..." | tee -a "$LOG"
+if python3 "$PROJECT_DIR/.agents/skills/bet-tracker/v3_scan.py" --date "$TODAY" --apply 2>&1 | tee -a "$LOG"; then
+  echo "✅ V3 Observation Scan completed." | tee -a "$LOG"
+else
+  echo "❌ V3 Observation Scan FAILED — continuing with V1/V2." | tee -a "$LOG"
+  notify_failure "⚠️ Daily Bet Picks: V3 Observation Scan for $TODAY FAILED on $(hostname). V1/V2 picks continue. Check scripts/.run-daily-picks.log."
+fi
+# Push the observations commit. A rejected push (origin moved since the morning pull)
+# gets one rebase + retry. A failed retry must never leave the checkout mid-rebase on a
+# detached HEAD: `claude -p` would then log and commit picks there. So any failure
+# aborts the rebase and checks HEAD is back on main.
+# Returns 0 pushed; 1 push failed but HEAD is on main (alerted, picks continue);
+# 2 HEAD could not be restored to main (alerted; the caller must stop the run).
+v3_push_observations() {
+  # TODO(#112): take scripts/.tracker.lock around this retry once #112 lands
+  if git push origin main 2>&1 | tee -a "$LOG"; then
+    return 0
+  fi
+  if git pull --rebase --autostash origin main 2>&1 | tee -a "$LOG" \
+     && git push origin main 2>&1 | tee -a "$LOG"; then
+    return 0
+  fi
+  git rebase --abort 2>/dev/null || true
+  if [ "$(git symbolic-ref -q --short HEAD || true)" != "main" ]; then
+    git checkout -q main 2>/dev/null || true
+  fi
+  if [ "$(git symbolic-ref -q --short HEAD || true)" != "main" ]; then
+    notify_failure "🚨 Daily Bet Picks: V3 observations push retry left $(hostname) OFF main (HEAD: $(git rev-parse --short HEAD 2>/dev/null || echo '?')). Run STOPPED before the picks agent — fix the checkout by hand."
+    return 2
+  fi
+  notify_failure "⚠️ Daily Bet Picks: V3 observations for $TODAY committed locally but PUSH FAILED (after a rebase retry) on $(hostname). HEAD is on main; picks continue."
+  return 1
+}
+if [ -f "$V3_OBS" ] && [ -n "$(git status --porcelain -- "$V3_OBS")" ]; then
+  git add -- "$V3_OBS"
+  git commit -m "chore: V3 observation scan for $TODAY" -- "$V3_OBS" 2>&1 | tee -a "$LOG" || true
+  v3_push_rc=0
+  v3_push_observations || v3_push_rc=$?
+  if [ "$v3_push_rc" -eq 2 ]; then
+    echo "❌ HEAD is not on main after the V3 push retry — stopping before claude -p." | tee -a "$LOG"
+    exit 1
+  fi
+fi
+# ---------------------------------------------------------------------------
 
 # Headless/unattended: no TTY to approve tool prompts, so skip permission prompts.
 # Safe here — this is your own machine running your own repo's skills, which have
