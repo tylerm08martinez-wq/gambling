@@ -489,6 +489,71 @@ def exchange_benchmark(quotes, line, kind, now):
     }
 
 
+def _usable_lines(book):
+    """A book's priced, live lines from a raw /offers selection (drops is_off/inactive)."""
+    out = []
+    for ln in book.get("lines") or []:
+        if ln.get("cost") is None or ln.get("is_off") or ln.get("active") is False:
+            continue
+        try:
+            cost = _parse_odds(ln["cost"])
+        except OddsParseError:
+            continue
+        out.append((ln.get("line"), cost, ln.get("updated"), bool(ln.get("main"))))
+    return out
+
+
+def _older(ts_a, ts_b):
+    """The staler of two `updated` stamps (a pair is only as fresh as its older side)."""
+    da, db = _as_utc_naive(ts_a), _as_utc_naive(ts_b)
+    if da is None or db is None:
+        return None
+    return ts_a if da <= db else ts_b
+
+
+def quotes_from_offer(offer, kind):
+    """Turn one raw BettingPros /offers market into two-way quotes. Pure; no I/O.
+
+    `offer` is one element of the feed's `offers` list, with exactly two selections
+    (A then B, in feed order). Each book's selection-A line is paired with its
+    selection-B line at the same number (total, prop), or at the negated number
+    (spread: A -6.5 with B +6.5, quoted at A's line). A moneyline has no number, so
+    each book's main price on each side is paired. Lines flagged `is_off` or inactive
+    are dropped; a side a book doesn't price leaves no quote. Returns
+    {"labels": (label_a, label_b), "quotes": [quote, ...]}.
+    """
+    kind = market_kind(kind)
+    sels = offer.get("selections") or []
+    if len(sels) != 2:
+        return {"labels": None, "quotes": []}
+    labels = tuple((s.get("label") or s.get("selection") or "").strip() for s in sels)
+    books_b = {b.get("id"): _usable_lines(b) for b in sels[1].get("books") or []}
+    quotes = []
+    for book in sels[0].get("books") or []:
+        bid = book.get("id")
+        lines_a, lines_b = _usable_lines(book), books_b.get(bid) or []
+        if not lines_a or not lines_b:
+            continue
+        if kind == "moneyline":
+            la = next((x for x in lines_a if x[3]), lines_a[0])
+            lb = next((x for x in lines_b if x[3]), lines_b[0])
+            quotes.append({"book_id": bid, "line": la[0], "odds_a": la[1], "odds_b": lb[1],
+                           "updated": _older(la[2], lb[2])})
+            continue
+        for line_a, cost_a, upd_a, _ in lines_a:
+            try:
+                want = -float(line_a) if kind == "spread" else float(line_a)
+            except (TypeError, ValueError):
+                continue
+            match = [x for x in lines_b if x[0] is not None and abs(float(x[0]) - want) < 1e-9]
+            if not match:
+                continue
+            line_b, cost_b, upd_b, _ = match[0]
+            quotes.append({"book_id": bid, "line": float(line_a), "odds_a": cost_a,
+                           "odds_b": cost_b, "updated": _older(upd_a, upd_b)})
+    return {"labels": labels, "quotes": quotes}
+
+
 def _line_key(line, kind):
     if kind == "moneyline":
         return None
@@ -539,7 +604,7 @@ def scan_market(quotes, kind, now):
                 action, reason = "no_bet", "at or worse than the Exchange Benchmark fair price"
             elif clv >= gate and units >= 1:
                 action, reason = "log", None
-            elif units >= 1:
+            elif clv < gate:
                 action = "reject"
                 reason = (f"+{clv*100:.1f}% CLV is below the {gate*100:.0f}% "
                           f"{'player-prop' if kind == 'prop' else 'game-line'} gate")

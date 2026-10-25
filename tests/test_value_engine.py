@@ -497,5 +497,84 @@ class TestScanMarket(unittest.TestCase):
             ve.scan_market(self.BENCH_EVEN, "points", NOW)
 
 
+# --- real-data cases: the live board pulled 2026-10-24 (tests/fixtures) ---------------
+_LIVE = json.loads((Path(__file__).parent / "fixtures" / "exchange_benchmark_offers.json").read_text())
+LIVE_NOW = datetime(2026, 10, 25, 2, 12, 0)   # when poll1 was pulled (UTC)
+
+
+class TestQuotesFromOffer(unittest.TestCase):
+    def test_moneyline_offer_becomes_one_two_way_quote_per_book(self):
+        out = ve.quotes_from_offer(_LIVE["colts_vikings_moneyline"], "moneyline")
+        self.assertEqual(out["labels"], ("Colts", "Vikings"))
+        by_book = {x["book_id"]: x for x in out["quotes"]}
+        self.assertEqual((by_book[12]["odds_a"], by_book[12]["odds_b"]), (260, -325))
+        self.assertEqual((by_book[60]["odds_a"], by_book[60]["odds_b"]), (257, -264))
+        self.assertEqual(by_book[68]["updated"], "2026-10-25 02:01:13")
+        self.assertEqual(len(out["quotes"]), 18)   # consensus (0) + 17 books
+
+    def test_prop_ladder_pairs_over_and_under_at_the_same_number(self):
+        out = ve.quotes_from_offer(_LIVE["gainwell_receiving_yards"], "prop")
+        self.assertEqual(out["labels"], ("Over", "Under"))
+        mgm = [x for x in out["quotes"] if x["book_id"] == 19]
+        self.assertEqual([(x["line"], x["odds_a"], x["odds_b"]) for x in mgm], [(14.5, 110, -150)])
+        # Fanatics (14) is flagged is_off on the feed, so it is not a quote at all.
+        self.assertNotIn(14, {x["book_id"] for x in out["quotes"]})
+
+    def test_spread_pairs_a_number_with_its_negation(self):
+        offer = {"selections": [
+            {"label": "Vikings", "books": [{"id": 12, "lines": [
+                {"line": -6.5, "cost": -108, "updated": "2026-10-25 02:05:00"},
+                {"line": -7.5, "cost": 105, "updated": "2026-10-25 02:05:00"}]}]},
+            {"label": "Colts", "books": [{"id": 12, "lines": [
+                {"line": 6.5, "cost": -112, "updated": "2026-10-25 02:04:00"},
+                {"line": 5.5, "cost": 130, "updated": "2026-10-25 02:05:00"}]}]}]}
+        out = ve.quotes_from_offer(offer, "spread")
+        self.assertEqual(out["quotes"], [{"book_id": 12, "line": -6.5, "odds_a": -108,
+                                          "odds_b": -112, "updated": "2026-10-25 02:04:00"}])
+
+
+class TestLiveBoardCases(unittest.TestCase):
+    def test_colts_moneyline_draftkings_260_against_the_exchange_benchmark(self):
+        # DraftKings Colts +260 (.2778). Benchmark at 02:12 UTC: Novig 257/-264,
+        # ProphetX 255/-260, Polymarket 245/-257, Kalshi 245/-257 -> four operators,
+        # all fresh and under 1% hold. Power fair Colts: .2769 / .2793 / .2840 / .2840,
+        # median .2817 -> +1.4%: positive but under the 2% gate.
+        quotes = ve.quotes_from_offer(_LIVE["colts_vikings_moneyline"], "moneyline")["quotes"]
+        bench = ve.exchange_benchmark(quotes, 1, "moneyline", LIVE_NOW)
+        self.assertEqual(bench["operators"], [38, 60, 68, "polymarket"])
+        self.assertAlmostEqual(bench["fair_a"], 0.2817, places=4)
+        dk = next(r for r in ve.scan_market(quotes, "moneyline", LIVE_NOW)
+                  if r["book_id"] == 12 and r["side"] == "a")
+        self.assertAlmostEqual(dk["clv"], 0.014, delta=0.001)
+        self.assertEqual(dk["action"], "reject")
+
+    def test_colts_without_prophetx_reproduces_the_issue_106_figure(self):
+        # Issue #106 expects 3 operators and about +2.2%, which clears the 2% gate. That
+        # figure came from the 2026-10-24 review script, whose venue list had no
+        # ProphetX (38). Dropping 38 reproduces it exactly: median .2840 -> +2.24%.
+        # It clears the 2% gate, but at +260 the ½-Kelly stake is 0.43% of bankroll,
+        # under the existing 0.5% floor (units_from_clv), so the row is still `reject`.
+        quotes = [x for x in ve.quotes_from_offer(_LIVE["colts_vikings_moneyline"],
+                                                  "moneyline")["quotes"] if x["book_id"] != 38]
+        bench = ve.exchange_benchmark(quotes, 1, "moneyline", LIVE_NOW)
+        self.assertEqual(len(bench["operators"]), 3)
+        dk = next(r for r in ve.scan_market(quotes, "moneyline", LIVE_NOW)
+                  if r["book_id"] == 12 and r["side"] == "a")
+        self.assertAlmostEqual(dk["clv"], 0.0224, delta=0.0005)
+        self.assertTrue(ve.clears_gate(dk["clv"], "moneyline"))
+        self.assertEqual(dk["units"], 0)
+        self.assertEqual(dk["action"], "reject")
+        self.assertIn("1u minimum", dk["reason"])
+
+    def test_gainwell_under_14_5_has_one_benchmark_operator_so_no_row(self):
+        # BetMGM Under 14.5 -150. At 14.5 the only benchmark venue is Novig, and its
+        # Under is a -99900 placeholder. One operator -> no benchmark -> no row.
+        quotes = ve.quotes_from_offer(_LIVE["gainwell_receiving_yards"], "prop")["quotes"]
+        self.assertIsNone(ve.exchange_benchmark(quotes, 14.5, "prop", LIVE_NOW))
+        rows = ve.scan_market(quotes, "prop", LIVE_NOW)
+        self.assertFalse([r for r in rows if r["book_id"] == 19])
+        self.assertEqual(rows, [])   # no line on this ladder has two operators
+
+
 if __name__ == "__main__":
     unittest.main()
