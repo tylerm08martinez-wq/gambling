@@ -238,6 +238,28 @@ class TestStrictExtractProp(unittest.TestCase):
         s = self._s("Cooper Rush Over 200.5 passing yards", 200.5, "NFL")
         self.assertEqual((s["player"], s["stat_key"]), ("cooper rush", "passingYards"))
 
+    def test_second_stat_before_the_side_is_refused(self):
+        # Re-review of #112: extract_prop takes everything before the side as the player
+        # ("jalen brunson points and"), so stripping that name hid the first stat and the
+        # bet passed as plain rebounds / receiving yards.
+        cases = (("Jalen Brunson points and rebounds Over 30.5", 30.5, "NBA"),
+                 ("Jalen Brunson pts and rebounds Over 30.5", 30.5, "NBA"),
+                 ("Travis Kelce receptions and receiving yards Over 50.5", 50.5, "NFL"),
+                 ("Jalen Brunson points & rebounds Over 30.5", 30.5, "NBA"),
+                 ("Jalen Brunson points/rebounds Over 30.5", 30.5, "NBA"))
+        for bet, ln, sport in cases:
+            with self.subTest(bet=bet):
+                self.assertIsNone(self._s(bet, ln, sport))
+
+    def test_single_stat_before_the_side_still_measures(self):
+        s = self._s("Jalen Brunson Points Over 25.5", 25.5, "NBA")
+        self.assertEqual((s["player"], s["stat_key"], s["side"]), ("jalen brunson", "points", "over"))
+
+    def test_cooper_rush_still_measures(self):
+        s = self._s("Cooper Rush (DAL) Under 210.5 passing yards vs NYG", 210.5, "NFL")
+        self.assertEqual((s["player"], s["stat_key"], s["threshold"]),
+                         ("cooper rush", "passingYards", 210.5))
+
     def test_second_stat_is_still_refused_when_the_name_shares_a_stat_word(self):
         self.assertIsNone(self._s("Cooper Rush Over 200.5 passing yards and rush yards", 200.5, "NFL"))
 

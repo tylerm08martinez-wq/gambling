@@ -138,10 +138,15 @@ def strict_extract_prop(extract_prop):
         does NOT exempt it: extract_prop reads "N+" first, so "Bo Nix (3+ games) Under
         224.5 passing yards" would otherwise come back as Over 2.5. Only a bet with no
         Over/Under word at all ("Jalen Brunson 25+ Points") is taken in N+ form;
+      * a parsed player name that contains a joining token (and, &, +, /) or a whole
+        stat keyword. extract_prop takes everything before the side as the player, so
+        "Jalen Brunson points and rebounds Over 30.5" parses as player "jalen brunson
+        points and" on plain rebounds 30.5 — the first stat hides inside the "name";
       * a bet naming a second stat once the matched keyword and the player's own name
-        are removed, e.g. "points and rebounds", which extract_prop silently reads as
-        rebounds alone. The player's name is removed first so "Cooper Rush ... passing
-        yards" is not refused for the word "rush";
+        are removed, e.g. "Over 23.5 points and rebounds", which extract_prop silently
+        reads as rebounds alone. The (already vetted) player's name is removed first so
+        "Cooper Rush ... passing yards" is not refused for the word "rush", which is a
+        stat word but not a stat keyword;
       * a missing or empty stat map (callers pass none for a sport with no map).
 
     A refusal leaves the pick Unmeasured. Never a guess.
@@ -157,6 +162,15 @@ def strict_extract_prop(extract_prop):
             m = re.search(rf"\b{spec['side']}\s+(\d+(?:\.\d+)?)", text, flags=re.IGNORECASE)
             if not m or float(m.group(1)) != float(spec["threshold"]):
                 return None
+        # The player segment (text before the side, or before "N+") must be a name only.
+        side_at = re.search(r"\b(over|under)\b|\d+(?:\.\d+)?\+", text, flags=re.IGNORECASE)
+        segment = text[:side_at.start()] if side_at else text
+        if re.search(r"[&+/]", segment):
+            return None
+        player = spec["player"]
+        if re.search(r"\band\b", player) or any(
+                re.search(rf"\b{re.escape(kw)}\b", player) for kw in stat_map):
+            return None
         # Same longest-first keyword choice extract_prop makes; remove it, then any
         # remaining stat word means the bet names more than one stat.
         low = text.lower()
