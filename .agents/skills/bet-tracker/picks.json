@@ -9602,5 +9602,107 @@
     "line_num": 13.5,
     "prop_result": "11 points",
     "prop_margin": -2.5
+  },
+  {
+    "id": "20261026-nba-v1-dennis-prop",
+    "date": "2026-10-26",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Dennis Schroder Over 14.5 Points (WAS @ CHA)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-117 @ ProphetX",
+    "units": 1,
+    "score": 7.2,
+    "primary_edge": "Cross-book prop gap: ProphetX still hangs 14.5 (O -117 / U +116) after the market moved 13.5 -> 15.5 at 13 sportsbooks (DK/Caesars/Fanatics/BetRivers/theScore/Betr/Hard Rock/Novig all 15.5) on Coby White + Kon Knueppel ruled out. De-vigged 15.5 two-ways put P(over 15.5) ~49.2%; cross-rung fair P(over 14.5) ~55.9% (P(X=15) ~6.7%, sigma 1.5*sqrt(line)) vs 53.9% needed (+2.0pp, EV ~+3.7%). BetMGM also at 14.5 but already priced it in at -130. Pinnacle absent - CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27932 market 156 (points)",
+        "status": "usable",
+        "freshness": "2026-10-26 16:08 UTC",
+        "detail": "ProphetX O14.5 -117 / U14.5 +116 (upd 15:54 UTC); BetMGM 14.5 -130/-105; DraftKings 15.5 -111/-114; Caesars 15.5 -109/-122; Fanatics 15.5 -115/-115; BetRivers 15.5 -125/-109; theScore 15.5 -110/-120; Betr 15.5 -114/-120; Hard Rock 15.5 -110/-120; Novig 15.5 +104/-115; consensus 15.5 -111/-115; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-26 16:08 UTC",
+        "detail": "Opened 13.5 -115/-115 (Fanatics 2026-10-26 00:29 UTC); market now 15.5 at 13 sportsbooks; ProphetX only moved to 14.5"
+      },
+      {
+        "category": "injury_news",
+        "source": "ESPN NBA injuries + Schroder gamelog",
+        "status": "usable",
+        "freshness": "2026-10-26 16:05 UTC",
+        "detail": "CHA: Coby White (calf) OUT, Kon Knueppel (hamstring) OUT, Naz Reid probable; Schroder last 3: 25 pts/38 min, 4 pts/20 min, 19 pts/35 min"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 14.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261026-nba-v1-darryn-prop",
+    "date": "2026-10-26",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Darryn Peterson Over 18.5 Points+Rebounds+Assists (MEM @ UTH)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-115 @ BetMGM",
+    "units": 1,
+    "score": 7.2,
+    "primary_edge": "Cross-book prop gap: BetMGM still hangs the 18.5 opener at its own 50/50 (-115/-115) after the market moved 18.5 -> 19.5 at 12 sportsbooks (DK/Caesars/Fanatics/BetRivers/Hard Rock/Novig/ProphetX all 19.5). De-vigged 19.5 two-ways put P(over 19.5) ~49.5%; cross-rung fair P(over 18.5) ~55.5% (P(X=19) ~6.0%, sigma 1.5*sqrt(line)) vs 53.5% needed (+2.0pp, EV ~+3.8%). Pinnacle absent - CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27938 market 338 (PRA)",
+        "status": "usable",
+        "freshness": "2026-10-26 16:08 UTC",
+        "detail": "BetMGM O18.5 -115 / U18.5 -115 (upd 15:51 UTC); Betr 18.5 -127/-109; DraftKings 19.5 -117/-112; Caesars 19.5 -113/-118; Fanatics 19.5 -115/-115; BetRivers 19.5 -103/-134; Hard Rock 19.5 -110/-120; Novig 19.5 -108/-117; ProphetX 19.5 -134/-116; consensus 19.5 -114/-116; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-26 16:08 UTC",
+        "detail": "Opened 18.5 O -107 / U -122 (DraftKings 2026-10-26 07:46 UTC); market now 19.5 at 12 sportsbooks; BetMGM still on the opener"
+      },
+      {
+        "category": "injury_news",
+        "source": "ESPN NBA injuries + Peterson gamelog",
+        "status": "usable",
+        "freshness": "2026-10-26 16:05 UTC",
+        "detail": "UTH: Nurkic OUT (4+ weeks), Trey Alexander OUT; Peterson last 3 PRA 13/19/16 at 30-31 min; no BP projection for PRA"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 18.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
