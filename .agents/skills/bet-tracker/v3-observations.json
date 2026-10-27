@@ -103,6 +103,58 @@
    "errors": [],
    "status": "ok",
    "new_observations": 4
+  },
+  {
+   "scan_date": "2026-10-27",
+   "scanned_at": "2026-10-27T16:00:06Z",
+   "sports": [
+    "NBA",
+    "NFL",
+    "MLB"
+   ],
+   "events_by_sport": {
+    "NBA": 4,
+    "NFL": 0,
+    "MLB": 1
+   },
+   "candidates": 0,
+   "offers_by_market": {
+    "NBA:127": 4,
+    "NBA:128": 4,
+    "NBA:129": 4,
+    "NBA:156": 53,
+    "NBA:157": 50,
+    "NBA:151": 38,
+    "NBA:335": 37,
+    "NBA:336": 48,
+    "NBA:337": 40,
+    "NBA:338": 54,
+    "NFL:1": 0,
+    "NFL:2": 0,
+    "NFL:3": 0,
+    "NFL:103": 0,
+    "NFL:100": 0,
+    "NFL:333": 0,
+    "NFL:104": 0,
+    "NFL:105": 0,
+    "NFL:106": 0,
+    "NFL:107": 0,
+    "NFL:406": 0,
+    "MLB:122": 1,
+    "MLB:175": 1,
+    "MLB:176": 1,
+    "MLB:285": 1,
+    "MLB:405": 1
+   },
+   "requests": 67,
+   "events_started": 0,
+   "markets_scanned": 337,
+   "markets_with_benchmark": 70,
+   "markets_scored": 69,
+   "fetch_failures": 0,
+   "errors": [],
+   "status": "ok",
+   "new_observations": 0
   }
  ],
  "observations": [
@@ -607,7 +659,51 @@
    "quote_updated": "2026-10-26 15:58:28",
    "quote_age_min": 1.6,
    "benchmark_max_age_min": 10.8,
-   "close": null
+   "close": {
+    "retail_consensus": {
+     "captured_at": "2026-10-26T23:45:02.022904+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 1.5,
+     "odds_side": -105,
+     "odds_other": -127,
+     "fair_p": 0.47794265089231996,
+     "quote_updated": "2026-10-26 23:38:59",
+     "source": "bettingpros_consensus"
+    },
+    "exchange": {
+     "captured_at": "2026-10-26T23:45:02.022904+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 1.5,
+     "fair_p": 0.4778264497681291,
+     "fair_other": 0.522173550231871,
+     "operators": [
+      68,
+      "polymarket"
+     ],
+     "quotes_used": [
+      {
+       "book_id": 68,
+       "odds_side": 104,
+       "odds_other": -113,
+       "updated": "2026-10-26 23:41:17"
+      },
+      {
+       "book_id": 75,
+       "odds_side": 108,
+       "odds_other": -113,
+       "updated": "2026-10-26 23:38:46"
+      }
+     ],
+     "source": "exchange_benchmark"
+    },
+    "side": "Under",
+    "captured_at": "2026-10-26T23:45:02.022904+00:00",
+    "minutes_before_start": 15.0
+   },
+   "realized_clv_exchange_frac": 0.089444,
+   "realized_clv_retail_frac": 0.089709
   }
  ]
 }
