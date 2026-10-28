@@ -9704,5 +9704,158 @@
     "line_num": 18.5,
     "prop_result": "14 pts + 7 reb + 4 ast = 25 PRA",
     "prop_margin": 6.5
+  },
+  {
+    "id": "20261028-nba-v1-tim-prop",
+    "date": "2026-10-28",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Tim Hardaway Jr. Over 6.5 Points (MIA @ ATL)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-121 @ BetRivers",
+    "units": 1,
+    "score": 6.8,
+    "primary_edge": "Cross-book prop gap: BetRivers (and its skin) hang 6.5 at their own ~50/50 (-121/-113) while 11 books sit on the 7.5 opener at -115/-115 (consensus 7.5 -116/-115, unmoved since DK opened 04:02 UTC). De-vigged P(over 7.5) ~49.8%; cross-rung fair P(over 6.5) ~57.8% (P(X=7) ~8%) vs 54.8% needed (+3.0pp, EV ~+5.5%). Fontecchio (MIA) ruled OUT today frees wing minutes. Pinnacle absent - CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27945 market 156 (points)",
+        "status": "usable",
+        "freshness": "2026-10-28 16:08 UTC",
+        "detail": "BetRivers O6.5 -121 / U6.5 -113 (upd 15:52 UTC); BetRivers skin(15) O6.5 -124 / U -110; DraftKings 7.5 -119/-107; Caesars 7.5 -117/-115; theScore 7.5 -115/-115; Hard Rock 7.5 -115/-115; Fanatics 7.5 -115/-115; Betr 7.5 -133/-104; ProphetX 7.5 -110/-104; Novig 7.5 -104/-104; consensus 7.5 -116/-115; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-28 16:08 UTC",
+        "detail": "Opened 7.5 O -116 (DraftKings 2026-10-28 04:02 UTC); market still 7.5 at 11 sportsbooks; only the BetRivers platform sits at 6.5"
+      },
+      {
+        "category": "injury_news",
+        "source": "ESPN NBA injuries API + Hardaway gamelog",
+        "status": "usable",
+        "freshness": "2026-10-28 16:05 UTC",
+        "detail": "MIA: Fontecchio OUT (illness) posted 15:04 UTC; ATL: Wiggins questionable. Hardaway 2026-27: 3/8/5/5 pts in 16-21 min (1 of 4 over 6.5); BP projection 7.7 (over)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 6.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261028-nba-v1-gui-prop",
+    "date": "2026-10-28",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Gui Santos Over 9.5 Points (GSW @ MIN)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-123 @ DraftKings",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "Cross-book prop gap: DraftKings lags at 9.5 (-123/-104) after the market moved 8.5 -> 10.5 at 13 books (FanDuel-family excluded; consensus 10.5 -115/-115) on Porzingis OUT + Lendeborg questionable. De-vigged P(over 10.5) ~50%; cross-rung fair P(over 9.5) ~57.5-58% (P(X=10) ~7.5-8%) vs 55.2% needed (+2.3-2.8pp, EV ~+4-5%). Pinnacle absent - CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27951 market 156 (points)",
+        "status": "usable",
+        "freshness": "2026-10-28 16:08 UTC",
+        "detail": "DraftKings O9.5 -123 / U9.5 -104 (upd 15:49 UTC); theScore 10.5 -115/-115; Caesars 10.5 -118/-113; BetMGM 10.5 -120/-111; Hard Rock 10.5 -110/-120; Fanatics 10.5 -115/-115; BetRivers 10.5 -113/-121; ProphetX 10.5 +103/-113; consensus 10.5 -115/-115; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-28 16:08 UTC",
+        "detail": "Opened 8.5 O -130 (Fanatics 2026-10-27 22:46 UTC); market now 10.5 at every sportsbook except DraftKings (9.5)"
+      },
+      {
+        "category": "injury_news",
+        "source": "ESPN NBA injuries API + Santos gamelog",
+        "status": "usable",
+        "freshness": "2026-10-28 16:05 UTC",
+        "detail": "GSW: Porzingis OUT (personal, indefinite), Lendeborg questionable (foot), Butler/Moody OUT. Santos 2026-27: 12/5/7/13 pts in 20-28 min (2 of 4 over 9.5); 2nd night of back-to-back after 28 min @DEN"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 9.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261028-nba-v1-jaden-prop",
+    "date": "2026-10-28",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Jaden McDaniels Over 24.5 Points+Rebounds+Assists (GSW @ MIN)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-115 @ BetMGM",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "Cross-book prop gap: BetMGM (and its skin) still hang the 24.5 opener at its own 50/50 (-115/-115) after the market moved 24.5 -> 25.5 at 10 books on Anthony Edwards OUT (knee surgery, up to 2 months). De-vigged P(over 25.5) ~50%; cross-rung fair P(over 24.5) ~55% (P(X=25) ~5.2%, sigma 1.5*sqrt(line)) vs 53.5% needed (+1.7pp, EV ~+3.2%). Pinnacle absent - CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27951 market 338 (PRA)",
+        "status": "usable",
+        "freshness": "2026-10-28 16:08 UTC",
+        "detail": "BetMGM O24.5 -115 / U24.5 -115 (upd 15:54 UTC); BetMGM skin(27) 24.5 -115/-115; Fanatics 24.5 -120/-110; FanDuel 25.5 -114/-114; DraftKings 25.5 -115/-114; Caesars 25.5 -110/-121; Hard Rock 25.5 -110/-120; BetRivers 25.5 -121/-112; Betr 25.5 -114/-122; ProphetX 25.5 -103/-122; Novig 25.5 -104/-113; consensus 25.5 -114/-114; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-28 16:08 UTC",
+        "detail": "Opened 24.5 O -122 (FanDuel 2026-10-28 07:22 UTC); market now 25.5 at 10 books; BetMGM still on the opener"
+      },
+      {
+        "category": "injury_news",
+        "source": "ESPN NBA injuries API + McDaniels gamelog",
+        "status": "usable",
+        "freshness": "2026-10-28 16:05 UTC",
+        "detail": "MIN: Anthony Edwards OUT (arthroscopic knee surgery, up to 2 months, 2026-10-27 22:52 UTC); DiVincenzo OUT. McDaniels 2026-27 PRA 26/24/23/24 in 29-37 min (1 of 4 over 24.5) with Edwards playing; BP projection 22.3 (under) - conflicting"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 24.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
