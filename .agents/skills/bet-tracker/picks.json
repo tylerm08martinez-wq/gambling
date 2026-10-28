@@ -9642,17 +9642,17 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "4:00 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "loss",
+    "units_won_lost": -1.0,
     "closing_line": "-124",
     "clv": -3.45,
     "clv_devig": -3.45,
     "clv_pct_pts": 1.44,
-    "final_score": null,
+    "final_score": "Charlotte 110, Washington 103",
     "game_margin": null,
     "line_num": 14.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "8 pts",
+    "prop_margin": -6.5
   },
   {
     "id": "20261026-nba-v1-darryn-prop",
@@ -9693,16 +9693,16 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "6:00 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "win",
+    "units_won_lost": 0.87,
     "closing_line": null,
     "clv": null,
     "clv_devig": null,
     "clv_pct_pts": null,
-    "final_score": null,
+    "final_score": "Memphis 110, Utah 105",
     "game_margin": null,
     "line_num": 18.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "14 pts + 7 reb + 4 ast = 25 PRA",
+    "prop_margin": 6.5
   }
 ]
