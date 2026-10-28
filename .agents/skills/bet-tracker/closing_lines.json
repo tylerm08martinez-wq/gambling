@@ -10,5 +10,29 @@
     "side": "over",
     "source": "bettingpros_consensus",
     "vintage": "close"
+  },
+  "20261028-nba-v1-gui-prop": {
+    "captured_at": "2026-10-28T16:45:01.289014-07:00",
+    "close": {
+      "over": "-120",
+      "under": "-116"
+    },
+    "market": "prop",
+    "minutes_before_start": 15.0,
+    "side": "over",
+    "source": "bettingpros_consensus",
+    "vintage": "close"
+  },
+  "20261028-nba-v1-jaden-prop": {
+    "captured_at": "2026-10-28T16:45:01.289014-07:00",
+    "close": {
+      "over": "-115",
+      "under": "-115"
+    },
+    "market": "prop",
+    "minutes_before_start": 15.0,
+    "side": "over",
+    "source": "bettingpros_consensus",
+    "vintage": "close"
   }
 }
