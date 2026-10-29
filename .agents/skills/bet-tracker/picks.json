@@ -9744,17 +9744,17 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "4:00 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "win",
+    "units_won_lost": 0.826,
     "closing_line": null,
     "clv": null,
     "clv_devig": null,
     "clv_pct_pts": null,
-    "final_score": null,
+    "final_score": "MIA 129, ATL 117",
     "game_margin": null,
     "line_num": 6.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "14 points",
+    "prop_margin": 7.5
   },
   {
     "id": "20261028-nba-v1-gui-prop",
@@ -9795,17 +9795,17 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "5:00 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "push",
+    "units_won_lost": 0.0,
     "closing_line": null,
     "clv": null,
     "clv_devig": null,
     "clv_pct_pts": null,
-    "final_score": null,
+    "final_score": "MIN 114, GSW 119",
     "game_margin": null,
     "line_num": 9.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "DNP (knee soreness)",
+    "prop_margin": 0
   },
   {
     "id": "20261028-nba-v1-jaden-prop",
@@ -9846,16 +9846,16 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "5:00 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "win",
+    "units_won_lost": 0.87,
     "closing_line": null,
     "clv": null,
     "clv_devig": null,
     "clv_pct_pts": null,
-    "final_score": null,
+    "final_score": "MIN 114, GSW 119",
     "game_margin": null,
     "line_num": 24.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "19 pts + 7-8 reb + 4 ast = 30-31 PRA",
+    "prop_margin": 6
   }
 ]
