@@ -9857,5 +9857,107 @@
     "line_num": 24.5,
     "prop_result": "19 pts + 7-8 reb + 4 ast = 30-31 PRA",
     "prop_margin": 6
+  },
+  {
+    "id": "20261029-nba-v1-jaylen-prop",
+    "date": "2026-10-29",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Jaylen Wells Over 10.5 Points (MEM @ POR)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-120 @ BetMGM",
+    "units": 1,
+    "score": 7.8,
+    "primary_edge": "Cross-book prop gap: BetMGM (and its skin) is the only book at 10.5 (O-120/U-110) while 8 sportsbooks hold the 11.5 opener at a de-vigged P(over 11.5) ~49%. Cross-rung fair P(over 10.5) ~56.8% (P(X=11) ~7.8%, sigma 1.5*sqrt(line)) vs 54.5% needed (+2.3pp, EV ~+4.2%). Season 4-0 over (12/17/16/14 in 25-33 min); BP projection 11.3 clears 10.5. Pinnacle absent - CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27958 market 156 (points)",
+        "status": "usable",
+        "freshness": "2026-10-29 16:00 UTC",
+        "detail": "BetMGM O10.5 -120 / U10.5 -110 (upd 15:51 UTC); BetMGM skin(27) 10.5 -120/-110; DraftKings 11.5 -108/-118; Caesars 11.5 -115/-115; theScore 11.5 -110/-120; Hard Rock 11.5 -115/-115; Fanatics 11.5 -105/-125; Betr 11.5 -109/-127; BetRivers 11.5 -112/-122; consensus 11.5 -110/-120; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-29 16:00 UTC",
+        "detail": "Opened 11.5 O -105 (Fanatics 2026-10-29 02:39 UTC); market still 11.5 at 8 sportsbooks; BetMGM alone at 10.5"
+      },
+      {
+        "category": "player_trend",
+        "source": "ESPN gamelog (athlete 5112087) + BettingPros /props performance",
+        "status": "usable",
+        "freshness": "2026-10-29 16:05 UTC",
+        "detail": "2026-27 PTS 12/17/16/14 in 28/25/33/30 min (4 of 4 over 10.5, avg 14.8); BP projection 11.3; MEM no ESPN injury entries; Ja Morant now on POR (usage freed)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "7:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 10.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261029-nba-v1-ja-prop",
+    "date": "2026-10-29",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Ja Morant Under 28.5 Points+Rebounds+Assists (MEM @ POR)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-122 @ DraftKings",
+    "units": 1,
+    "score": 6.6,
+    "primary_edge": "Cross-book prop gap: DraftKings is the only book at 28.5 (O-107/U-122) while 9 sportsbooks hold the 27.5 opener with the under juiced (median de-vig P(over 27.5) ~48%). Cross-rung fair P(under 28.5) ~57.0% (P(X=28) ~5.0%, sigma 1.5*sqrt(line)) vs 55.0% needed (+2.1pp, EV ~+3.7%). Season PRA 27/22/27 for POR (0 of 3 over 28.5); BP projection 28.9 leans over - conflicting. Pinnacle absent - CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27958 market 338 (PRA)",
+        "status": "usable",
+        "freshness": "2026-10-29 16:00 UTC",
+        "detail": "DraftKings O28.5 -107 / U28.5 -122 (upd 15:47 UTC); FanDuel 27.5 -114/-114; Caesars 27.5 -117/-115; BetMGM 27.5 -105/-125; Hard Rock 27.5 -115/-115; Fanatics 27.5 -105/-125; Betr 27.5 -108/-128; BetRivers 27.5 -104/-132; consensus 27.5 -105/-125; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-29 16:00 UTC",
+        "detail": "Opened 27.5 O -102 / U -130 (FanDuel 2026-10-29 04:45 UTC); market still 27.5 at 9 sportsbooks; DraftKings alone at 28.5"
+      },
+      {
+        "category": "player_trend",
+        "source": "ESPN gamelog (athlete 4279888) + BettingPros /props performance",
+        "status": "usable",
+        "freshness": "2026-10-29 16:10 UTC",
+        "detail": "2026-27 (POR) PRA 27 (14/5/8, 23 min) / 22 (12/3/7, 27 min) / 27 (23/0/4, 31 min); 0 of 3 over 28.5, avg 25.3; BP projection 28.9 (over); no POR/MEM ESPN injury entry for Morant; facing former team"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "7:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 28.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
