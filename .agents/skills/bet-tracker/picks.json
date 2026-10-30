@@ -10010,5 +10010,56 @@
     "line_num": 9.5,
     "prop_result": null,
     "prop_margin": null
+  },
+  {
+    "id": "20261030-nba-v2-mikel-prop",
+    "date": "2026-10-30",
+    "model": "v2-sharp",
+    "sport": "NBA",
+    "bet": "Mikel Brown Jr. Under 19.5 Points+Rebounds+Assists (DET @ BKN)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-113 @ BetRivers",
+    "units": 1,
+    "score": 8.8,
+    "primary_edge": "Cross-book prop gap 1.0: BetRivers is the only sportsbook at 19.5 (O-121/U-113, its own ~50/50) while 7 sportsbooks hold the 18.5 opener (consensus -113/-118, de-vig P(over 18.5) ~49.5%). Cross-rung fair P(under 19.5) ~55-56.5% (P(X=19) ~5-6%) vs 53.1% needed (+2-3pp, EV ~+4-6%). BP projection 19.1 sits under 19.5 but recommends over vs 18.5 - trend not confirmed. Rising minutes (20/20/28) is the risk. Pinnacle absent - CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27960 market 338 (PRA)",
+        "status": "usable",
+        "freshness": "2026-10-30 16:00 UTC",
+        "detail": "BetRivers O19.5 -121 / U19.5 -113 (upd 15:57 UTC; skin book 15 identical); FanDuel 18.5 -112/-118; DraftKings 18.5 -121/-109; Caesars 18.5 -113/-118; BetMGM 18.5 -111/-120; Hard Rock 18.5 -110/-120; Fanatics 18.5 -115/-115; Betr 18.5 -119; Novig 18.5 -108; ProphetX 18.5 -119; consensus 18.5 -113/-118 (de-vig P(over 18.5) ~49.5%); Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-30 16:00 UTC",
+        "detail": "PRA opened 18.5 O -106 / U -125 (FanDuel 2026-10-30 06:01 UTC); 7 sportsbooks still hold 18.5; BetRivers alone at 19.5. Points market drifted 10.5 -> 11.5 (BetMGM still 10.5)"
+      },
+      {
+        "category": "player_trend",
+        "source": "ESPN gamelog (athlete 5101761) + ESPN NBA injuries + BettingPros /props",
+        "status": "usable",
+        "freshness": "2026-10-30 16:20 UTC",
+        "detail": "Rookie PRA 12 (20 min) / 15 (20 min) / 27 (28 min, OT @BOS) - 1 of 3 over 19.5; BP PRA projection 19.1 (below 19.5); BKN: Demin out, Clowney questionable (illness, downgraded 14:16 UTC)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:30 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 19.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
