@@ -34,5 +34,17 @@
     "side": "over",
     "source": "bettingpros_consensus",
     "vintage": "close"
+  },
+  "20261029-nba-v1-jaylen-prop": {
+    "captured_at": "2026-10-29T18:45:01.699613-07:00",
+    "close": {
+      "over": "-120",
+      "under": "-110"
+    },
+    "market": "prop",
+    "minutes_before_start": 15.0,
+    "side": "over",
+    "source": "bettingpros_consensus",
+    "vintage": "close"
   }
 }
