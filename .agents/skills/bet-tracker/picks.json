@@ -9897,17 +9897,17 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "7:00 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "loss",
+    "units_won_lost": -1.0,
     "closing_line": null,
     "clv": null,
     "clv_devig": null,
     "clv_pct_pts": null,
-    "final_score": null,
+    "final_score": "MEM 124, POR 103",
     "game_margin": null,
     "line_num": 10.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "10 points (4-9 FG, 2-7 3PT, 25 min)",
+    "prop_margin": -0.5
   },
   {
     "id": "20261029-nba-v1-ja-prop",
@@ -9948,16 +9948,16 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "7:00 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "win",
+    "units_won_lost": 0.82,
     "closing_line": null,
     "clv": null,
     "clv_devig": null,
     "clv_pct_pts": null,
-    "final_score": null,
+    "final_score": "MEM 124, POR 103",
     "game_margin": null,
     "line_num": 28.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "14 pts + 2 reb + 3 ast = 19 PRA (exited early, left hamstring)",
+    "prop_margin": -9.5
   }
 ]
