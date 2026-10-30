@@ -9959,5 +9959,56 @@
     "line_num": 28.5,
     "prop_result": "14 pts + 2 reb + 3 ast = 19 PRA (exited early, left hamstring)",
     "prop_margin": -9.5
+  },
+  {
+    "id": "20261030-nba-v1-joel-prop",
+    "date": "2026-10-30",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Joel Embiid Under 9.5 Rebounds (NYK @ PHI)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-112 @ BetRivers",
+    "units": 1,
+    "score": 6.8,
+    "primary_edge": "Cross-book prop gap: BetRivers is the only sportsbook still at the 9.5 opener (O-122/U-112) while 8 sportsbooks moved to 8.5 with the over juiced (consensus -129/-103, de-vig P(over 8.5) ~52.6%). Cross-rung fair P(under 9.5) ~56.5% (P(X=9) ~9%, sigma 1.5*sqrt(line)); 9.5 prediction-market strikes de-vig ~58% under; vs 52.8% needed (+3.7pp, EV ~+6.9%). Conflicting: 11/11/7/11 reb this season (3 of 4 over 9.5). Pinnacle absent - CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27963 market 157 (rebounds)",
+        "status": "usable",
+        "freshness": "2026-10-30 16:00 UTC",
+        "detail": "BetRivers O9.5 -122 / U9.5 -112 (upd 15:57 UTC; skin book 15 identical); DraftKings 8.5 -126/-105; FanDuel 8.5 -128/-104; Caesars 8.5 -130/-103; BetMGM 8.5 -135/+100; theScore 8.5 -125/-105; Hard Rock 8.5 -130/+100; Fanatics 8.5 -130/+100; Betr 8.5 -135/-103; consensus 8.5 -129/-103; prediction-market 9.5 strikes +138/-144, +133/-223, +133/-150; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-10-30 16:00 UTC",
+        "detail": "Opened 9.5 O -140 / U +105 (Fanatics 2026-10-30 00:50 UTC); 8 sportsbooks now at 8.5 with over still juiced (~-129); BetRivers alone still at the 9.5 opener. Embiid points steady 22.5, PRA 35.5 -> 36.5"
+      },
+      {
+        "category": "player_trend",
+        "source": "ESPN gamelog (athlete 3059318) + ESPN NBA injuries + BettingPros /props",
+        "status": "usable",
+        "freshness": "2026-10-30 16:10 UTC",
+        "detail": "2026-27 rebounds 11/11/7/11 in 33-39 min (3 of 4 over 9.5, avg 10.0) - conflicts; 11 reb vs NYK 10-20; not on ESPN injury report; BP PRA projection 32.1 vs 36.5 line (under), PRA L5 1-4"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "4:30 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 9.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
