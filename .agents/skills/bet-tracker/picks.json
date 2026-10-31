@@ -9999,17 +9999,17 @@
     "validation_status": "passed",
     "validation_notes": [],
     "game_time": "4:30 PM",
-    "result": null,
-    "units_won_lost": null,
+    "result": "win",
+    "units_won_lost": 0.893,
     "closing_line": null,
     "clv": null,
     "clv_devig": null,
     "clv_pct_pts": null,
-    "final_score": null,
+    "final_score": "PHI 98, NYK 93",
     "game_margin": null,
     "line_num": 9.5,
-    "prop_result": null,
-    "prop_margin": null
+    "prop_result": "7 rebounds",
+    "prop_margin": -2.5
   },
   {
     "id": "20261030-nba-v2-mikel-prop",
