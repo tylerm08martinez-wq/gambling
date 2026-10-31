@@ -1205,7 +1205,51 @@
    "quote_updated": "2026-10-30 15:57:34",
    "quote_age_min": 2.8,
    "benchmark_max_age_min": 9.8,
-   "close": null
+   "close": {
+    "retail_consensus": {
+     "captured_at": "2026-10-31T01:45:01.703786+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 6.5,
+     "odds_side": -125,
+     "odds_other": -105,
+     "fair_p": 0.5203045685279188,
+     "quote_updated": "2026-10-31 01:39:37",
+     "source": "bettingpros_consensus"
+    },
+    "exchange": {
+     "captured_at": "2026-10-31T01:45:01.703786+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 6.5,
+     "fair_p": 0.5378818880761109,
+     "fair_other": 0.4621181119238891,
+     "operators": [
+      38,
+      60
+     ],
+     "quotes_used": [
+      {
+       "book_id": 38,
+       "odds_side": -119,
+       "odds_other": 113,
+       "updated": "2026-10-31 01:33:36"
+      },
+      {
+       "book_id": 60,
+       "odds_side": -122,
+       "odds_other": 113,
+       "updated": "2026-10-31 01:33:09"
+      }
+     ],
+     "source": "exchange_benchmark"
+    },
+    "side": "Over",
+    "captured_at": "2026-10-31T01:45:01.703786+00:00",
+    "minutes_before_start": 15.0
+   },
+   "realized_clv_exchange_frac": 0.055076,
+   "realized_clv_retail_frac": 0.020597
   },
   {
    "id": "v3obs-d6595898bfbef5a3",
