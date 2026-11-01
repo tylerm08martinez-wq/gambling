@@ -10061,5 +10061,107 @@
     "line_num": 19.5,
     "prop_result": "10 pts, 0 reb, 4 ast = 14 PRA",
     "prop_margin": -5.5
+  },
+  {
+    "id": "20261101-nfl-v1-chase-prop",
+    "date": "2026-11-01",
+    "model": "v1-trends",
+    "sport": "NFL",
+    "bet": "Chase Brown Over 80.5 rushing + receiving yards (TEN @ CIN)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-110 @ Fanatics",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "Cross-book prop gap: Fanatics alone at 80.5 rush+rec yds (O-110/U-120, its own price leans under) while sportsbooks moved 77.5 opener -> 83.5-85.5 (Caesars 83.5, theScore 84.5, DK/BetMGM 85.5). Kalshi 80+ strike de-vigs to ~56.5% over 79.5 -> fair P(over 80.5) ~54-55% vs 52.4% needed (+2pp, EV ~+3.7%). BP component projections (58.6 rush + 19.0 rec) lean under - conflicting signal (-2)",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NFL event 22129 market 406 (rush+rec yards)",
+        "status": "usable",
+        "freshness": "2026-11-01 16:05 UTC",
+        "detail": "Fanatics O80.5 -110 / U80.5 -120 (upd 15:28 UTC, its whole feed updates ~15:27); Novig 80.5 -120/-111; ProphetX O80.5 -160 (one-sided); Caesars 83.5 -115/-115; theScore 84.5 -115/-115; consensus 84.5 -115/-115; DraftKings 85.5 -111/-115; BetMGM 85.5 -115/-115; Kalshi 79.5 O-133/U+127; Underdog 89.5 +107/-132"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-11-01 16:05 UTC",
+        "detail": "Rush+rec opened 77.5 (DraftKings 2026-10-29) -> 83.5-85.5 now (+6-8 yd move in bet direction); rush yds opened 51.5 -> 57.5-60.5 at every book; Fanatics lagging at 80.5"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection",
+        "status": "usable",
+        "freshness": "2026-11-01 16:02 UTC",
+        "detail": "Rush yds proj 58.62 vs 59.5 (under), rec yds proj 19.03 vs 19.5 (under); no rush+rec projection in feed; rush L10 5-5 vs line"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "11:00 AM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 80.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261101-nba-v1-desmon-prop",
+    "date": "2026-11-01",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Desmond Bane Over 26.5 Points+Rebounds+Assists (BOS @ ORL)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-111 @ Betr",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "Cross-book prop gap 1.0: Betr is the only sportsbook still on the 26.5 opener (O-111/U-123, its own price leans under) while 11 sportsbooks moved to 27.5 (de-vig P(over 27.5) ~51%). Fanatics 28.5 ~48% over, Polymarket 30+ strike ~42.5% over -> fair P(over 26.5) ~54.5-56% vs 52.6% needed (+2-3pp, EV ~+4.9%). BP projection 25.7 leans under - conflicting signal (-2). Pinnacle absent - CLV unverified",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27976 market 338 (PRA)",
+        "status": "usable",
+        "freshness": "2026-11-01 16:07 UTC",
+        "detail": "Betr O26.5 -111 / U26.5 -123 (upd 15:59 UTC); FanDuel 27.5 -120/-110; DraftKings 27.5 -115/-114; Caesars 27.5 -125/-107; BetRivers 27.5 -114/-118; BetMGM 27.5 -115/-115; Hard Rock 27.5 -115/-115; ProphetX 27.5 -117/-102; Novig 27.5 -115/-102; consensus 27.5 -115/-114; Fanatics 28.5 -105/-125; Polymarket 29.5 +133/-138; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-11-01 16:07 UTC",
+        "detail": "PRA opened 26.5 -119/-110 (DraftKings 2026-11-01 02:31 UTC) -> 27.5 at 11 books; points 18.5 -> 19.5 at 13 books (BetRivers/Betr 18.5 now juiced over -128/-136); Betr lagging at the PRA opener"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection + performance",
+        "status": "usable",
+        "freshness": "2026-11-01 16:03 UTC",
+        "detail": "PRA proj 25.7 (under, conflicting); points proj 17.4 vs 19.5; assists proj 3.9 over 3.5; season 2-3 vs PRA line"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "1:30 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 26.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
