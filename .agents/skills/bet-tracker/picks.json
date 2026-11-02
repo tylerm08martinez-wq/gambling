@@ -10163,5 +10163,56 @@
     "line_num": 26.5,
     "prop_result": "22 PRA (19 pts, 2 reb, 1 ast)",
     "prop_margin": -4.5
+  },
+  {
+    "id": "20261102-nba-v1-dejoun-prop",
+    "date": "2026-11-02",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Dejounte Murray Under 5.5 Rebounds (NOR @ MEM)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+105 @ BetRivers",
+    "units": 1,
+    "score": 7.4,
+    "primary_edge": "Cross-book price gap on the same line: BetRivers prices Murray U5.5 reb at +105 (O-143), still near the FD opener (O-158), while 16 books repriced toward the under (DK/BetMGM/Fanatics/HR -110/-120, FD -102/-130). Median sportsbook de-vig P(under 5.5) ~51.4% vs 48.8% needed (+2.6pp, ~+5.4% EV); exchange de-vig ~53.5%. BP projection 5.2 reb (under).",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 27988 market 157 (rebounds)",
+        "status": "usable",
+        "freshness": "2026-11-02 16:00 UTC",
+        "detail": "BetRivers 5.5 O-143/U+105 (upd 15:51 UTC; skin b15 identical); FanDuel 5.5 -102/-130; DraftKings 5.5 -110/-120; Caesars 5.5 -107/-127; Fanatics 5.5 -110/-120; BetMGM 5.5 -110/-120; theScore 5.5 -105/-125; Hard Rock 5.5 -110/-120; Betr 5.5 -109/-127; Novig 5.5 +113/-120; ProphetX 5.5 +106/-122; consensus 5.5 -110/-120; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-11-02 16:00 UTC",
+        "detail": "Opened 5.5 O-158 (FanDuel 2026-11-02 00:21 UTC) -> O-110/U-120 consensus; whole Murray market repriced down (PRA 30.5->29.5 at every book, points 17.5 unders juiced to -120/-130); BetRivers rebounds price lagging near opener"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props projection + performance",
+        "status": "usable",
+        "freshness": "2026-11-02 15:57 UTC",
+        "detail": "Rebounds proj 5.2 (under, diff -0.3); L5 4-1 over, L10 5-5, season 3-1 over (conflicting recent form, -2 applied)"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:00 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 5.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
