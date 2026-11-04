@@ -46,5 +46,18 @@
     "side": "over",
     "source": "bettingpros_consensus",
     "vintage": "close"
+  },
+  "20261102-nba-v1-dejoun-prop": {
+    "captured_at": "2026-11-02T17:45:02.015475-07:00",
+    "close": {
+      "over": "+122",
+      "under": "-265"
+    },
+    "market": "prop",
+    "minutes_before_start": 15.0,
+    "side": "under",
+    "source": "bettingpros_consensus",
+    "start_source": "event_scheduled",
+    "vintage": "close"
   }
 }
