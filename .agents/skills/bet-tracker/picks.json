@@ -10214,5 +10214,63 @@
     "line_num": 5.5,
     "prop_result": "DNP (personal reasons)",
     "prop_margin": null
+  },
+  {
+    "id": "20261104-nba-v1-jarret-prop",
+    "date": "2026-11-04",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Jarrett Allen Under 8.5 Rebounds (CLE @ OKC)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "-113 @ BetRivers",
+    "units": 1,
+    "score": 6.6,
+    "primary_edge": "Cross-book price gap on the same line: BetRivers prices Allen U8.5 reb at -113 (O-120), still near the -115/-115 opener, while sportsbooks repriced toward the under (consensus +105/-140; FD -146, BetMGM -150, Fanatics -145, Hard Rock -140). Median sportsbook de-vig P(under 8.5) ~55.1% vs 53.05% needed (+2.0pp, ~+3.8% EV); Novig/ProphetX low-hold de-vig ~54.6% (+1.5pp). Same opponent as Monday, when Allen had 6 reb in 28 min and Hartenstein 14. BP P+R projection leans over (conflict).",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 28002 market 157 (rebounds)",
+        "status": "usable",
+        "freshness": "2026-11-04 15:59 UTC",
+        "detail": "BetRivers 8.5 O-120/U-113 (upd 15:59 UTC; skin b15 identical at 15:46, so held across polls); FanDuel 8.5 +110/-146; DraftKings 8.5 -105/-125; Caesars 8.5 +101/-136; Fanatics 8.5 +110/-145; BetMGM 8.5 +110/-150; Hard Rock 8.5 +110/-140; Betr 8.5 +100/-137; Novig 8.5 +113/-120; ProphetX 8.5 +121/-130; consensus 8.5 +105/-140; Pinnacle absent"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-11-04 15:59 UTC",
+        "detail": "Opened 8.5 -115/-115 (Fanatics 2026-11-03 13:20 UTC) -> market repriced toward the under at about +105/-140 across sportsbooks; BetRivers still O-120/U-113, on the opener side of the move"
+      },
+      {
+        "category": "model_projection",
+        "source": "BettingPros /props market 336 (no market-157 row for Allen)",
+        "status": "usable",
+        "freshness": "2026-11-04 16:00 UTC",
+        "detail": "CONFLICT: P+R projection 25.2 vs 21.5 line (over); consensus P+R moved up 20.5 -> 21.5 while rebounds moved down. No direct rebounds projection available"
+      },
+      {
+        "category": "situational",
+        "source": "ESPN gamelog + SI Cavaliers recap 2026-11-03",
+        "status": "usable",
+        "freshness": "2026-11-04 16:08 UTC",
+        "detail": "Regular-season rebounds 7,8,9,12,8,11,6 (3 of 7 over 8.5, mean 8.7, 24-30 min). Monday vs OKC: 6 reb in 28 min, sat closing lineup with Harden at PF; Hartenstein 14 reb in 28 min. Same opponent tonight"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:00 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 8.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
