@@ -59,5 +59,18 @@
     "source": "bettingpros_consensus",
     "start_source": "event_scheduled",
     "vintage": "close"
+  },
+  "20261104-nba-v1-jarret-prop": {
+    "captured_at": "2026-11-04T17:45:01.900004-07:00",
+    "close": {
+      "over": "+103",
+      "under": "-138"
+    },
+    "market": "prop",
+    "minutes_before_start": 15.0,
+    "side": "under",
+    "source": "bettingpros_consensus",
+    "start_source": "event_scheduled",
+    "vintage": "close"
   }
 }
