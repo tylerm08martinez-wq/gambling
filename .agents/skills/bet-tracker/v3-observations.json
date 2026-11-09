@@ -4509,23 +4509,23 @@
    "benchmark_max_age_min": 4.8,
    "close": {
     "retail_consensus": {
-     "captured_at": "2026-11-09T23:15:01.795723+00:00",
-     "minutes_before_start": 45.0,
-     "vintage": "pre-close",
+     "captured_at": "2026-11-09T23:30:01.863960+00:00",
+     "minutes_before_start": 30.0,
+     "vintage": "close",
      "line": 10.5,
      "odds_side": -130,
-     "odds_other": 100,
-     "fair_p": 0.5306122448979592,
-     "quote_updated": "2026-11-09 23:12:30",
+     "odds_other": -101,
+     "fair_p": 0.5293760129659644,
+     "quote_updated": "2026-11-09 23:26:51",
      "source": "bettingpros_consensus"
     },
     "exchange": null,
     "side": "Under",
-    "captured_at": "2026-11-09T23:15:01.795723+00:00",
-    "minutes_before_start": 45.0
+    "captured_at": "2026-11-09T23:30:01.863960+00:00",
+    "minutes_before_start": 30.0
    },
    "realized_clv_exchange_frac": null,
-   "realized_clv_retail_frac": 0.035957
+   "realized_clv_retail_frac": 0.033544
   },
   {
    "id": "v3obs-5d8dc521d237fdb1",
