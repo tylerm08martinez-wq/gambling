@@ -779,6 +779,58 @@
    "errors": [],
    "status": "ok",
    "new_observations": 5
+  },
+  {
+   "scan_date": "2026-11-10",
+   "scanned_at": "2026-11-10T16:00:06Z",
+   "sports": [
+    "NBA",
+    "NFL",
+    "MLB"
+   ],
+   "events_by_sport": {
+    "NBA": 6,
+    "NFL": 0,
+    "MLB": 0
+   },
+   "candidates": 8,
+   "offers_by_market": {
+    "NBA:127": 6,
+    "NBA:128": 6,
+    "NBA:129": 6,
+    "NBA:156": 84,
+    "NBA:157": 84,
+    "NBA:151": 66,
+    "NBA:335": 66,
+    "NBA:336": 80,
+    "NBA:337": 71,
+    "NBA:338": 83,
+    "NFL:1": 0,
+    "NFL:2": 0,
+    "NFL:3": 0,
+    "NFL:103": 0,
+    "NFL:100": 0,
+    "NFL:333": 0,
+    "NFL:104": 0,
+    "NFL:105": 0,
+    "NFL:106": 0,
+    "NFL:107": 0,
+    "NFL:406": 0,
+    "MLB:122": 0,
+    "MLB:175": 0,
+    "MLB:176": 0,
+    "MLB:285": 0,
+    "MLB:405": 0
+   },
+   "requests": 100,
+   "events_started": 0,
+   "markets_scanned": 549,
+   "markets_with_benchmark": 127,
+   "markets_scored": 123,
+   "fetch_failures": 0,
+   "errors": [],
+   "status": "ok",
+   "new_observations": 8
   }
  ],
  "observations": [
@@ -4474,7 +4526,65 @@
    "quote_updated": "2026-11-09 15:57:09",
    "quote_age_min": 3.0,
    "benchmark_max_age_min": 9.0,
-   "close": null
+   "close": {
+    "retail_consensus": {
+     "captured_at": "2026-11-10T01:45:01.267073+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 1,
+     "odds_side": -393,
+     "odds_other": 310,
+     "fair_p": 0.7825764714455679,
+     "quote_updated": "2026-11-10 01:41:48",
+     "source": "bettingpros_consensus"
+    },
+    "exchange": {
+     "captured_at": "2026-11-10T01:45:01.267073+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 1,
+     "fair_p": 0.7664178925082499,
+     "fair_other": 0.23358210749175015,
+     "operators": [
+      38,
+      60,
+      68,
+      "polymarket"
+     ],
+     "quotes_used": [
+      {
+       "book_id": 38,
+       "odds_side": -335,
+       "odds_other": 330,
+       "updated": "2026-11-10 01:37:28"
+      },
+      {
+       "book_id": 60,
+       "odds_side": -335,
+       "odds_other": 317,
+       "updated": "2026-11-10 01:40:35"
+      },
+      {
+       "book_id": 68,
+       "odds_side": -335,
+       "odds_other": 317,
+       "updated": "2026-11-10 01:32:51"
+      },
+      {
+       "book_id": 73,
+       "odds_side": -335,
+       "odds_other": 317,
+       "updated": "2026-11-10 01:41:51"
+      }
+     ],
+     "source": "exchange_benchmark"
+    },
+    "side": "Spurs",
+    "captured_at": "2026-11-10T01:45:01.267073+00:00",
+    "minutes_before_start": 15.0
+   },
+   "realized_clv_exchange_frac": 0.034396,
+   "realized_clv_retail_frac": 0.056205
   },
   {
    "id": "v3obs-98e7b1f701144929",
@@ -4509,23 +4619,23 @@
    "benchmark_max_age_min": 4.8,
    "close": {
     "retail_consensus": {
-     "captured_at": "2026-11-09T23:30:01.863960+00:00",
-     "minutes_before_start": 30.0,
+     "captured_at": "2026-11-09T23:45:01.155019+00:00",
+     "minutes_before_start": 15.0,
      "vintage": "close",
      "line": 10.5,
-     "odds_side": -130,
-     "odds_other": -101,
-     "fair_p": 0.5293760129659644,
-     "quote_updated": "2026-11-09 23:26:51",
+     "odds_side": -123,
+     "odds_other": -106,
+     "fair_p": 0.5173554393988893,
+     "quote_updated": "2026-11-09 23:42:46",
      "source": "bettingpros_consensus"
     },
     "exchange": null,
     "side": "Under",
-    "captured_at": "2026-11-09T23:30:01.863960+00:00",
-    "minutes_before_start": 30.0
+    "captured_at": "2026-11-09T23:45:01.155019+00:00",
+    "minutes_before_start": 15.0
    },
    "realized_clv_exchange_frac": null,
-   "realized_clv_retail_frac": 0.033544
+   "realized_clv_retail_frac": 0.010075
   },
   {
    "id": "v3obs-5d8dc521d237fdb1",
@@ -4558,7 +4668,51 @@
    "quote_updated": "2026-11-09 15:57:03",
    "quote_age_min": 3.1,
    "benchmark_max_age_min": 7.9,
-   "close": null
+   "close": {
+    "retail_consensus": {
+     "captured_at": "2026-11-10T00:15:01.181059+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 5.5,
+     "odds_side": -119,
+     "odds_other": -111,
+     "fair_p": 0.5080942166821806,
+     "quote_updated": "2026-11-10 00:08:35",
+     "source": "bettingpros_consensus"
+    },
+    "exchange": {
+     "captured_at": "2026-11-10T00:15:01.181059+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 5.5,
+     "fair_p": 0.5245960182126596,
+     "fair_other": 0.47540398178734045,
+     "operators": [
+      68,
+      "polymarket"
+     ],
+     "quotes_used": [
+      {
+       "book_id": 68,
+       "odds_side": -113,
+       "odds_other": 108,
+       "updated": "2026-11-10 00:03:17"
+      },
+      {
+       "book_id": 75,
+       "odds_side": -113,
+       "odds_other": 108,
+       "updated": "2026-11-10 00:04:49"
+      }
+     ],
+     "source": "exchange_benchmark"
+    },
+    "side": "Under",
+    "captured_at": "2026-11-10T00:15:01.181059+00:00",
+    "minutes_before_start": 15.0
+   },
+   "realized_clv_exchange_frac": 0.014873,
+   "realized_clv_retail_frac": -0.017051
   },
   {
    "id": "v3obs-4a9bc073ca587736",
@@ -4591,7 +4745,51 @@
    "quote_updated": "2026-11-09 15:55:52",
    "quote_age_min": 4.2,
    "benchmark_max_age_min": 7.9,
-   "close": null
+   "close": {
+    "retail_consensus": {
+     "captured_at": "2026-11-10T01:45:01.267073+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 3.5,
+     "odds_side": -154,
+     "odds_other": 115,
+     "fair_p": 0.5658861733037088,
+     "quote_updated": "2026-11-10 01:43:56",
+     "source": "bettingpros_consensus"
+    },
+    "exchange": {
+     "captured_at": "2026-11-10T01:45:01.267073+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 3.5,
+     "fair_p": 0.5439043431811645,
+     "fair_other": 0.45609565681883557,
+     "operators": [
+      68,
+      "polymarket"
+     ],
+     "quotes_used": [
+      {
+       "book_id": 68,
+       "odds_side": -122,
+       "odds_other": 117,
+       "updated": "2026-11-10 01:33:57"
+      },
+      {
+       "book_id": 75,
+       "odds_side": -122,
+       "odds_other": 117,
+       "updated": "2026-11-10 01:40:04"
+      }
+     ],
+     "source": "exchange_benchmark"
+    },
+    "side": "Under",
+    "captured_at": "2026-11-10T01:45:01.267073+00:00",
+    "minutes_before_start": 15.0
+   },
+   "realized_clv_exchange_frac": -0.037708,
+   "realized_clv_retail_frac": 0.001183
   },
   {
    "id": "v3obs-3b595ba3c515fe1f",
@@ -4623,6 +4821,321 @@
    ],
    "quote_updated": "2026-11-09 15:53:58",
    "quote_age_min": 6.1,
+   "benchmark_max_age_min": 7.7,
+   "close": {
+    "retail_consensus": {
+     "captured_at": "2026-11-10T01:45:01.267073+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 24.5,
+     "odds_side": -115,
+     "odds_other": -115,
+     "fair_p": 0.5,
+     "quote_updated": "2026-11-10 01:43:52",
+     "source": "bettingpros_consensus"
+    },
+    "exchange": {
+     "captured_at": "2026-11-10T01:45:01.267073+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 24.5,
+     "fair_p": 0.5048543689320388,
+     "fair_other": 0.49514563106796117,
+     "operators": [
+      60,
+      68,
+      "polymarket"
+     ],
+     "quotes_used": [
+      {
+       "book_id": 60,
+       "odds_side": -104,
+       "odds_other": 100,
+       "updated": "2026-11-10 01:40:36"
+      },
+      {
+       "book_id": 68,
+       "odds_side": -104,
+       "odds_other": -104,
+       "updated": "2026-11-10 01:34:14"
+      },
+      {
+       "book_id": 75,
+       "odds_side": -104,
+       "odds_other": 100,
+       "updated": "2026-11-10 01:40:04"
+      }
+     ],
+     "source": "exchange_benchmark"
+    },
+    "side": "Over",
+    "captured_at": "2026-11-10T01:45:01.267073+00:00",
+    "minutes_before_start": 15.0
+   },
+   "realized_clv_exchange_frac": -0.014332,
+   "realized_clv_retail_frac": -0.02381
+  },
+  {
+   "id": "v3obs-2d37ee3b5fa18143",
+   "scan_date": "2026-11-10",
+   "scanned_at": "2026-11-10T16:00:06Z",
+   "sport": "NBA",
+   "event_id": 28046,
+   "event": "ORL @ SAC",
+   "start_utc": "2026-11-11T03:00:00Z",
+   "market_id": 151,
+   "market": "assists",
+   "kind": "prop",
+   "participant": "Domantas Sabonis",
+   "bet": "Domantas Sabonis Under 5.5 assists",
+   "line": 5.5,
+   "side": "Under",
+   "selection": "b",
+   "book_id": 45,
+   "book": "Betr",
+   "odds": 101,
+   "p_best": 0.497512,
+   "fair_p": 0.636131,
+   "projected_clv": 0.278624,
+   "gate": 0.03,
+   "units_kelly": 1,
+   "benchmark_operators": [
+    68,
+    "polymarket"
+   ],
+   "quote_updated": "2026-11-10 15:57:29",
+   "quote_age_min": 2.6,
+   "benchmark_max_age_min": 7.7,
+   "close": null
+  },
+  {
+   "id": "v3obs-3cd1cb8d09fcf1be",
+   "scan_date": "2026-11-10",
+   "scanned_at": "2026-11-10T16:00:06Z",
+   "sport": "NBA",
+   "event_id": 28046,
+   "event": "ORL @ SAC",
+   "start_utc": "2026-11-11T03:00:00Z",
+   "market_id": 151,
+   "market": "assists",
+   "kind": "prop",
+   "participant": "Domantas Sabonis",
+   "bet": "Domantas Sabonis Under 5.5 assists",
+   "line": 5.5,
+   "side": "Under",
+   "selection": "b",
+   "book_id": 33,
+   "book": "theScore Bet",
+   "odds": -105,
+   "p_best": 0.512195,
+   "fair_p": 0.636131,
+   "projected_clv": 0.24197,
+   "gate": 0.03,
+   "units_kelly": 1,
+   "benchmark_operators": [
+    68,
+    "polymarket"
+   ],
+   "quote_updated": "2026-11-10 15:52:46",
+   "quote_age_min": 7.3,
+   "benchmark_max_age_min": 7.7,
+   "close": null
+  },
+  {
+   "id": "v3obs-54bff491e5208be3",
+   "scan_date": "2026-11-10",
+   "scanned_at": "2026-11-10T16:00:06Z",
+   "sport": "NBA",
+   "event_id": 28046,
+   "event": "ORL @ SAC",
+   "start_utc": "2026-11-11T03:00:00Z",
+   "market_id": 151,
+   "market": "assists",
+   "kind": "prop",
+   "participant": "Domantas Sabonis",
+   "bet": "Domantas Sabonis Under 5.5 assists",
+   "line": 5.5,
+   "side": "Under",
+   "selection": "b",
+   "book_id": 13,
+   "book": "Caesars",
+   "odds": -105,
+   "p_best": 0.512195,
+   "fair_p": 0.636131,
+   "projected_clv": 0.24197,
+   "gate": 0.03,
+   "units_kelly": 1,
+   "benchmark_operators": [
+    68,
+    "polymarket"
+   ],
+   "quote_updated": "2026-11-10 15:50:28",
+   "quote_age_min": 9.6,
+   "benchmark_max_age_min": 7.7,
+   "close": null
+  },
+  {
+   "id": "v3obs-cf3dcd75523f3e4c",
+   "scan_date": "2026-11-10",
+   "scanned_at": "2026-11-10T16:00:06Z",
+   "sport": "NBA",
+   "event_id": 28046,
+   "event": "ORL @ SAC",
+   "start_utc": "2026-11-11T03:00:00Z",
+   "market_id": 151,
+   "market": "assists",
+   "kind": "prop",
+   "participant": "Domantas Sabonis",
+   "bet": "Domantas Sabonis Under 5.5 assists",
+   "line": 5.5,
+   "side": "Under",
+   "selection": "b",
+   "book_id": 10,
+   "book": "FanDuel",
+   "odds": -106,
+   "p_best": 0.514563,
+   "fair_p": 0.636131,
+   "projected_clv": 0.236255,
+   "gate": 0.03,
+   "units_kelly": 1,
+   "benchmark_operators": [
+    68,
+    "polymarket"
+   ],
+   "quote_updated": "2026-11-10 15:59:13",
+   "quote_age_min": 0.9,
+   "benchmark_max_age_min": 7.7,
+   "close": null
+  },
+  {
+   "id": "v3obs-6ba2374bff95a3b3",
+   "scan_date": "2026-11-10",
+   "scanned_at": "2026-11-10T16:00:06Z",
+   "sport": "NBA",
+   "event_id": 28046,
+   "event": "ORL @ SAC",
+   "start_utc": "2026-11-11T03:00:00Z",
+   "market_id": 151,
+   "market": "assists",
+   "kind": "prop",
+   "participant": "Domantas Sabonis",
+   "bet": "Domantas Sabonis Under 5.5 assists",
+   "line": 5.5,
+   "side": "Under",
+   "selection": "b",
+   "book_id": 49,
+   "book": "Hard Rock",
+   "odds": -110,
+   "p_best": 0.52381,
+   "fair_p": 0.636131,
+   "projected_clv": 0.214432,
+   "gate": 0.03,
+   "units_kelly": 1,
+   "benchmark_operators": [
+    68,
+    "polymarket"
+   ],
+   "quote_updated": "2026-11-10 15:56:03",
+   "quote_age_min": 4.1,
+   "benchmark_max_age_min": 7.7,
+   "close": null
+  },
+  {
+   "id": "v3obs-caefc4a6e8b2043a",
+   "scan_date": "2026-11-10",
+   "scanned_at": "2026-11-10T16:00:06Z",
+   "sport": "NBA",
+   "event_id": 28046,
+   "event": "ORL @ SAC",
+   "start_utc": "2026-11-11T03:00:00Z",
+   "market_id": 151,
+   "market": "assists",
+   "kind": "prop",
+   "participant": "Domantas Sabonis",
+   "bet": "Domantas Sabonis Under 5.5 assists",
+   "line": 5.5,
+   "side": "Under",
+   "selection": "b",
+   "book_id": 39,
+   "book": "Fliff",
+   "odds": -115,
+   "p_best": 0.534884,
+   "fair_p": 0.636131,
+   "projected_clv": 0.189289,
+   "gate": 0.03,
+   "units_kelly": 1,
+   "benchmark_operators": [
+    68,
+    "polymarket"
+   ],
+   "quote_updated": "2026-11-10 15:59:05",
+   "quote_age_min": 1.0,
+   "benchmark_max_age_min": 7.7,
+   "close": null
+  },
+  {
+   "id": "v3obs-b880e4b47de25fee",
+   "scan_date": "2026-11-10",
+   "scanned_at": "2026-11-10T16:00:06Z",
+   "sport": "NBA",
+   "event_id": 28046,
+   "event": "ORL @ SAC",
+   "start_utc": "2026-11-11T03:00:00Z",
+   "market_id": 151,
+   "market": "assists",
+   "kind": "prop",
+   "participant": "Domantas Sabonis",
+   "bet": "Domantas Sabonis Under 5.5 assists",
+   "line": 5.5,
+   "side": "Under",
+   "selection": "b",
+   "book_id": 19,
+   "book": "BetMGM",
+   "odds": -125,
+   "p_best": 0.555556,
+   "fair_p": 0.636131,
+   "projected_clv": 0.145036,
+   "gate": 0.03,
+   "units_kelly": 1,
+   "benchmark_operators": [
+    68,
+    "polymarket"
+   ],
+   "quote_updated": "2026-11-10 15:59:50",
+   "quote_age_min": 0.3,
+   "benchmark_max_age_min": 7.7,
+   "close": null
+  },
+  {
+   "id": "v3obs-6821ff55514206a5",
+   "scan_date": "2026-11-10",
+   "scanned_at": "2026-11-10T16:00:06Z",
+   "sport": "NBA",
+   "event_id": 28046,
+   "event": "ORL @ SAC",
+   "start_utc": "2026-11-11T03:00:00Z",
+   "market_id": 151,
+   "market": "assists",
+   "kind": "prop",
+   "participant": "Domantas Sabonis",
+   "bet": "Domantas Sabonis Under 5.5 assists",
+   "line": 5.5,
+   "side": "Under",
+   "selection": "b",
+   "book_id": 18,
+   "book": "BetRivers",
+   "odds": -130,
+   "p_best": 0.565217,
+   "fair_p": 0.636131,
+   "projected_clv": 0.125463,
+   "gate": 0.03,
+   "units_kelly": 1,
+   "benchmark_operators": [
+    68,
+    "polymarket"
+   ],
+   "quote_updated": "2026-11-10 15:58:30",
+   "quote_age_min": 1.6,
    "benchmark_max_age_min": 7.7,
    "close": null
   }
