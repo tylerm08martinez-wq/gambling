@@ -6378,7 +6378,41 @@
    "quote_updated": "2026-11-15 15:58:08",
    "quote_age_min": 2.0,
    "benchmark_max_age_min": 5.8,
-   "close": null
+   "close": {
+    "retail_consensus": null,
+    "exchange": {
+     "captured_at": "2026-11-15T20:45:02.091774+00:00",
+     "minutes_before_start": 45.0,
+     "vintage": "pre-close",
+     "line": 1.5,
+     "fair_p": 0.6683383011253767,
+     "fair_other": 0.3316616988746233,
+     "operators": [
+      68,
+      "polymarket"
+     ],
+     "quotes_used": [
+      {
+       "book_id": 68,
+       "odds_side": -203,
+       "odds_other": 194,
+       "updated": "2026-11-15 20:36:24"
+      },
+      {
+       "book_id": 75,
+       "odds_side": -213,
+       "odds_other": 203,
+       "updated": "2026-11-15 20:33:42"
+      }
+     ],
+     "source": "exchange_benchmark"
+    },
+    "side": "Over",
+    "captured_at": "2026-11-15T20:45:02.091774+00:00",
+    "minutes_before_start": 45.0
+   },
+   "realized_clv_exchange_frac": 0.021956,
+   "realized_clv_retail_frac": null
   },
   {
    "id": "v3obs-ae583da728ce8d69",
