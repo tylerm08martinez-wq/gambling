@@ -6198,7 +6198,51 @@
    "quote_updated": "2026-11-14 15:56:05",
    "quote_age_min": 4.0,
    "benchmark_max_age_min": 12.6,
-   "close": null
+   "close": {
+    "retail_consensus": {
+     "captured_at": "2026-11-15T00:15:02.185263+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 1.5,
+     "odds_side": 119,
+     "odds_other": -160,
+     "fair_p": 0.4259501965923984,
+     "quote_updated": "2026-11-15 00:10:56",
+     "source": "bettingpros_consensus"
+    },
+    "exchange": {
+     "captured_at": "2026-11-15T00:15:02.185263+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 1.5,
+     "fair_p": 0.44080618338833477,
+     "fair_other": 0.5591938166116652,
+     "operators": [
+      68,
+      "polymarket"
+     ],
+     "quotes_used": [
+      {
+       "book_id": 68,
+       "odds_side": 127,
+       "odds_other": -133,
+       "updated": "2026-11-15 00:06:05"
+      },
+      {
+       "book_id": 75,
+       "odds_side": 122,
+       "odds_other": -127,
+       "updated": "2026-11-15 00:06:46"
+      }
+     ],
+     "source": "exchange_benchmark"
+    },
+    "side": "Over",
+    "captured_at": "2026-11-15T00:15:02.185263+00:00",
+    "minutes_before_start": 15.0
+   },
+   "realized_clv_exchange_frac": 0.057935,
+   "realized_clv_retail_frac": 0.02228
   },
   {
    "id": "v3obs-664a02209616ae96",
@@ -6231,7 +6275,25 @@
    "quote_updated": "2026-11-14 15:54:38",
    "quote_age_min": 5.5,
    "benchmark_max_age_min": 6.9,
-   "close": null
+   "close": {
+    "retail_consensus": {
+     "captured_at": "2026-11-15T00:45:02.093389+00:00",
+     "minutes_before_start": 15.0,
+     "vintage": "close",
+     "line": 3.5,
+     "odds_side": -134,
+     "odds_other": 105,
+     "fair_p": 0.5400039315903282,
+     "quote_updated": "2026-11-15 00:38:18",
+     "source": "bettingpros_consensus"
+    },
+    "exchange": null,
+    "side": "Under",
+    "captured_at": "2026-11-15T00:45:02.093389+00:00",
+    "minutes_before_start": 15.0
+   },
+   "realized_clv_exchange_frac": null,
+   "realized_clv_retail_frac": 0.215009
   }
  ]
 }
