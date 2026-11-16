@@ -10272,5 +10272,107 @@
     "line_num": 8.5,
     "prop_result": "1 rebound",
     "prop_margin": -7.5
+  },
+  {
+    "id": "20261116-nba-v1-josh-prop",
+    "date": "2026-11-16",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Josh Giddey Over 6.5 Rebounds (CHI @ CLE)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+105 @ BetMGM",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "Cross-book price gap on the same line: BetMGM (and its skin) price Giddey O6.5 reb at +105 (U-140), still at the opener (+100/-130), while 8 sportsbooks repriced toward the over (FD -118/-112, DK -129/-102, Caesars -121/-110, theScore -120/-110, Betr -132/-105) and Novig is -113/+106. De-vig fair over ~50.6% at sportsbooks, 52.2% Novig, 50.5% ProphetX vs 48.8% needed: about +2pp (EV ~+4%). Mobley (toe) out for CLE. Conflict: BetMGM also prices his points over high, so this may be its view; game log 6 of 12 over 6.5",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 28087 market 157 (rebounds)",
+        "status": "usable",
+        "freshness": "2026-11-16 16:06 UTC",
+        "detail": "BetMGM 6.5 O+105/U-140 (upd ~15:56 UTC; skin b27 identical); FanDuel 6.5 -118/-112; DraftKings -129/-102; Caesars -121/-110; BetRivers -114/-118; theScore -120/-110; Betr -132/-105; Hard Rock -115/-115; Fliff -120/-120; Novig -113/+106; ProphetX -115/-110; consensus -119/-111; Kalshi 7.5 +163/-170; Pinnacle absent. Same-line de-vig fair over: sportsbook median 50.6%, Novig 52.2%, ProphetX 50.5%; entry 48.8%"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-11-16 16:06 UTC",
+        "detail": "Opened 6.5 O+100/U-130 (Fanatics 2026-11-16 02:55 UTC) -> sportsbooks repriced to about -119/-111; BetMGM still +105/-140, on the opener side of the move"
+      },
+      {
+        "category": "situational",
+        "source": "ESPN NBA injuries + gamelog",
+        "status": "usable",
+        "freshness": "2026-11-16 16:10 UTC",
+        "detail": "Evan Mobley (toe) ruled out for CLE. Giddey rebounds this season 8,10,2,7,1,4,4,8,1,8,4,7 (6 of 12 over 6.5, 24-39 min). BettingPros projection 7.0. CONFLICT: BetMGM prices Giddey points O12.5 at -135 vs a 50/50 market, so the low rebound price may be a BetMGM view rather than a stale quote"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "5:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 6.5,
+    "prop_result": null,
+    "prop_margin": null
+  },
+  {
+    "id": "20261116-nba-v1-sidy-prop",
+    "date": "2026-11-16",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Sidy Cissoko Under 1.5 Assists (POR @ MIN)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+125 @ BetRivers",
+    "units": 1,
+    "score": 6.0,
+    "primary_edge": "Cross-book price gap on the same line: BetRivers (and its skin) price Cissoko U1.5 ast at +125 (O-175), still near the opener (O-165/U+120), while the market repriced toward the under (DK -132/+100, Hard Rock -130/+100, Fliff -140/-105, Betr -147/+107, Kalshi -117/+113, ProphetX -126/-105). De-vig fair under ~46.8% at sportsbooks, 46.5% Kalshi, 47.9% ProphetX vs 44.4% needed: about +2.2pp (EV ~+5%). Conflict: BettingPros projection 2.0 leans over; game log 6 of 12 under 1.5",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 28091 market 151 (assists)",
+        "status": "usable",
+        "freshness": "2026-11-16 16:06 UTC",
+        "detail": "BetRivers 1.5 O-175/U+125 (upd ~15:59 UTC; skin b15 identical); DraftKings 1.5 -132/+100; Hard Rock -130/+100; Fliff -140/-105; Betr -147/+107; Kalshi -117/+113; ProphetX -126/-105; consensus -135/+112; Pinnacle absent. Same-line de-vig fair under: sportsbook median 46.8%, Kalshi 46.5%, ProphetX 47.9%; entry 44.4%"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-11-16 16:06 UTC",
+        "detail": "Opened 1.5 O-165/U+120 (Fanatics 2026-11-16 02:16 UTC) -> market repriced to about O-135/U+112; BetRivers still O-175/U+125, on the opener side of the move"
+      },
+      {
+        "category": "situational",
+        "source": "ESPN gamelog + BettingPros /props",
+        "status": "usable",
+        "freshness": "2026-11-16 16:10 UTC",
+        "detail": "Cissoko assists this season 1,0,3,1,3,4,0,1,2,4,1,3 (6 of 12 under 1.5, 16-33 min). CONFLICT: BettingPros projection 2.0 recommends the over. BetRivers is the largest over-side outlier of its 51 low-rung assist quotes tonight (median deviation +0.1pp), so not a house-wide lean"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "6:00 PM",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 1.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
