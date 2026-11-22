@@ -1403,6 +1403,58 @@
    "errors": [],
    "status": "ok",
    "new_observations": 0
+  },
+  {
+   "scan_date": "2026-11-22",
+   "scanned_at": "2026-11-22T16:00:05Z",
+   "sports": [
+    "NBA",
+    "NFL",
+    "MLB"
+   ],
+   "events_by_sport": {
+    "NBA": 7,
+    "NFL": 11,
+    "MLB": 0
+   },
+   "candidates": 1,
+   "offers_by_market": {
+    "NBA:127": 7,
+    "NBA:128": 7,
+    "NBA:129": 7,
+    "NBA:156": 90,
+    "NBA:157": 90,
+    "NBA:151": 70,
+    "NBA:335": 72,
+    "NBA:336": 87,
+    "NBA:337": 73,
+    "NBA:338": 89,
+    "NFL:1": 11,
+    "NFL:2": 11,
+    "NFL:3": 11,
+    "NFL:103": 24,
+    "NFL:100": 24,
+    "NFL:333": 24,
+    "NFL:104": 184,
+    "NFL:105": 182,
+    "NFL:106": 76,
+    "NFL:107": 76,
+    "NFL:406": 53,
+    "MLB:122": 0,
+    "MLB:175": 0,
+    "MLB:176": 0,
+    "MLB:285": 0,
+    "MLB:405": 0
+   },
+   "requests": 255,
+   "events_started": 0,
+   "markets_scanned": 1265,
+   "markets_with_benchmark": 421,
+   "markets_scored": 350,
+   "fetch_failures": 0,
+   "errors": [],
+   "status": "ok",
+   "new_observations": 1
   }
  ],
  "observations": [
@@ -8765,6 +8817,41 @@
    },
    "realized_clv_exchange_frac": -0.104319,
    "realized_clv_retail_frac": -0.061056
+  },
+  {
+   "id": "v3obs-f625f112cdbf6ac7",
+   "scan_date": "2026-11-22",
+   "scanned_at": "2026-11-22T16:00:05Z",
+   "sport": "NFL",
+   "event_id": 22017,
+   "event": "LV @ DEN",
+   "start_utc": "2026-11-22T21:25:00Z",
+   "market_id": 1,
+   "market": "moneyline",
+   "kind": "moneyline",
+   "participant": "Raiders",
+   "bet": "Raiders ML",
+   "line": 1,
+   "side": "Raiders",
+   "selection": "a",
+   "book_id": 10,
+   "book": "FanDuel",
+   "odds": 500,
+   "p_best": 0.166667,
+   "fair_p": 0.170041,
+   "projected_clv": 0.020247,
+   "gate": 0.02,
+   "units_kelly": 0,
+   "benchmark_operators": [
+    38,
+    60,
+    68,
+    "polymarket"
+   ],
+   "quote_updated": "2026-11-22 15:51:31",
+   "quote_age_min": 8.6,
+   "benchmark_max_age_min": 9.3,
+   "close": null
   }
  ]
 }
