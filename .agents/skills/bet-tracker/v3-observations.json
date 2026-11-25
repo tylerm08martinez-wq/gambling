@@ -9205,19 +9205,19 @@
    "benchmark_max_age_min": 10.5,
    "close": {
     "retail_consensus": {
-     "captured_at": "2026-11-25T00:30:01.996469+00:00",
-     "minutes_before_start": 30.0,
+     "captured_at": "2026-11-25T00:45:01.585647+00:00",
+     "minutes_before_start": 15.0,
      "vintage": "close",
      "line": 1,
      "odds_side": 350,
      "odds_other": -450,
      "fair_p": 0.19561921976057695,
-     "quote_updated": "2026-11-25 00:29:50",
+     "quote_updated": "2026-11-25 00:41:10",
      "source": "bettingpros_consensus"
     },
     "exchange": {
-     "captured_at": "2026-11-25T00:30:01.996469+00:00",
-     "minutes_before_start": 30.0,
+     "captured_at": "2026-11-25T00:45:01.585647+00:00",
+     "minutes_before_start": 15.0,
      "vintage": "close",
      "line": 1,
      "fair_p": 0.21273596346739032,
@@ -9232,8 +9232,8 @@
       {
        "book_id": 38,
        "odds_side": 360,
-       "odds_other": -380,
-       "updated": "2026-11-25 00:22:07"
+       "odds_other": -385,
+       "updated": "2026-11-25 00:40:54"
       },
       {
        "book_id": 60,
@@ -9245,20 +9245,20 @@
        "book_id": 68,
        "odds_side": 355,
        "odds_other": -376,
-       "updated": "2026-11-25 00:17:05"
+       "updated": "2026-11-25 00:30:09"
       },
       {
        "book_id": 73,
        "odds_side": 355,
        "odds_other": -376,
-       "updated": "2026-11-25 00:28:27"
+       "updated": "2026-11-25 00:40:34"
       }
      ],
      "source": "exchange_benchmark"
     },
     "side": "Wizards",
-    "captured_at": "2026-11-25T00:30:01.996469+00:00",
-    "minutes_before_start": 30.0
+    "captured_at": "2026-11-25T00:45:01.585647+00:00",
+    "minutes_before_start": 15.0
    },
    "realized_clv_exchange_frac": 0.084953,
    "realized_clv_retail_frac": -0.002342
@@ -9626,20 +9626,20 @@
    "benchmark_max_age_min": 6.6,
    "close": {
     "retail_consensus": {
-     "captured_at": "2026-11-25T00:30:01.996469+00:00",
-     "minutes_before_start": 30.0,
+     "captured_at": "2026-11-25T00:45:01.585647+00:00",
+     "minutes_before_start": 15.0,
      "vintage": "close",
      "line": 6.5,
      "odds_side": 104,
      "odds_other": -139,
      "fair_p": 0.45736374770361293,
-     "quote_updated": "2026-11-25 00:28:06",
+     "quote_updated": "2026-11-25 00:37:35",
      "source": "bettingpros_consensus"
     },
     "exchange": null,
     "side": "Over",
-    "captured_at": "2026-11-25T00:30:01.996469+00:00",
-    "minutes_before_start": 30.0
+    "captured_at": "2026-11-25T00:45:01.585647+00:00",
+    "minutes_before_start": 15.0
    },
    "realized_clv_exchange_frac": null,
    "realized_clv_retail_frac": -0.062404
