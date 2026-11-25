@@ -702,5 +702,40 @@
     "validation_notes": [
       "scheduled duplicate market already logged: 20261003-mlb-v1-jacob-prop"
     ]
+  },
+  {
+    "id": "20261125-nfl-v2-colby-prop",
+    "date": "2026-11-25",
+    "checked_at": "2026-11-25T09:06:39",
+    "run_type": "scheduled",
+    "model": "v2-sharp",
+    "sport": "NFL",
+    "bet": "Colby Parkinson Under 20.5 receiving yards (GB @ LAR)",
+    "line": "-118 @ Betr",
+    "units": 1,
+    "score": 8.75,
+    "primary_edge": "Signal A prop gap, 3 yards: Betr hangs Parkinson rec yds at 20.5 (-118/-118) while the market moved from a 22.5 opener to 17.5 at 8 venues and 16.5 at FanDuel/Hard Rock; Betr is the lagging book. Exchange 19.5 strike has the under favoured (Novig -122, Kalshi -122, Polymarket US -127; de-vig under 54.4-55.4%), so fair under 20.5 ~56.3% vs 54.1% entry: about +2.2pp. Pinnacle absent, CLV unverified. Same spot as today's V1 pick",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NFL event 21918 market 105 (receiving yards)",
+        "status": "usable",
+        "freshness": "2026-11-25 16:05 UTC",
+        "detail": "Betr 20.5 O-118/U-118 (upd 15:55 UTC, re-pulled 16:05 UTC still live); DraftKings 17.5 -108/-116; Caesars 17.5 -110/-118; BetMGM 17.5 -120/-111; ProphetX 17.5 -108/-118; Fliff 17.5 -120/-120; FanDuel 16.5 -113/-113; Hard Rock 16.5 -120/-110; Novig 19.5 +117/-122; Kalshi 19.5 +117/-122; Polymarket US 19.5 +122/-127; consensus 17.5 -110/-116; Pinnacle absent. theScore 19.5 +110/-105 ignored (under side flagged off, negative hold). Exchange de-vig under 19.5 median 54.4%; est. fair under 20.5 ~56.3%; entry 54.1%"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-11-25 16:05 UTC",
+        "detail": "Opened 22.5 -114/-114 (FanDuel 2026-11-23 01:31 UTC); now 16.5-17.5 at 10 venues and 19.5 at the exchanges; Betr moved only to 20.5. No injury catalyst: Parkinson, Higbee, Davis Allen all active"
+      }
+    ],
+    "rejection_reason": "scheduled duplicate market already logged: 20261125-nfl-v1-colby-prop",
+    "validation_status": "failed",
+    "validation_notes": [
+      "scheduled duplicate market already logged: 20261125-nfl-v1-colby-prop"
+    ]
   }
 ]
