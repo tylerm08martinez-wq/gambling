@@ -10476,5 +10476,56 @@
     "line_num": 2.5,
     "prop_result": "2 assists",
     "prop_margin": -0.5
+  },
+  {
+    "id": "20261128-nba-v1-wendel-prop",
+    "date": "2026-11-28",
+    "model": "v1-trends",
+    "sport": "NBA",
+    "bet": "Wendell Carter Jr. Under 1.5 Assists (ORL @ WAS)",
+    "bet_type": "prop",
+    "bet_type_source": "declared",
+    "line": "+160 @ Betr",
+    "units": 1,
+    "score": 6.8,
+    "primary_edge": "Same-line cross-book price gap: Betr hangs Carter Under 1.5 assists at +160 (implied 38.5%; its over is -227) while every other venue pays +105 to +133 on the under. Same-line de-vig fair under: exchanges 41.1-42.1% (ProphetX 41.1, Polymarket US 41.7, Kalshi 42.1 at 1.9% hold; Novig under ask +133); sportsbooks 42.5-47% (Fliff 42.5, FanDuel 44.5, BetMGM skin 45.2, BetRivers 47.0). Edge about +3.2pp vs exchanges and +6pp vs sportsbooks, EV about +7 to +8%. Betr is level with the market on his points, P+A, R+A and PRA, and is not generous on other low assist unders tonight, so this is one mispriced market, not a player view. Season log: under 1.5 in 9 of 17 (avg 1.4). Conflicts (scored -2): the market drifted toward the over since the FanDuel opener (O-146/U+110 to about O-150/-164) and Betr sits past that move rather than behind it; 4 of his last 5 went over; Anthony Black (back) questionable",
+    "primary_edge_type": "cross_book_gap",
+    "source_evidence": [
+      {
+        "category": "prop_line_data",
+        "source": "BettingPros /offers NBA event 28169 market 151 (assists)",
+        "status": "usable",
+        "freshness": "2026-11-28 16:03 UTC",
+        "detail": "Over/Under 1.5 at every venue. Betr -227/+160 (upd 15:57 UTC, re-pulled 16:03 UTC still live); FanDuel -146/+110 (upd 12:36); BetRivers and SugarHouse -134/-103; BetMGM skin -145/+105; Fliff -170/+115; Caesars over -164 (under not quoted); ProphetX -162/+132; Kalshi -144/+133; Polymarket US -150/+133; Novig under +133; consensus -148/-103; Pinnacle absent. Same-line de-vig fair under: exchanges median 41.7% (41.1-42.1), sportsbooks 42.5-47.0%; entry implied 38.5%"
+      },
+      {
+        "category": "line_movement_data",
+        "source": "BettingPros /offers opening_line",
+        "status": "usable",
+        "freshness": "2026-11-28 16:03 UTC",
+        "detail": "Opened 1.5 O-146/U+110 (FanDuel 2026-11-27 23:48 UTC, de-vig over 55.5%); exchanges now price the over about 58%; Betr prices it 64.3% on its own two-way, past the move. Betr on his other markets: points 11.5 -106/-130, P+A 13.5 -110/-125, R+A 10.5 -105/-130, PRA 21.5 -122/-112, all level with the market"
+      },
+      {
+        "category": "situational",
+        "source": "ESPN NBA injuries + gamelog",
+        "status": "usable",
+        "freshness": "2026-11-28 16:05 UTC",
+        "detail": "Carter assists this season 0,1,2,3,1,0,0,2,0,1,3,0,1,3,2,3,2 (9 of 17 under 1.5, 26-40 min; 4 of last 5 over). ORL: Banchero, Porter Jr., Isaac out (all posted before the opener); Anthony Black (back) questionable"
+      }
+    ],
+    "validation_status": "passed",
+    "validation_notes": [],
+    "game_time": "3:00 PM AZ",
+    "result": null,
+    "units_won_lost": null,
+    "closing_line": null,
+    "clv": null,
+    "clv_devig": null,
+    "clv_pct_pts": null,
+    "final_score": null,
+    "game_margin": null,
+    "line_num": 1.5,
+    "prop_result": null,
+    "prop_margin": null
   }
 ]
